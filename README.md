@@ -226,18 +226,27 @@ that `theme` id in `data/sources.json`.
 
 **Splitting one source into layers under different categories:** some City
 of Toronto datasets mix locations that belong in different categories —
-for example, the Real Estate Asset Inventory includes both administrative
-land/buildings (Governance) and parks-department land/buildings that
-overlap what the Green Spaces / Parks & Recreation layers already show
-(Parks & Public Realm). Rather than showing the same park twice under two
-categories, `data/sources.json` can list the same source `file`/`url`
-under two layer entries with complementary `filter`/`excludeFilter`
-values, so each feature ends up in exactly one of them — see
-`real-estate-land` / `real-estate-park-land` and `real-estate-buildings` /
-`real-estate-park-buildings` for a worked example. `filter` keeps only
-features matching a property (value can be a single value or an array of
-allowed values); `excludeFilter` uses the same matching but drops features
-instead of keeping them.
+for example, the Real Estate Asset Inventory includes administrative
+land/buildings (Governance), parks-department land/buildings that overlap
+what the Green Spaces / Parks & Recreation layers already show (Parks &
+Public Realm), and carparks (Transportation). Rather than showing the same
+location twice under two categories, `data/sources.json` can list the same
+source `file`/`url` under multiple layer entries with complementary
+`filter`/`excludeFilter` values, so each feature ends up in exactly one of
+them — see the `real-estate-*` layers for a worked example. A `filter`/
+`excludeFilter` value can be:
+
+- a plain value — exact match against that property;
+- an array of values — matches if the property equals any of them;
+- `{ "contains": "TEXT" }` — case-insensitive substring match (e.g. every
+  property description containing "CARPARK"), for when there's no clean
+  categorical field to match on exactly.
+
+`filter` keeps only features matching every key given; `excludeFilter`
+drops features instead of keeping them, and can itself be an array of
+filter objects to drop features matching *any* of several unrelated
+reasons (e.g. "is a park" OR "is a carpark") — see `real-estate-land`'s
+`excludeFilter`.
 
 **How it works:** `data/sources.json` lists the layers (a label, which
 `theme` id it belongs to, and where to read the source GeoJSON from) and a

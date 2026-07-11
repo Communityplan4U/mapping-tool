@@ -68,7 +68,12 @@ function normalizeToFeatures(input) {
 
 function valueMatches(actual, expected) {
   if (Array.isArray(expected)) {
-    return expected.some((v) => String(actual) === String(v));
+    return expected.some((v) => valueMatches(actual, v));
+  }
+  if (expected && typeof expected === "object" && "contains" in expected) {
+    return String(actual ?? "")
+      .toUpperCase()
+      .includes(String(expected.contains).toUpperCase());
   }
   return String(actual) === String(expected);
 }
@@ -80,11 +85,14 @@ function matchesPropertyFilter(properties, filter) {
   );
 }
 
+// excludeFilter may be a single {key: value} object, or an array of such
+// objects — the feature is excluded if it matches ANY of them (OR), so
+// unrelated exclusion reasons (e.g. "is a park" vs. "is a carpark") can be
+// combined without one accidentally requiring the other.
 function matchesExcludeFilter(properties, excludeFilter) {
   if (!excludeFilter) return false;
-  return Object.entries(excludeFilter).every(([key, value]) =>
-    valueMatches((properties || {})[key], value)
-  );
+  const filters = Array.isArray(excludeFilter) ? excludeFilter : [excludeFilter];
+  return filters.some((filter) => matchesPropertyFilter(properties, filter));
 }
 
 async function processLayer(layer, bbox) {

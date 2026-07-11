@@ -12,19 +12,30 @@
       "label": "Real Estate Asset Inventory (Buildings)",
       "theme": "governance",
       "file": "data/raw/building-asset-inventory.geojson",
-      "excludeFilter": {
-        "Building Description": [
-          "FAIRBANK MEMORIAL PARK - OUTDOOR POOL SERVICE BLDG",
-          "FAIRBANK MEMORIAL PARK - COMMUNITY CENTRE",
-          "KEELESDALE PARK - CHRIS TONKS ARENA",
-          "KEELESDALE PARK - BASEBALL CLUBHOUSE & CHANGE / WASHROOM",
-          "BERT ROBINSON PARK - MAINTENANCE BLDG",
-          "CEDARVALE PARK - PHIL WHITE ARENA",
-          "FAIRBANK MEMORIAL PARK - GREENHOUSE",
-          "CHARLES CACCIA PARK SEWAGE PUMPING STATION"
-        ]
-      },
-      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Building (EPSG:4326), unfiltered except the buildings excluded above, which duplicate named parks already shown by the green-spaces/parks-rec layers — see the real-estate-park-buildings layer below, which shows them instead under Parks & Public Realm. Re-download and replace data/raw/building-asset-inventory.geojson to refresh, then re-run scripts/fetch-open-data.js."
+      "excludeFilter": [
+        {
+          "Building Description": [
+            "FAIRBANK MEMORIAL PARK - OUTDOOR POOL SERVICE BLDG",
+            "FAIRBANK MEMORIAL PARK - COMMUNITY CENTRE",
+            "KEELESDALE PARK - CHRIS TONKS ARENA",
+            "KEELESDALE PARK - BASEBALL CLUBHOUSE & CHANGE / WASHROOM",
+            "BERT ROBINSON PARK - MAINTENANCE BLDG",
+            "CEDARVALE PARK - PHIL WHITE ARENA",
+            "FAIRBANK MEMORIAL PARK - GREENHOUSE",
+            "CHARLES CACCIA PARK SEWAGE PUMPING STATION"
+          ]
+        },
+        { "Building Description": { "contains": "CARPARK" } }
+      ],
+      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Building (EPSG:4326), unfiltered except the buildings excluded above: ones that duplicate named parks already shown by the green-spaces/parks-rec layers (see real-estate-park-buildings below) and ones that are carparks (see real-estate-parking-buildings below). Re-download and replace data/raw/building-asset-inventory.geojson to refresh, then re-run scripts/fetch-open-data.js."
+    },
+    {
+      "id": "real-estate-parking-buildings",
+      "label": "Real Estate Asset Inventory (Parking Buildings)",
+      "theme": "transportation",
+      "file": "data/raw/building-asset-inventory.geojson",
+      "filter": { "Building Description": { "contains": "CARPARK" } },
+      "_source": "Same source file as real-estate-buildings, filtered down to buildings whose description contains \"CARPARK\" — grouped under Transportation instead of Governance."
     },
     {
       "id": "real-estate-park-buildings",
@@ -51,8 +62,11 @@
       "label": "Real Estate Asset Inventory (Land)",
       "theme": "governance",
       "file": "data/raw/land-asset-inventory.geojson",
-      "excludeFilter": { "Property Type": "Park/Rec/Open Space" },
-      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Land (EPSG:4326), excluding parcels typed \"Park/Rec/Open Space\" — those duplicate the green-spaces layer's park polygons and are shown instead by the real-estate-park-land layer below, under Parks & Public Realm. Re-download and replace data/raw/land-asset-inventory.geojson to refresh, then re-run scripts/fetch-open-data.js."
+      "excludeFilter": [
+        { "Property Type": "Park/Rec/Open Space" },
+        { "Property Description": { "contains": "CARPARK" } }
+      ],
+      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Land (EPSG:4326), excluding parcels typed \"Park/Rec/Open Space\" (shown instead by real-estate-park-land below, under Parks & Public Realm) and parcels described as a \"CARPARK\" (shown instead by real-estate-parking-land below, under Transportation). Re-download and replace data/raw/land-asset-inventory.geojson to refresh, then re-run scripts/fetch-open-data.js."
     },
     {
       "id": "real-estate-park-land",
@@ -62,6 +76,15 @@
       "file": "data/raw/land-asset-inventory.geojson",
       "filter": { "Property Type": "Park/Rec/Open Space" },
       "_source": "Same source file as real-estate-land, filtered down to parcels typed \"Park/Rec/Open Space\" — grouped under Parks & Public Realm instead of Governance so they aren't shown twice under two different categories."
+    },
+    {
+      "id": "real-estate-parking-land",
+      "label": "Real Estate Asset Inventory (Parking Land)",
+      "theme": "transportation",
+      "dashed": true,
+      "file": "data/raw/land-asset-inventory.geojson",
+      "filter": { "Property Description": { "contains": "CARPARK" } },
+      "_source": "Same source file as real-estate-land, filtered down to parcels whose description contains \"CARPARK\" — grouped under Transportation instead of Governance."
     },
     {
       "id": "community-housing",

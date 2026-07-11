@@ -227,12 +227,60 @@
   });
   map.addControl(new ShareControl());
 
+  // Add-marker toggle: click this button to arm "placing" mode (cursor
+  // becomes a crosshair), then click anywhere on the map to leave a
+  // feedback marker there. Plain map clicks do nothing on their own —
+  // this makes leaving feedback a deliberate action instead of firing on
+  // every click while panning/exploring.
+  let addMarkerMode = false;
+  const AddMarkerControl = L.Control.extend({
+    options: { position: "topleft" },
+    onAdd: function () {
+      const container = L.DomUtil.create(
+        "div",
+        "leaflet-bar leaflet-control leaflet-control-custom"
+      );
+      const button = L.DomUtil.create("a", "", container);
+      button.href = "#";
+      button.title = "Add a feedback marker";
+      button.setAttribute("role", "button");
+      button.setAttribute(
+        "aria-label",
+        "Add a feedback marker — click, then click the map"
+      );
+      button.innerHTML = "📍";
+      L.DomEvent.on(button, "click", L.DomEvent.stop).on(button, "click", () =>
+        setAddMarkerMode(!addMarkerMode)
+      );
+      this._button = button;
+      return container;
+    },
+  });
+  const addMarkerControl = new AddMarkerControl();
+  map.addControl(addMarkerControl);
+
+  function setAddMarkerMode(active) {
+    if (!config.mapCommentTopics || config.mapCommentTopics.length === 0) {
+      return;
+    }
+    addMarkerMode = active;
+    map.getContainer().classList.toggle("add-marker-mode", active);
+    const button = addMarkerControl._button;
+    button.classList.toggle("is-active", active);
+    button.innerHTML = active ? "✕" : "📍";
+    button.title = active ? "Cancel adding a marker" : "Add a feedback marker";
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && addMarkerMode) setAddMarkerMode(false);
+  });
+
   // ---------- Map comments (click-anywhere feedback) ----------
-  // Separate from the per-site ranking system: click anywhere on the map
-  // to leave a topic-tagged comment at that exact point. Stored in the
-  // map_comments table (see supabase/schema.sql) and rendered as square
-  // markers — a shape not used by any open data layer — so a resident's
-  // own feedback is never confused with official City data.
+  // Placing a marker (armed via the button above) leaves a topic-tagged
+  // comment at that exact point. Stored in the map_comments table (see
+  // supabase/schema.sql) and rendered as square markers — a shape not
+  // used by any open data layer — so a resident's own feedback is never
+  // confused with official City data.
   const topicsById = new Map(
     (config.mapCommentTopics || []).map((t) => [t.id, t])
   );
@@ -383,9 +431,8 @@
   });
 
   map.on("click", (e) => {
-    if (!config.mapCommentTopics || config.mapCommentTopics.length === 0) {
-      return;
-    }
+    if (!addMarkerMode) return;
+    setAddMarkerMode(false);
     pendingCommentLatLng = e.latlng;
     document.getElementById(
       "map-comment-location"

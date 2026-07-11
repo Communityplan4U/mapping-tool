@@ -42,6 +42,20 @@
       "color": "#e87ba4",
       "file": "data/raw/community-housing.geojson",
       "_source": "City of Toronto Open Data Portal, Toronto Community Housing Data (EPSG:4326). Re-download and replace data/raw/community-housing.geojson to refresh, then re-run scripts/fetch-open-data.js."
+    },
+    {
+      "id": "real-estate-buildings",
+      "label": "Real Estate Asset Inventory (Buildings)",
+      "color": "#eb6834",
+      "file": "data/raw/building-asset-inventory.geojson",
+      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Building (EPSG:4326), unfiltered. Re-download and replace data/raw/building-asset-inventory.geojson to refresh, then re-run scripts/fetch-open-data.js."
+    },
+    {
+      "id": "real-estate-land",
+      "label": "Real Estate Asset Inventory (Land)",
+      "color": "#008300",
+      "file": "data/raw/land-asset-inventory.geojson",
+      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Land (EPSG:4326), unfiltered. Re-download and replace data/raw/land-asset-inventory.geojson to refresh, then re-run scripts/fetch-open-data.js."
     }
   ]
 }

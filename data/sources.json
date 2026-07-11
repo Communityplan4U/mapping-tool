@@ -56,6 +56,13 @@
       "color": "#008300",
       "file": "data/raw/land-asset-inventory.geojson",
       "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Land (EPSG:4326), unfiltered. Re-download and replace data/raw/land-asset-inventory.geojson to refresh, then re-run scripts/fetch-open-data.js."
+    },
+    {
+      "id": "libraries",
+      "label": "Library Branches",
+      "color": "#2a78d6",
+      "file": "data/raw/library-branches.geojson",
+      "_source": "Toronto Public Library Open Data, Branch General Information (EPSG:4326). Re-download and replace data/raw/library-branches.geojson to refresh, then re-run scripts/fetch-open-data.js."
     }
   ]
 }

@@ -78,21 +78,32 @@ function valueMatches(actual, expected) {
   return String(actual) === String(expected);
 }
 
-function matchesPropertyFilter(properties, filter) {
-  if (!filter) return true;
+function matchesFilterGroup(properties, filter) {
   return Object.entries(filter).every(([key, value]) =>
     valueMatches((properties || {})[key], value)
   );
 }
 
-// excludeFilter may be a single {key: value} object, or an array of such
-// objects — the feature is excluded if it matches ANY of them (OR), so
-// unrelated exclusion reasons (e.g. "is a park" vs. "is a carpark") can be
-// combined without one accidentally requiring the other.
+// filter/excludeFilter may each be a single {key: value} object (all keys
+// must match, AND), or an array of such objects (the feature matches if it
+// satisfies ANY of them, OR) — so unrelated match/exclusion reasons (e.g.
+// "is a park" vs. "is a carpark") can be combined without one accidentally
+// requiring the other.
+function matchesAnyFilterGroup(properties, filterOrFilters) {
+  if (!filterOrFilters) return false;
+  const filters = Array.isArray(filterOrFilters)
+    ? filterOrFilters
+    : [filterOrFilters];
+  return filters.some((f) => matchesFilterGroup(properties, f));
+}
+
+function matchesPropertyFilter(properties, filter) {
+  if (!filter) return true;
+  return matchesAnyFilterGroup(properties, filter);
+}
+
 function matchesExcludeFilter(properties, excludeFilter) {
-  if (!excludeFilter) return false;
-  const filters = Array.isArray(excludeFilter) ? excludeFilter : [excludeFilter];
-  return filters.some((filter) => matchesPropertyFilter(properties, filter));
+  return matchesAnyFilterGroup(properties, excludeFilter);
 }
 
 async function processLayer(layer, bbox) {

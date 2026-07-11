@@ -65,9 +65,10 @@
       "excludeFilter": [
         { "Property Type": "Park/Rec/Open Space" },
         { "Property Description": { "contains": "CARPARK" } },
+        { "Property Type": "Parking Facility" },
         { "Property Type": "School" }
       ],
-      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Land (EPSG:4326), excluding parcels typed \"Park/Rec/Open Space\" (shown instead by real-estate-park-land below, under Parks & Public Realm), parcels described as a \"CARPARK\" (shown instead by real-estate-parking-land below, under Transportation), and parcels typed \"School\" (shown instead by real-estate-school-land below, under Community Services & Institutions). Re-download and replace data/raw/land-asset-inventory.geojson to refresh, then re-run scripts/fetch-open-data.js."
+      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Land (EPSG:4326), excluding parcels typed \"Park/Rec/Open Space\" (shown instead by real-estate-park-land below, under Parks & Public Realm), parcels described as a \"CARPARK\" or typed \"Parking Facility\" (shown instead by real-estate-parking-land below, under Transportation), and parcels typed \"School\" (shown instead by real-estate-school-land below, under Community Services & Institutions). Re-download and replace data/raw/land-asset-inventory.geojson to refresh, then re-run scripts/fetch-open-data.js."
     },
     {
       "id": "real-estate-park-land",
@@ -92,8 +93,11 @@
       "theme": "transportation",
       "dashed": true,
       "file": "data/raw/land-asset-inventory.geojson",
-      "filter": { "Property Description": { "contains": "CARPARK" } },
-      "_source": "Same source file as real-estate-land, filtered down to parcels whose description contains \"CARPARK\" — grouped under Transportation instead of Governance."
+      "filter": [
+        { "Property Description": { "contains": "CARPARK" } },
+        { "Property Type": "Parking Facility" }
+      ],
+      "_source": "Same source file as real-estate-land, filtered down to parcels whose description contains \"CARPARK\" or whose type is \"Parking Facility\" — grouped under Transportation instead of Governance."
     },
     {
       "id": "community-housing",

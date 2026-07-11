@@ -101,6 +101,14 @@ The anon key is meant to be public (it's used from browser JS) — access
 control is enforced by the row-level security policies in `schema.sql`,
 not by keeping the key secret.
 
+**Troubleshooting "permission denied for table X"**: this is a different
+error from an RLS policy problem — it means the `anon` role doesn't have
+basic read/write access to that table at all, usually because it's a table
+added after the initial setup (RLS policies were created, but the
+underlying grant wasn't). Fix: re-run `supabase/schema.sql` — it now
+includes explicit `grant` statements for every table, safe to run as many
+times as you like.
+
 ### 2. Add your real sites
 
 Still in `js/config.js`, replace the `sites` array with your neighbourhood's

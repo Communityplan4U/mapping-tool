@@ -47,6 +47,18 @@ alter table submissions enable row level security;
 alter table upvotes enable row level security;
 alter table map_comments enable row level security;
 
+-- RLS policies (below) control *which rows* anon/authenticated can see or
+-- change; these grants control whether they can touch the table *at all*.
+-- Supabase projects normally get this set up automatically for new tables,
+-- but re-stating it explicitly means this schema doesn't depend on that —
+-- if you ever hit "permission denied for table X", re-running just this
+-- block fixes it. Safe to re-run any time; re-granting an already-granted
+-- privilege is a no-op in Postgres.
+grant usage on schema public to anon, authenticated;
+grant select, insert on submissions to anon, authenticated;
+grant select, insert, delete on upvotes to anon, authenticated;
+grant select, insert on map_comments to anon, authenticated;
+
 -- Anyone using the public anon key can read all submissions, upvotes, and
 -- map comments — results need to be visible to every visitor, not just
 -- their own.

@@ -30,7 +30,17 @@ launching (see below).
   clicking any point on the map opens a small form (topic + comment) and
   drops a square marker there, colored by topic (`mapCommentTopics` in
   `js/config.js`). A "Community feedback" panel lets residents toggle
-  each topic on/off, the same way the open data layers work.
+  each topic on/off, the same way the open data layers work, plus a bar
+  chart showing how much feedback each topic has received across the
+  whole map.
+- **Base layer switcher** — a layers control (top-right on the map) swaps
+  between OpenStreetMap street tiles and Esri World Imagery satellite
+  tiles, both free with no API key.
+- **Reporting view** (`admin.html`) — a read-only page listing every site
+  submission and map comment as sortable tables, with CSV export, for
+  planners who don't have (or don't need) Supabase dashboard access. Shows
+  the same publicly-readable data as the rest of the site — nothing
+  additional is exposed.
 - **Backend** — [Supabase](https://supabase.com) (free tier), used only as
   a hosted Postgres database via its JS client. No server to run or
   maintain.

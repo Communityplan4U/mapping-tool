@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reporting — Community Land Use Tool</title>
+  <meta name="description" content="Read-only reporting view of submitted contributions, for planners." />
+  <meta name="robots" content="noindex" />
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1>Reporting view</h1>
+    <p class="muted">Read-only export of everything residents have submitted.</p>
+  </header>
+
+  <main class="admin-main">
+    <section class="intro">
+      <p>
+        This shows the same publicly-readable data used throughout the main
+        tool — nothing here is private, and no login is required to view
+        this page. It exists so planners can review and export
+        contributions without needing a Supabase account.
+      </p>
+      <p class="muted">
+        To remove spam or off-topic entries, use the
+        <strong>Supabase Table Editor</strong> instead — this page is
+        read-only and can't delete anything.
+      </p>
+    </section>
+
+    <div id="admin-config-warning" class="banner banner--warning" hidden>
+      ⚠️ This site isn't connected to a database yet. See
+      <code>README.md</code> to finish setup.
+    </div>
+
+    <section class="admin-section">
+      <div class="admin-section__header">
+        <h2>Site submissions</h2>
+        <button type="button" id="export-submissions" class="btn btn--small">
+          Download CSV
+        </button>
+      </div>
+      <p id="submissions-summary" class="hint"></p>
+      <div class="admin-table-wrap">
+        <table id="submissions-table" class="admin-table">
+          <thead>
+            <tr>
+              <th>Site</th>
+              <th>Nickname</th>
+              <th>Top picks</th>
+              <th>Comment</th>
+              <th>Submitted</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="admin-section">
+      <div class="admin-section__header">
+        <h2>Map feedback</h2>
+        <button type="button" id="export-map-comments" class="btn btn--small">
+          Download CSV
+        </button>
+      </div>
+      <p id="map-comments-summary" class="hint"></p>
+      <div class="admin-table-wrap">
+        <table id="map-comments-table" class="admin-table">
+          <thead>
+            <tr>
+              <th>Topic</th>
+              <th>Comment</th>
+              <th>Location</th>
+              <th>Submitted</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p class="muted"><a href="index.html">&larr; Back to the map</a></p>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

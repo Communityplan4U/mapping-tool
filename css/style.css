@@ -443,6 +443,13 @@ main {
   font-size: 0.95rem;
 }
 
+.layers-panel__subtitle {
+  margin: 1rem 0 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+
 .layers-list {
   list-style: none;
   margin: 0.5rem 0 0;
@@ -600,4 +607,58 @@ main {
   .result-row {
     grid-template-columns: 14rem 1fr 3rem;
   }
+}
+
+/* Reporting page */
+
+.admin-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1rem 2rem;
+}
+
+.admin-section {
+  margin-top: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  background: var(--surface-1);
+}
+
+.admin-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.admin-section__header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+  margin-top: 0.75rem;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--gridline);
+  vertical-align: top;
+}
+
+.admin-table th {
+  color: var(--text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
 }

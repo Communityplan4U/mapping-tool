@@ -73,10 +73,29 @@
     config.neighbourhood.center,
     config.neighbourhood.zoom
   );
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: "&copy; OpenStreetMap contributors",
-  }).addTo(map);
+
+  const streetLayer = L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap contributors",
+    }
+  ).addTo(map);
+  const satelliteLayer = L.tileLayer(
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    {
+      maxZoom: 19,
+      attribution:
+        "Tiles &copy; Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
+    }
+  );
+  L.control
+    .layers(
+      { Street: streetLayer, Satellite: satelliteLayer },
+      null,
+      { position: "topright", collapsed: true }
+    )
+    .addTo(map);
 
   // Address search (OpenStreetMap Nominatim geocoding, no API key needed).
   // Guarded in case the CDN script fails to load — the map still works
@@ -289,6 +308,71 @@
   }
   loadMapComments();
 
+  // Aggregate count of feedback per topic across the whole map — the
+  // click-anywhere-feedback analog of the per-site results bar chart.
+  // Bars use each topic's own color (already its identity everywhere
+  // else on the page: swatch, marker) rather than one neutral hue.
+  async function loadTopicSummary() {
+    const chartEl = document.getElementById("topic-summary-chart");
+    const topics = config.mapCommentTopics || [];
+    if (topics.length === 0) {
+      chartEl.innerHTML = "";
+      return;
+    }
+    if (!db) {
+      chartEl.innerHTML = `<p class="empty-msg">Backend not configured — see README.md.</p>`;
+      return;
+    }
+    chartEl.innerHTML = `<p class="empty-msg">Loading…</p>`;
+
+    const { data, error } = await db.from("map_comments").select("topic");
+    if (error) {
+      chartEl.innerHTML = `<p class="empty-msg">Couldn't load topic summary: ${escapeHtml(
+        error.message
+      )}</p>`;
+      return;
+    }
+    if (!data.length) {
+      chartEl.innerHTML = `<p class="empty-msg">No feedback submitted yet.</p>`;
+      return;
+    }
+
+    const counts = new Map(topics.map((t) => [t.id, 0]));
+    data.forEach((row) => {
+      if (counts.has(row.topic)) {
+        counts.set(row.topic, counts.get(row.topic) + 1);
+      }
+    });
+
+    const results = topics
+      .map((t) => ({
+        label: t.label,
+        color: t.color,
+        count: counts.get(t.id) || 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    const maxCount = Math.max(...results.map((r) => r.count), 1);
+
+    chartEl.innerHTML = "";
+    results.forEach((r) => {
+      const pct = Math.max((r.count / maxCount) * 100, 1);
+      const row = document.createElement("div");
+      row.className = "result-row";
+      row.innerHTML = `
+        <span class="result-row__label">${escapeHtml(r.label)}</span>
+        <span class="result-row__track">
+          <span class="result-row__bar" style="width:${pct}%;background:${escapeHtml(
+            r.color
+          )}"></span>
+        </span>
+        <span class="result-row__value">${r.count}</span>
+      `;
+      chartEl.appendChild(row);
+    });
+  }
+  loadTopicSummary();
+
   const mapCommentDialog = document.getElementById("map-comment-dialog");
   const mapCommentTopicSelect = document.getElementById("map-comment-topic");
   (config.mapCommentTopics || []).forEach((topic) => {
@@ -357,6 +441,7 @@
       statusEl.className = "status-msg is-ok";
       addCommentMarker({ ...row, created_at: new Date().toISOString() });
       refreshContributionCounter();
+      loadTopicSummary();
     });
 
   const markersBySiteId = new Map();

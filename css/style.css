@@ -68,6 +68,17 @@ body {
   font-size: 1.6rem;
 }
 
+.contribution-counter {
+  display: inline-block;
+  margin: 0.75rem 0 0;
+  padding: 0.3rem 0.9rem;
+  border-radius: 999px;
+  background: var(--gridline);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
 main {
   max-width: 960px;
   margin: 0 auto;
@@ -527,6 +538,26 @@ dialog#site-dialog::backdrop {
     background: var(--surface-1);
     color: var(--text-primary);
   }
+
+  .leaflet-bar a,
+  .leaflet-control-geocoder,
+  .leaflet-control-geocoder-icon,
+  .leaflet-control-geocoder-form input {
+    background: var(--surface-1);
+    color: var(--text-primary);
+  }
+
+  .leaflet-control-geocoder-alternatives {
+    background: var(--surface-1);
+  }
+
+  .leaflet-control-geocoder-alternatives li:hover {
+    background: var(--gridline);
+  }
+}
+
+.leaflet-control-custom a {
+  font-size: 1.1rem;
 }
 
 .site-footer {

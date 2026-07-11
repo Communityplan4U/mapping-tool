@@ -40,6 +40,21 @@
     "page-subtitle"
   ).textContent = `Help decide how public land should be used in ${config.neighbourhood.name}.`;
 
+  // ---------- Contribution counter ----------
+  async function refreshContributionCounter() {
+    const el = document.getElementById("contribution-counter");
+    if (!db) return;
+    const { count, error } = await db
+      .from("submissions")
+      .select("*", { count: "exact", head: true });
+    if (error || count === null) return;
+    el.textContent = `${count.toLocaleString()} contribution${
+      count === 1 ? "" : "s"
+    } so far`;
+    el.hidden = false;
+  }
+  refreshContributionCounter();
+
   // ---------- Map ----------
   const map = L.map("map").setView(
     config.neighbourhood.center,
@@ -49,6 +64,87 @@
     maxZoom: 19,
     attribution: "&copy; OpenStreetMap contributors",
   }).addTo(map);
+
+  // Address search (OpenStreetMap Nominatim geocoding, no API key needed).
+  // Guarded in case the CDN script fails to load — the map still works
+  // without it.
+  if (window.L.Control && window.L.Control.Geocoder) {
+    L.Control.geocoder({
+      placeholder: "Enter an address",
+      collapsed: false,
+      position: "topleft",
+    }).addTo(map);
+  }
+
+  // Fullscreen control (native Fullscreen API, no plugin needed).
+  const FullscreenControl = L.Control.extend({
+    options: { position: "topleft" },
+    onAdd: function () {
+      const container = L.DomUtil.create(
+        "div",
+        "leaflet-bar leaflet-control leaflet-control-custom"
+      );
+      const button = L.DomUtil.create("a", "", container);
+      button.href = "#";
+      button.title = "Toggle fullscreen";
+      button.setAttribute("role", "button");
+      button.setAttribute("aria-label", "Toggle fullscreen map");
+      button.innerHTML = "⛶";
+      L.DomEvent.on(button, "click", L.DomEvent.stop).on(button, "click", () =>
+        toggleMapFullscreen()
+      );
+      return container;
+    },
+  });
+  map.addControl(new FullscreenControl());
+
+  function toggleMapFullscreen() {
+    const el = map.getContainer();
+    if (!document.fullscreenElement) {
+      (el.requestFullscreen || el.webkitRequestFullscreen)?.call(el);
+    } else {
+      (document.exitFullscreen || document.webkitExitFullscreen)?.call(
+        document
+      );
+    }
+  }
+  map.on("fullscreenchange", () => map.invalidateSize());
+  document.addEventListener("fullscreenchange", () => map.invalidateSize());
+
+  // Share control (copies this page's URL to the clipboard).
+  const ShareControl = L.Control.extend({
+    options: { position: "topleft" },
+    onAdd: function () {
+      const container = L.DomUtil.create(
+        "div",
+        "leaflet-bar leaflet-control leaflet-control-custom"
+      );
+      const button = L.DomUtil.create("a", "", container);
+      button.href = "#";
+      button.title = "Copy link to this map";
+      button.setAttribute("role", "button");
+      button.setAttribute("aria-label", "Copy link to this map");
+      button.innerHTML = "🔗";
+      L.DomEvent.on(button, "click", L.DomEvent.stop).on(
+        button,
+        "click",
+        async () => {
+          try {
+            await navigator.clipboard.writeText(window.location.href);
+            button.innerHTML = "✅";
+            setTimeout(() => {
+              button.innerHTML = "🔗";
+            }, 1500);
+          } catch {
+            // Clipboard API may be unavailable (e.g. insecure context) —
+            // fail silently, the button just won't confirm the copy.
+          }
+        }
+      );
+      return container;
+    },
+  });
+  map.addControl(new ShareControl());
 
   const markersBySiteId = new Map();
   config.sites.forEach((site) => {
@@ -221,6 +317,7 @@
       }
       statusEl.textContent = "Thanks! Your ranking was submitted.";
       statusEl.className = "status-msg is-ok";
+      refreshContributionCounter();
     });
 
   // ---------- Community ideas (submissions + upvotes) ----------

@@ -12,6 +12,13 @@ locations — replace them with your real sites before launching (see below).
 
 - **Map** — [Leaflet](https://leafletjs.com/) + OpenStreetMap, no API key
   needed. Each marker is a public land site.
+- **Address search** — [Leaflet Control Geocoder](https://github.com/perliedman/leaflet-control-geocoder),
+  backed by OpenStreetMap's free Nominatim geocoding service, no API key
+  needed.
+- **Fullscreen / share controls** — built with the browser's native
+  Fullscreen API and Clipboard API, no extra library.
+- **Contribution counter** — a live count of all submitted rankings, shown
+  in the header.
 - **Per-site survey** — residents drag (or use ▲▼) to rank a fixed list of
   possible uses from most to least wanted, plus an optional comment.
 - **Community ideas** — everyone's submitted rankings/comments are listed

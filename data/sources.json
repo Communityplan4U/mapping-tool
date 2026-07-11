@@ -35,6 +35,13 @@
       "file": "data/raw/long-term-care-locations.geojson",
       "filter": { "CITY_OP": "Y" },
       "_source": "City of Toronto Open Data Portal, Long Term Care Locations (EPSG:4326), filtered to CITY_OP=Y. Re-download and replace data/raw/long-term-care-locations.geojson to refresh, then re-run scripts/fetch-open-data.js."
+    },
+    {
+      "id": "community-housing",
+      "label": "Toronto Community Housing",
+      "color": "#e87ba4",
+      "file": "data/raw/community-housing.geojson",
+      "_source": "City of Toronto Open Data Portal, Toronto Community Housing Data (EPSG:4326). Re-download and replace data/raw/community-housing.geojson to refresh, then re-run scripts/fetch-open-data.js."
     }
   ]
 }

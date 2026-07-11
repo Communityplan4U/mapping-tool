@@ -42,8 +42,9 @@ launching (see below).
   plus 3 added categories to cover things the plan doesn't name but the
   map needs. See "Open data map layers" below.
 - **Base layer switcher** — a layers control (top-right on the map) swaps
-  between OpenStreetMap street tiles and Esri World Imagery satellite
-  tiles, both free with no API key.
+  between [CARTO Positron](https://carto.com/basemaps) (a light, minimal
+  street basemap chosen to stay out of the way of the site's own colors)
+  and Esri World Imagery satellite tiles, both free with no API key.
 - **Reporting view** (`admin.html`) — a read-only page listing every site
   submission and map comment as sortable tables, with CSV export, for
   planners who don't have (or don't need) Supabase dashboard access. Shows

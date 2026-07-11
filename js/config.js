@@ -7,8 +7,8 @@ window.APP_CONFIG = {
   // Create a free project at https://supabase.com, run supabase/schema.sql
   // in its SQL editor, then paste the Project URL and anon public key here.
   // See README.md for step-by-step instructions.
-  supabaseUrl: "YOUR_SUPABASE_URL",
-  supabaseAnonKey: "YOUR_SUPABASE_ANON_KEY",
+  supabaseUrl: "https://vyytuffjlhkgckqiszzl.supabase.co",
+  supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5eXR1ZmZqbGhrZ2NrcWlzenpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3ODI0NzMsImV4cCI6MjA5OTM1ODQ3M30.UHNHZE31W9QuzoH-_yhokiwjODqOEGGcQrE979ttwsk",
 
   neighbourhood: {
     name: "Little Jamaica, Toronto",

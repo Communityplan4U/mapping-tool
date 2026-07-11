@@ -159,15 +159,6 @@
       "shape": "diamond",
       "file": "data/raw/library-branches.geojson",
       "_source": "Toronto Public Library Open Data, Branch General Information (EPSG:4326). Re-download and replace data/raw/library-branches.geojson to refresh, then re-run scripts/fetch-open-data.js."
-    },
-    {
-      "id": "ltc-city-operated",
-      "label": "Long-Term Care Locations (City-Operated)",
-      "theme": "community-services",
-      "shape": "triangle",
-      "file": "data/raw/long-term-care-locations.geojson",
-      "filter": { "CITY_OP": "Y" },
-      "_source": "City of Toronto Open Data Portal, Long Term Care Locations (EPSG:4326), filtered to CITY_OP=Y. Re-download and replace data/raw/long-term-care-locations.geojson to refresh, then re-run scripts/fetch-open-data.js."
     }
   ]
 }

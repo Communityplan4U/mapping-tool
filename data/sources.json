@@ -64,9 +64,10 @@
       "file": "data/raw/land-asset-inventory.geojson",
       "excludeFilter": [
         { "Property Type": "Park/Rec/Open Space" },
-        { "Property Description": { "contains": "CARPARK" } }
+        { "Property Description": { "contains": "CARPARK" } },
+        { "Property Type": "School" }
       ],
-      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Land (EPSG:4326), excluding parcels typed \"Park/Rec/Open Space\" (shown instead by real-estate-park-land below, under Parks & Public Realm) and parcels described as a \"CARPARK\" (shown instead by real-estate-parking-land below, under Transportation). Re-download and replace data/raw/land-asset-inventory.geojson to refresh, then re-run scripts/fetch-open-data.js."
+      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Land (EPSG:4326), excluding parcels typed \"Park/Rec/Open Space\" (shown instead by real-estate-park-land below, under Parks & Public Realm), parcels described as a \"CARPARK\" (shown instead by real-estate-parking-land below, under Transportation), and parcels typed \"School\" (shown instead by real-estate-school-land below, under Community Services & Institutions). Re-download and replace data/raw/land-asset-inventory.geojson to refresh, then re-run scripts/fetch-open-data.js."
     },
     {
       "id": "real-estate-park-land",
@@ -76,6 +77,14 @@
       "file": "data/raw/land-asset-inventory.geojson",
       "filter": { "Property Type": "Park/Rec/Open Space" },
       "_source": "Same source file as real-estate-land, filtered down to parcels typed \"Park/Rec/Open Space\" — grouped under Parks & Public Realm instead of Governance so they aren't shown twice under two different categories."
+    },
+    {
+      "id": "real-estate-school-land",
+      "label": "Real Estate Asset Inventory (School Land)",
+      "theme": "community-services",
+      "file": "data/raw/land-asset-inventory.geojson",
+      "filter": { "Property Type": "School" },
+      "_source": "Same source file as real-estate-land, filtered down to parcels typed \"School\" — grouped under Community Services & Institutions instead of Governance so they aren't shown twice under two different categories."
     },
     {
       "id": "real-estate-parking-land",

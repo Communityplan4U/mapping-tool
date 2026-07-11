@@ -31,38 +31,15 @@ window.APP_CONFIG = {
     { id: "natural", label: "Leave as natural space" },
   ],
 
-  // TODO: Replace these sample sites with the real public land parcels in
-  // your neighbourhood. To get coordinates: right-click the spot on
-  // https://www.google.com/maps and click the lat/lng that appears.
-  sites: [
-    {
-      id: "site-1",
-      name: "[SAMPLE] Eglinton West & Keele — Vacant Lot",
-      lat: 43.6902,
-      lng: -79.4655,
-      description:
-        "Replace with a real description: current condition, approximate size, and who owns it (city, TTC, Metrolinx, etc.).",
-    },
-    {
-      id: "site-2",
-      name: "[SAMPLE] Oakwood Ave Parkette Site",
-      lat: 43.6945,
-      lng: -79.4525,
-      description: "Replace with a real description of this site.",
-    },
-    {
-      id: "site-3",
-      name: "[SAMPLE] Marlee Ave Public Land",
-      lat: 43.696,
-      lng: -79.446,
-      description: "Replace with a real description of this site.",
-    },
-    {
-      id: "site-4",
-      name: "[SAMPLE] Allen Rd Underused Lot",
-      lat: 43.6975,
-      lng: -79.439,
-      description: "Replace with a real description of this site.",
-    },
-  ],
+  // Add real public land parcels here as they're identified. To get
+  // coordinates: right-click the spot on https://www.google.com/maps and
+  // click the lat/lng that appears. Example entry:
+  // {
+  //   id: "some-unique-id",
+  //   name: "Site name",
+  //   lat: 43.1234,
+  //   lng: -79.1234,
+  //   description: "Current condition, approximate size, who owns it.",
+  // },
+  sites: [],
 };

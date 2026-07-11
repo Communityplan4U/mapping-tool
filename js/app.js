@@ -44,14 +44,18 @@
   async function refreshContributionCounter() {
     const el = document.getElementById("contribution-counter");
     if (!db) return;
+    el.textContent = "Loading contributions…";
+    el.hidden = false;
     const { count, error } = await db
       .from("submissions")
       .select("*", { count: "exact", head: true });
-    if (error || count === null) return;
+    if (error || count === null) {
+      el.textContent = "Contribution count unavailable";
+      return;
+    }
     el.textContent = `${count.toLocaleString()} contribution${
       count === 1 ? "" : "s"
     } so far`;
-    el.hidden = false;
   }
   refreshContributionCounter();
 
@@ -68,12 +72,61 @@
   // Address search (OpenStreetMap Nominatim geocoding, no API key needed).
   // Guarded in case the CDN script fails to load — the map still works
   // without it.
+  let searchResultMarker = null;
   if (window.L.Control && window.L.Control.Geocoder) {
     L.Control.geocoder({
       placeholder: "Enter an address",
       collapsed: false,
       position: "topleft",
-    }).addTo(map);
+      defaultMarkGeocode: false,
+    })
+      .on("markgeocode", (e) => {
+        const { center, name } = e.geocode;
+        map.setView(center, 17);
+
+        if (searchResultMarker) map.removeLayer(searchResultMarker);
+
+        const searchedSite = {
+          id: `search-${center.lat.toFixed(5)}-${center.lng.toFixed(5)}`,
+          name: name || `${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`,
+          lat: center.lat,
+          lng: center.lng,
+          description:
+            "Location found via address search — not an official site, but you can still leave feedback here.",
+        };
+
+        searchResultMarker = L.marker(center, {
+          icon: searchResultIcon(),
+          zIndexOffset: 1000,
+        }).addTo(map);
+        searchResultMarker.bindPopup(`
+          <div class="feature-popup">
+            <p class="feature-popup__layer">${escapeHtml(searchedSite.name)}</p>
+            <button type="button" class="btn btn--small search-feedback-btn">Leave feedback here</button>
+          </div>
+        `);
+        searchResultMarker.on("popupopen", (ev) => {
+          ev.popup
+            .getElement()
+            .querySelector(".search-feedback-btn")
+            ?.addEventListener("click", () => {
+              searchResultMarker.closePopup();
+              openSiteDialog(searchedSite);
+            });
+        });
+        searchResultMarker.openPopup();
+      })
+      .addTo(map);
+  }
+
+  function searchResultIcon() {
+    return L.divIcon({
+      className: "search-marker-wrapper",
+      html: `<span class="search-marker"></span>`,
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+      popupAnchor: [0, -10],
+    });
   }
 
   // Fullscreen control (native Fullscreen API, no plugin needed).

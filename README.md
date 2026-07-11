@@ -33,6 +33,16 @@ There is no login system — submissions are anonymous, identified only by a
 random token stored in the visitor's browser (used to let people toggle
 their own upvotes on/off).
 
+Residents aren't limited to the predefined `sites` in `js/config.js` —
+searching an address opens the same ranking/comment form for that
+location. Its `site_id` is derived from the searched coordinates
+(`search-<lat>-<lng>`), so searching the same address again lands on the
+same thread. These ad-hoc submissions aren't shown as map markers or in
+the site list (only the configured `sites` are) — they exist in the
+`submissions` table and count toward the contribution counter, but
+reviewing them means querying Supabase directly by `site_id LIKE
+'search-%'`.
+
 ## Setup
 
 ### 1. Create the database (Supabase, free)

@@ -5,8 +5,9 @@ in their neighbourhood to be used. Residents see designated public sites on
 a map, rank possible uses for each site (park, housing, garden, etc.),
 leave a comment, and support ideas other residents have submitted.
 
-Currently configured for **Little Jamaica, Toronto** with sample site
-locations — replace them with your real sites before launching (see below).
+Currently configured for **Little Jamaica, Toronto**. No sites are
+configured yet — add real public land parcels to `js/config.js` before
+launching (see below).
 
 ## How it works
 
@@ -25,6 +26,11 @@ locations — replace them with your real sites before launching (see below).
   per site, and residents can upvote ("support") the ones they agree with.
 - **Results** — an aggregated bar chart per site shows which uses have the
   most community support.
+- **Click-anywhere feedback** — not limited to the predefined sites:
+  clicking any point on the map opens a small form (topic + comment) and
+  drops a square marker there, colored by topic (`mapCommentTopics` in
+  `js/config.js`). A "Community feedback" panel lets residents toggle
+  each topic on/off, the same way the open data layers work.
 - **Backend** — [Supabase](https://supabase.com) (free tier), used only as
   a hosted Postgres database via its JS client. No server to run or
   maintain.
@@ -42,6 +48,26 @@ the site list (only the configured `sites` are) — they exist in the
 `submissions` table and count toward the contribution counter, but
 reviewing them means querying Supabase directly by `site_id LIKE
 'search-%'`.
+
+## Click-anywhere map feedback
+
+Separate from the per-site ranking system: clicking any point on the map
+opens a small form (a topic dropdown and a comment box — no ranking) and,
+on submit, drops a square marker at that spot in the topic's color. Markers
+are always square regardless of topic, so a resident's own feedback is
+never visually confused with an open data layer's circle/diamond markers
+or a predefined site's pin.
+
+- **Topics** are defined in `mapCommentTopics` in `js/config.js` — each has
+  an `id`, `label`, and `color`. Add, remove, or recolor topics there; the
+  dropdown and the "Community feedback" toggle panel are both generated
+  from this list.
+- **Storage**: a `map_comments` table in Supabase (added by
+  `supabase/schema.sql` — re-run it if your project predates this feature,
+  it's safe to run multiple times). Comments are anonymous and public, same
+  as site submissions, and count toward the header's contribution counter.
+- **Moderation**: same approach as everything else — no in-app edit/delete,
+  review and remove rows from the Supabase Table Editor.
 
 ## Setup
 

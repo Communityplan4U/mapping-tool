@@ -41,20 +41,29 @@
   ).textContent = `Help decide how public land should be used in ${config.neighbourhood.name}.`;
 
   // ---------- Contribution counter ----------
+  // Counts both site rankings (submissions) and map click-anywhere
+  // feedback (map_comments) — anything a resident has contributed.
   async function refreshContributionCounter() {
     const el = document.getElementById("contribution-counter");
     if (!db) return;
     el.textContent = "Loading contributions…";
     el.hidden = false;
-    const { count, error } = await db
-      .from("submissions")
-      .select("*", { count: "exact", head: true });
-    if (error || count === null) {
+    const [submissionsResult, commentsResult] = await Promise.all([
+      db.from("submissions").select("*", { count: "exact", head: true }),
+      db.from("map_comments").select("*", { count: "exact", head: true }),
+    ]);
+    if (
+      submissionsResult.error ||
+      commentsResult.error ||
+      submissionsResult.count === null ||
+      commentsResult.count === null
+    ) {
       el.textContent = "Contribution count unavailable";
       return;
     }
-    el.textContent = `${count.toLocaleString()} contribution${
-      count === 1 ? "" : "s"
+    const total = submissionsResult.count + commentsResult.count;
+    el.textContent = `${total.toLocaleString()} contribution${
+      total === 1 ? "" : "s"
     } so far`;
   }
   refreshContributionCounter();
@@ -198,6 +207,157 @@
     },
   });
   map.addControl(new ShareControl());
+
+  // ---------- Map comments (click-anywhere feedback) ----------
+  // Separate from the per-site ranking system: click anywhere on the map
+  // to leave a topic-tagged comment at that exact point. Stored in the
+  // map_comments table (see supabase/schema.sql) and rendered as square
+  // markers — a shape not used by any open data layer — so a resident's
+  // own feedback is never confused with official City data.
+  const topicsById = new Map(
+    (config.mapCommentTopics || []).map((t) => [t.id, t])
+  );
+  const commentTopicsListEl = document.getElementById("comment-topics-list");
+  const commentMarkersByTopic = new Map();
+  let pendingCommentLatLng = null;
+
+  (config.mapCommentTopics || []).forEach((topic) => {
+    commentMarkersByTopic.set(topic.id, []);
+
+    const li = document.createElement("li");
+    li.className = "layers-list__item";
+    li.innerHTML = `
+      <label>
+        <input type="checkbox" data-topic-id="${escapeHtml(topic.id)}" checked />
+        <span class="layers-list__swatch" style="background:${escapeHtml(
+          topic.color
+        )}"></span>
+        ${escapeHtml(topic.label)}
+      </label>
+    `;
+    li.querySelector("input").addEventListener("change", (e) => {
+      const visible = e.currentTarget.checked;
+      (commentMarkersByTopic.get(topic.id) || []).forEach((marker) => {
+        if (visible) marker.addTo(map);
+        else map.removeLayer(marker);
+      });
+    });
+    commentTopicsListEl.appendChild(li);
+  });
+
+  function commentMarkerIcon(color) {
+    return L.divIcon({
+      className: "comment-marker-wrapper",
+      html: `<span class="comment-marker" style="background:${escapeHtml(
+        color
+      )}"></span>`,
+      iconSize: [14, 14],
+      iconAnchor: [7, 7],
+      popupAnchor: [0, -7],
+    });
+  }
+
+  function addCommentMarker(row) {
+    const topic = topicsById.get(row.topic);
+    if (!topic) return;
+    const marker = L.marker([row.lat, row.lng], {
+      icon: commentMarkerIcon(topic.color),
+    });
+    marker.bindPopup(`
+      <div class="feature-popup">
+        <p class="feature-popup__layer">${escapeHtml(topic.label)}</p>
+        <p>${escapeHtml(row.comment)}</p>
+        <p class="muted">${escapeHtml(formatDate(row.created_at))}</p>
+      </div>
+    `);
+    marker.on("click", (e) => L.DomEvent.stopPropagation(e));
+    commentMarkersByTopic.get(row.topic)?.push(marker);
+    const checkbox = commentTopicsListEl.querySelector(
+      `input[data-topic-id="${row.topic}"]`
+    );
+    if (!checkbox || checkbox.checked) marker.addTo(map);
+    return marker;
+  }
+
+  async function loadMapComments() {
+    if (!db) return;
+    const { data, error } = await db
+      .from("map_comments")
+      .select("id, lat, lng, topic, comment, created_at");
+    if (error || !data) return;
+    data.forEach(addCommentMarker);
+  }
+  loadMapComments();
+
+  const mapCommentDialog = document.getElementById("map-comment-dialog");
+  const mapCommentTopicSelect = document.getElementById("map-comment-topic");
+  (config.mapCommentTopics || []).forEach((topic) => {
+    const opt = document.createElement("option");
+    opt.value = topic.id;
+    opt.textContent = topic.label;
+    mapCommentTopicSelect.appendChild(opt);
+  });
+
+  map.on("click", (e) => {
+    if (!config.mapCommentTopics || config.mapCommentTopics.length === 0) {
+      return;
+    }
+    pendingCommentLatLng = e.latlng;
+    document.getElementById(
+      "map-comment-location"
+    ).textContent = `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
+    document.getElementById("map-comment-text").value = "";
+    const statusEl = document.getElementById("map-comment-status");
+    statusEl.textContent = "";
+    statusEl.className = "status-msg";
+    mapCommentDialog.showModal();
+  });
+
+  document
+    .getElementById("submit-map-comment")
+    .addEventListener("click", async () => {
+      const statusEl = document.getElementById("map-comment-status");
+      if (!db) {
+        statusEl.textContent =
+          "Backend not configured — see README.md to enable saving.";
+        statusEl.className = "status-msg is-error";
+        return;
+      }
+      if (!pendingCommentLatLng) return;
+      const comment = document
+        .getElementById("map-comment-text")
+        .value.trim();
+      if (!comment) {
+        statusEl.textContent = "Please add a comment before submitting.";
+        statusEl.className = "status-msg is-error";
+        return;
+      }
+
+      const submitBtn = document.getElementById("submit-map-comment");
+      submitBtn.disabled = true;
+      statusEl.textContent = "Submitting…";
+      statusEl.className = "status-msg";
+
+      const row = {
+        lat: pendingCommentLatLng.lat,
+        lng: pendingCommentLatLng.lng,
+        topic: mapCommentTopicSelect.value,
+        comment,
+        voter_token: voterToken,
+      };
+      const { error } = await db.from("map_comments").insert(row);
+
+      submitBtn.disabled = false;
+      if (error) {
+        statusEl.textContent = `Something went wrong: ${error.message}`;
+        statusEl.className = "status-msg is-error";
+        return;
+      }
+      statusEl.textContent = "Thanks! Your feedback was submitted.";
+      statusEl.className = "status-msg is-ok";
+      addCommentMarker({ ...row, created_at: new Date().toISOString() });
+      refreshContributionCounter();
+    });
 
   const markersBySiteId = new Map();
   config.sites.forEach((site) => {
@@ -638,6 +798,10 @@
         leafletLayer.bindPopup(
           buildFeaturePopup(layer.label, feature.properties)
         );
+        // Path-based layers (polygons, circleMarkers) bubble clicks to the
+        // map by default, which would also open the "leave feedback here"
+        // dialog. Stop it so clicking a shape only opens its own popup.
+        leafletLayer.on("click", (e) => L.DomEvent.stopPropagation(e));
       },
     });
   }

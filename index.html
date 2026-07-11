@@ -31,7 +31,9 @@
         This map shows public land sites where your neighbourhood is
         collecting ideas. Pick a site to rank the uses you'd most like to
         see there, leave a comment, and support ideas other residents have
-        already proposed.
+        already proposed. You can also <strong>click anywhere on the map</strong>
+        to leave feedback about retail, housing, transportation, public
+        realm, parks, or heritage at that spot.
       </p>
     </section>
 
@@ -48,11 +50,20 @@
         <p id="layers-status" class="layers-status" role="status"></p>
       </div>
 
+      <div class="layers-panel">
+        <h2 class="layers-panel__title">Community feedback</h2>
+        <p class="hint">
+          Feedback residents have left by clicking the map, grouped by
+          topic. Turn a topic on or off to show or hide its pins.
+        </p>
+        <ul id="comment-topics-list" class="layers-list"></ul>
+      </div>
+
       <ul id="site-list" class="site-list" aria-label="List of public land sites"></ul>
     </section>
   </main>
 
-  <dialog id="site-dialog">
+  <dialog id="site-dialog" class="app-dialog">
     <form method="dialog" class="dialog-close-form">
       <button type="submit" class="dialog-close" aria-label="Close">✕</button>
     </form>
@@ -102,6 +113,28 @@
       <p class="hint">Average support across all submitted rankings for this site.</p>
       <div id="results-chart" class="viz-root"></div>
     </section>
+  </dialog>
+
+  <dialog id="map-comment-dialog" class="app-dialog">
+    <form method="dialog" class="dialog-close-form">
+      <button type="submit" class="dialog-close" aria-label="Close">✕</button>
+    </form>
+
+    <h2>Leave feedback at this location</h2>
+    <p id="map-comment-location" class="muted"></p>
+
+    <label class="field">
+      <span>Topic</span>
+      <select id="map-comment-topic"></select>
+    </label>
+
+    <label class="field">
+      <span>Comment</span>
+      <textarea id="map-comment-text" maxlength="1000" rows="3" placeholder="What would you like to see here, or what's your concern about this spot?"></textarea>
+    </label>
+
+    <button type="button" id="submit-map-comment" class="btn btn--primary">Submit feedback</button>
+    <p id="map-comment-status" class="status-msg" role="status"></p>
   </dialog>
 
   <footer class="site-footer">

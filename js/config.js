@@ -31,6 +31,20 @@ window.APP_CONFIG = {
     { id: "natural", label: "Leave as natural space" },
   ],
 
+  // Topics residents can pick when leaving feedback by clicking anywhere
+  // on the map (separate from the per-site ranking above). Each gets its
+  // own marker color; markers always render as squares so they're never
+  // confused with the round/diamond markers used by the open data layers
+  // in data/sources.json.
+  mapCommentTopics: [
+    { id: "retail", label: "Retail", color: "#2a78d6" },
+    { id: "housing", label: "Housing", color: "#1baf7a" },
+    { id: "transportation", label: "Transportation", color: "#eda100" },
+    { id: "public-realm", label: "Public Realm", color: "#008300" },
+    { id: "parks-green-spaces", label: "Parks and Green Spaces", color: "#4a3aa7" },
+    { id: "heritage-community-identity", label: "Heritage and Community Identity", color: "#e34948" },
+  ],
+
   // Add real public land parcels here as they're identified. To get
   // coordinates: right-click the spot on https://www.google.com/maps and
   // click the lat/lng that appears. Example entry:

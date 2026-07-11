@@ -20,6 +20,13 @@
       "color": "#eda100",
       "file": "data/raw/parks-and-recreation-facilities.geojson",
       "_source": "City of Toronto Open Data Portal, Parks and Recreation Facilities (EPSG:4326). Re-download and replace data/raw/parks-and-recreation-facilities.geojson to refresh, then re-run scripts/fetch-open-data.js."
+    },
+    {
+      "id": "schools",
+      "label": "School Locations",
+      "color": "#4a3aa7",
+      "file": "data/raw/school-locations.geojson",
+      "_source": "City of Toronto Open Data Portal, School Locations - all types (EPSG:4326). Re-download and replace data/raw/school-locations.geojson to refresh, then re-run scripts/fetch-open-data.js."
     }
   ]
 }

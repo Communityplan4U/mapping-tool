@@ -404,15 +404,21 @@
     const li = document.createElement("li");
     li.className = "layers-list__item";
     const color = layer.color || "#2a78d6";
-    const swatchClass =
-      layer.shape === "diamond"
-        ? "layers-list__swatch layers-list__swatch--diamond"
-        : "layers-list__swatch";
+    const swatchClass = [
+      "layers-list__swatch",
+      layer.shape === "diamond" ? "layers-list__swatch--diamond" : "",
+      layer.dashed ? "layers-list__swatch--dashed" : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+    const swatchStyle = layer.dashed
+      ? `border-color:${color}`
+      : `background:${color}`;
     li.innerHTML = `
       <label>
         <input type="checkbox" data-layer-id="${escapeHtml(layer.id)}" />
-        <span class="${swatchClass}" style="background:${escapeHtml(
-          color
+        <span class="${swatchClass}" style="${escapeHtml(
+          swatchStyle
         )}"></span>
         ${escapeHtml(layer.label)}
       </label>
@@ -461,7 +467,13 @@
   function buildGeoJSONLayer(layer, geojson) {
     const color = layer.color || "#2a78d6";
     return L.geoJSON(geojson, {
-      style: () => ({ color, weight: 2, fillColor: color, fillOpacity: 0.15 }),
+      style: () => ({
+        color,
+        weight: 2,
+        fillColor: color,
+        fillOpacity: 0.15,
+        dashArray: layer.dashed ? "6 4" : null,
+      }),
       pointToLayer: (feature, latlng) =>
         layer.shape === "diamond"
           ? L.marker(latlng, { icon: diamondIcon(color) })

@@ -159,6 +159,41 @@ node scripts/fetch-open-data.js
 `data/sources.json` — `minLng`/`minLat`/`maxLng`/`maxLat` — to widen or
 narrow the box features are kept within, then re-run the script.
 
+**Running out of colors:** the palette this project draws from has 8 fixed
+hues, assigned in order as layers were added (see `js/app.js`'s
+`buildGeoJSONLayer`/`addLayerToggle`). Once all 8 are used, don't invent a
+9th color — reuse one and add a second visual channel so identity still
+comes through:
+
+- Point layers: set `"shape": "diamond"` on the layer in `data/sources.json`
+  to render a diamond marker instead of a circle.
+- Polygon/line layers: set `"dashed": true` to render a dashed outline
+  instead of solid.
+
+Both apply automatically to the legend swatch too.
+
+**Adding a layer from a Shapefile instead of GeoJSON:** not every City of
+Toronto dataset has a ready-made "-4326.geojson" export — some are only
+published as an Esri Shapefile (a `.shp` + `.shx` + `.dbf` + `.prj` set of
+files, all required together) in whatever coordinate system the city used
+internally (often **NAD27 MTM Zone 10**, not plain latitude/longitude). To
+add one:
+
+1. Download all four files and check the `.prj` for the exact projection
+   parameters (central meridian, false easting, datum, etc.).
+2. Convert to a GeoJSON FeatureCollection in EPSG:4326 with `pyshp` (reads
+   the shapefile) and `pyproj` (reprojects coordinates) — see the git
+   history for `data/raw/major-transit-station-areas.geojson` for a worked
+   example, including the exact `pyproj` CRS string used for NAD27 MTM
+   Zone 10.
+3. Save the result under `data/raw/<id>.geojson` and add a normal `file`
+   entry to `data/sources.json` — from here on it's identical to any other
+   layer.
+
+Sanity-check the conversion by looking up a few named features (e.g. a
+station or building you know the real location of) and confirming the
+output coordinates land in the right place before committing.
+
 ## Moderation & limits (read before launching publicly)
 
 - Submissions can't be edited or deleted from the app itself once posted —

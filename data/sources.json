@@ -71,6 +71,14 @@
       "shape": "diamond",
       "file": "data/raw/places-of-worship.geojson",
       "_source": "City of Toronto Open Data Portal, Places of Worship (EPSG:4326). Reuses the Real Estate Asset Inventory (Land) color but as a diamond marker, since all 8 fixed palette hues are already assigned to other layers. Re-download and replace data/raw/places-of-worship.geojson to refresh, then re-run scripts/fetch-open-data.js."
+    },
+    {
+      "id": "major-transit-station-areas",
+      "label": "Major Transit Station Areas",
+      "color": "#4a3aa7",
+      "dashed": true,
+      "file": "data/raw/major-transit-station-areas.geojson",
+      "_source": "City of Toronto Open Data Portal, Major Transit Station Area Delineations (Jan 2026). Source was a shapefile in NAD27 MTM Zone 10 (no \"-4326\" GeoJSON export existed) — converted to EPSG:4326 with pyproj and committed directly as GeoJSON (see conversion notes in README.md). Reuses the School Locations color but as a dashed outline, since all 8 fixed palette hues are already assigned. To refresh: re-download the shapefile (all 4 parts: .shp/.shx/.dbf/.prj), re-run the same conversion, and replace this file."
     }
   ]
 }

@@ -462,6 +462,11 @@ dialog#site-dialog::backdrop {
   transform: rotate(45deg);
 }
 
+.layers-list__swatch--dashed {
+  background: none !important;
+  border: 2px dashed;
+}
+
 .layers-status {
   font-size: 0.8rem;
   color: #d03b3b;

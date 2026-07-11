@@ -275,22 +275,24 @@
     if (e.key === "Escape" && addMarkerMode) setAddMarkerMode(false);
   });
 
-  // ---------- Map comments (click-anywhere feedback) ----------
-  // Placing a marker (armed via the button above) leaves a topic-tagged
-  // comment at that exact point. Stored in the map_comments table (see
-  // supabase/schema.sql) and rendered as square markers — a shape not
-  // used by any open data layer — so a resident's own feedback is never
-  // confused with official City data.
+  // ---------- Map comments (click-anywhere feedback, threaded by address) ----------
+  // Placing a marker (armed via the button above) reverse-geocodes the
+  // clicked point to an address (OpenStreetMap Nominatim, same free
+  // service the address search box uses) and opens a dialog scoped to
+  // that address: everyone who leaves feedback at the same address lands
+  // in the same thread and can see + vote on each other's comments,
+  // rather than each click creating an isolated pin. One marker is shown
+  // per unique address (not per comment) — square, a shape not used by
+  // any open data layer, so a resident's own feedback is never confused
+  // with official City data.
   const topicsById = new Map(
     (config.mapCommentTopics || []).map((t) => [t.id, t])
   );
   const commentTopicsListEl = document.getElementById("comment-topics-list");
-  const commentMarkersByTopic = new Map();
-  let pendingCommentLatLng = null;
+  const markersByLocationKey = new Map();
+  let pendingCommentLocation = null;
 
   (config.mapCommentTopics || []).forEach((topic) => {
-    commentMarkersByTopic.set(topic.id, []);
-
     const li = document.createElement("li");
     li.className = "layers-list__item";
     li.innerHTML = `
@@ -304,9 +306,10 @@
     `;
     li.querySelector("input").addEventListener("change", (e) => {
       const visible = e.currentTarget.checked;
-      (commentMarkersByTopic.get(topic.id) || []).forEach((marker) => {
-        if (visible) marker.addTo(map);
-        else map.removeLayer(marker);
+      markersByLocationKey.forEach((entry) => {
+        if (entry.topicId !== topic.id) return;
+        if (visible) entry.marker.addTo(map);
+        else map.removeLayer(entry.marker);
       });
     });
     commentTopicsListEl.appendChild(li);
@@ -324,35 +327,59 @@
     });
   }
 
-  function addCommentMarker(row) {
-    const topic = topicsById.get(row.topic);
-    if (!topic) return;
-    const marker = L.marker([row.lat, row.lng], {
-      icon: commentMarkerIcon(topic.color),
+  function locationKey(address, lat, lng) {
+    return address || `${lat.toFixed(5)},${lng.toFixed(5)}`;
+  }
+
+  // First comment at an address sets the marker's color/position; later
+  // comments at the same address join its thread without moving or
+  // recoloring the marker.
+  function ensureLocationMarker(lat, lng, address, topicId) {
+    const key = locationKey(address, lat, lng);
+    let entry = markersByLocationKey.get(key);
+    if (entry) return entry;
+
+    const topic = topicsById.get(topicId);
+    const marker = L.marker([lat, lng], {
+      icon: commentMarkerIcon(topic ? topic.color : "#898781"),
     });
-    marker.bindPopup(`
-      <div class="feature-popup">
-        <p class="feature-popup__layer">${escapeHtml(topic.label)}</p>
-        <p>${escapeHtml(row.comment)}</p>
-        <p class="muted">${escapeHtml(formatDate(row.created_at))}</p>
-      </div>
-    `);
-    marker.on("click", (e) => L.DomEvent.stopPropagation(e));
-    commentMarkersByTopic.get(row.topic)?.push(marker);
+    marker.on("click", (e) => {
+      L.DomEvent.stopPropagation(e);
+      openMapCommentDialog({ lat, lng, address });
+    });
     const checkbox = commentTopicsListEl.querySelector(
-      `input[data-topic-id="${row.topic}"]`
+      `input[data-topic-id="${topicId}"]`
     );
     if (!checkbox || checkbox.checked) marker.addTo(map);
-    return marker;
+
+    entry = { marker, topicId };
+    markersByLocationKey.set(key, entry);
+    return entry;
+  }
+
+  async function reverseGeocode(lat, lng) {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18`
+      );
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data && data.display_name ? data.display_name : null;
+    } catch {
+      return null;
+    }
   }
 
   async function loadMapComments() {
     if (!db) return;
     const { data, error } = await db
       .from("map_comments")
-      .select("id, lat, lng, topic, comment, created_at");
+      .select("id, lat, lng, address, topic, created_at")
+      .order("created_at", { ascending: true });
     if (error || !data) return;
-    data.forEach(addCommentMarker);
+    data.forEach((row) =>
+      ensureLocationMarker(row.lat, row.lng, row.address || null, row.topic)
+    );
   }
   loadMapComments();
 
@@ -430,18 +457,141 @@
     mapCommentTopicSelect.appendChild(opt);
   });
 
-  map.on("click", (e) => {
-    if (!addMarkerMode) return;
-    setAddMarkerMode(false);
-    pendingCommentLatLng = e.latlng;
-    document.getElementById(
-      "map-comment-location"
-    ).textContent = `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
+  async function openMapCommentDialog({ lat, lng, address }) {
+    pendingCommentLocation = { lat, lng, address: address || null };
+    const addressEl = document.getElementById("map-comment-address");
     document.getElementById("map-comment-text").value = "";
     const statusEl = document.getElementById("map-comment-status");
     statusEl.textContent = "";
     statusEl.className = "status-msg";
     mapCommentDialog.showModal();
+
+    if (address) {
+      addressEl.textContent = address;
+      loadCommentThread(address, lat, lng);
+      return;
+    }
+    addressEl.textContent = "Looking up address…";
+    document.getElementById(
+      "map-comment-thread-list"
+    ).innerHTML = `<li class="empty-msg">Loading…</li>`;
+    const resolved = await reverseGeocode(lat, lng);
+    // The dialog may have been closed (or reopened for somewhere else)
+    // while the lookup was in flight — only apply it if still relevant.
+    if (pendingCommentLocation && pendingCommentLocation.lat === lat) {
+      pendingCommentLocation.address = resolved;
+    }
+    addressEl.textContent = resolved || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    loadCommentThread(resolved, lat, lng);
+  }
+
+  async function loadCommentThread(address, lat, lng) {
+    const listEl = document.getElementById("map-comment-thread-list");
+    if (!db) {
+      listEl.innerHTML = "";
+      return;
+    }
+    listEl.innerHTML = `<li class="empty-msg">Loading…</li>`;
+
+    let query = db
+      .from("map_comments")
+      .select("id, topic, comment, created_at");
+    query = address
+      ? query.eq("address", address)
+      : query.eq("lat", lat).eq("lng", lng);
+    const { data: comments, error } = await query.order("created_at", {
+      ascending: false,
+    });
+
+    if (error) {
+      listEl.innerHTML = `<li class="empty-msg">Couldn't load comments: ${escapeHtml(
+        error.message
+      )}</li>`;
+      return;
+    }
+    if (!comments.length) {
+      listEl.innerHTML = `<li class="empty-msg">No comments yet at this location — be the first!</li>`;
+      return;
+    }
+
+    const commentIds = comments.map((c) => c.id);
+    const { data: votes } = await db
+      .from("map_comment_votes")
+      .select("comment_id, voter_token, direction")
+      .in("comment_id", commentIds);
+
+    const votesByComment = new Map();
+    (votes || []).forEach((v) => {
+      if (!votesByComment.has(v.comment_id)) {
+        votesByComment.set(v.comment_id, []);
+      }
+      votesByComment.get(v.comment_id).push(v);
+    });
+
+    listEl.innerHTML = "";
+    comments.forEach((c) => {
+      const topic = topicsById.get(c.topic);
+      const cVotes = votesByComment.get(c.id) || [];
+      const upCount = cVotes.filter((v) => v.direction === 1).length;
+      const downCount = cVotes.filter((v) => v.direction === -1).length;
+      const myVote = cVotes.find((v) => v.voter_token === voterToken);
+
+      const li = document.createElement("li");
+      li.className = "idea-card";
+      li.innerHTML = `
+        <div class="idea-card__top">
+          <span class="idea-card__author" style="color:${escapeHtml(
+            topic ? topic.color : "inherit"
+          )}">${escapeHtml(topic ? topic.label : c.topic)}</span>
+          <span class="idea-card__time">${formatDate(c.created_at)}</span>
+        </div>
+        <p class="idea-card__comment">${escapeHtml(c.comment)}</p>
+        <div class="vote-btns">
+          <button type="button" class="upvote-btn${
+            myVote?.direction === 1 ? " is-active" : ""
+          }" data-dir="1">▲ ${upCount}</button>
+          <button type="button" class="upvote-btn upvote-btn--down${
+            myVote?.direction === -1 ? " is-active" : ""
+          }" data-dir="-1">▼ ${downCount}</button>
+        </div>
+      `;
+      li.querySelectorAll(".upvote-btn").forEach((btn) => {
+        btn.addEventListener("click", () =>
+          toggleCommentVote(
+            c.id,
+            Number(btn.dataset.dir),
+            myVote,
+            address,
+            lat,
+            lng
+          )
+        );
+      });
+      listEl.appendChild(li);
+    });
+  }
+
+  async function toggleCommentVote(commentId, direction, myVote, address, lat, lng) {
+    if (!db) return;
+    if (myVote) {
+      await db
+        .from("map_comment_votes")
+        .delete()
+        .eq("comment_id", commentId)
+        .eq("voter_token", voterToken);
+    }
+    if (!myVote || myVote.direction !== direction) {
+      await db
+        .from("map_comment_votes")
+        .insert({ comment_id: commentId, voter_token: voterToken, direction });
+    }
+    loadCommentThread(address, lat, lng);
+  }
+
+  map.on("click", (e) => {
+    if (!addMarkerMode) return;
+    setAddMarkerMode(false);
+    openMapCommentDialog({ lat: e.latlng.lat, lng: e.latlng.lng });
   });
 
   document
@@ -454,7 +604,7 @@
         statusEl.className = "status-msg is-error";
         return;
       }
-      if (!pendingCommentLatLng) return;
+      if (!pendingCommentLocation) return;
       const comment = document
         .getElementById("map-comment-text")
         .value.trim();
@@ -469,9 +619,11 @@
       statusEl.textContent = "Submitting…";
       statusEl.className = "status-msg";
 
+      const { lat, lng, address } = pendingCommentLocation;
       const row = {
-        lat: pendingCommentLatLng.lat,
-        lng: pendingCommentLatLng.lng,
+        lat,
+        lng,
+        address,
         topic: mapCommentTopicSelect.value,
         comment,
         voter_token: voterToken,
@@ -486,9 +638,11 @@
       }
       statusEl.textContent = "Thanks! Your feedback was submitted.";
       statusEl.className = "status-msg is-ok";
-      addCommentMarker({ ...row, created_at: new Date().toISOString() });
+      document.getElementById("map-comment-text").value = "";
+      ensureLocationMarker(lat, lng, address, row.topic);
       refreshContributionCounter();
       loadTopicSummary();
+      loadCommentThread(address, lat, lng);
     });
 
   const markersBySiteId = new Map();

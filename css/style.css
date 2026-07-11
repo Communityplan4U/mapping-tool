@@ -383,6 +383,29 @@ main {
   color: #fff;
 }
 
+.vote-btns {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.upvote-btn--down {
+  border-color: #d03b3b;
+  color: #d03b3b;
+}
+
+.upvote-btn--down.is-active {
+  background: #d03b3b;
+  color: #fff;
+}
+
+#map-comment-thread-list {
+  margin-bottom: 1rem;
+}
+
+#map-comment-thread-list:empty {
+  display: none;
+}
+
 .empty-msg {
   color: var(--text-muted);
   font-size: 0.9rem;

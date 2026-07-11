@@ -125,7 +125,7 @@
 
     const { data, error } = await db
       .from("map_comments")
-      .select("topic, comment, lat, lng, created_at")
+      .select("topic, comment, lat, lng, address, created_at")
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -144,7 +144,9 @@
           <tr>
             <td>${escapeHtml(topicsById.get(row.topic)?.label || row.topic)}</td>
             <td>${escapeHtml(row.comment || "")}</td>
-            <td>${row.lat.toFixed(5)}, ${row.lng.toFixed(5)}</td>
+            <td>${escapeHtml(
+              row.address || `${row.lat.toFixed(5)}, ${row.lng.toFixed(5)}`
+            )}</td>
             <td>${escapeHtml(formatDateTime(row.created_at))}</td>
           </tr>
         `
@@ -173,10 +175,18 @@
     .addEventListener("click", () => {
       downloadCSV(
         "map-feedback.csv",
-        ["Topic", "Comment", "Latitude", "Longitude", "Submitted"],
+        [
+          "Topic",
+          "Comment",
+          "Address",
+          "Latitude",
+          "Longitude",
+          "Submitted",
+        ],
         latestMapComments.map((row) => [
           topicsById.get(row.topic)?.label || row.topic,
           row.comment || "",
+          row.address || "",
           row.lat,
           row.lng,
           formatDateTime(row.created_at),

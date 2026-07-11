@@ -61,9 +61,14 @@ reviewing them means querying Supabase directly by `site_id LIKE
 
 ## Click-anywhere map feedback
 
-Separate from the per-site ranking system: clicking any point on the map
-opens a small form (a topic dropdown and a comment box — no ranking) and,
-on submit, drops a square marker at that spot in the topic's color. Markers
+Separate from the per-site ranking system: click the **📍 Add a feedback
+marker** button, then click any point on the map. The clicked point is
+reverse-geocoded to a street address (OpenStreetMap Nominatim, the same
+free service the address search box uses), and a dialog opens showing
+that address plus every existing comment left at it — anyone can add
+another comment to the same address rather than each click creating an
+isolated, disconnected pin. One marker is shown per unique address (not
+per comment), colored by whichever topic was posted there first. Markers
 are always square regardless of topic, so a resident's own feedback is
 never visually confused with an open data layer's circle/diamond markers
 or a predefined site's pin.
@@ -72,10 +77,22 @@ or a predefined site's pin.
   an `id`, `label`, and `color`. Add, remove, or recolor topics there; the
   dropdown and the "Community feedback" toggle panel are both generated
   from this list.
-- **Storage**: a `map_comments` table in Supabase (added by
-  `supabase/schema.sql` — re-run it if your project predates this feature,
-  it's safe to run multiple times). Comments are anonymous and public, same
-  as site submissions, and count toward the header's contribution counter.
+- **Threading by address**: matching is an exact string match against the
+  `address` column (same approach the address-search feature already uses
+  for its `site_id`) — two clicks that Nominatim resolves to slightly
+  different address strings won't merge into one thread. If reverse
+  geocoding fails or returns nothing, the comment still saves; it just
+  falls back to being grouped by its exact lat/lng instead (so it won't
+  join a thread other visitors can find by clicking nearby).
+- **Voting**: each comment has independent up/down voting (`map_comment_votes`
+  table) — distinct from the upvote-only "support" mechanic on site
+  submissions. Voting the same direction again retracts your vote; voting
+  the other direction switches it.
+- **Storage**: `map_comments` and `map_comment_votes` tables in Supabase
+  (added by `supabase/schema.sql` — re-run it if your project predates
+  this feature, it's safe to run multiple times). Everything here is
+  anonymous and public, same as site submissions, and comments count
+  toward the header's contribution counter.
 - **Moderation**: same approach as everything else — no in-app edit/delete,
   review and remove rows from the Supabase Table Editor.
 

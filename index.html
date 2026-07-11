@@ -55,7 +55,9 @@
         <h2 class="layers-panel__title">Community feedback</h2>
         <p class="hint">
           Feedback residents have left by clicking the map, grouped by
-          topic. Turn a topic on or off to show or hide its pins.
+          address — anyone can add another comment at a location others
+          have already commented on, and vote on comments. Turn a topic
+          on or off to show or hide its pins.
         </p>
         <ul id="comment-topics-list" class="layers-list"></ul>
 
@@ -124,8 +126,12 @@
       <button type="submit" class="dialog-close" aria-label="Close">✕</button>
     </form>
 
-    <h2>Leave feedback at this location</h2>
-    <p id="map-comment-location" class="muted"></p>
+    <h2>Feedback at this location</h2>
+    <p id="map-comment-address" class="muted"></p>
+
+    <ul id="map-comment-thread-list" class="ideas-list"></ul>
+
+    <h3 class="layers-panel__subtitle">Add your comment</h3>
 
     <label class="field">
       <span>Topic</span>

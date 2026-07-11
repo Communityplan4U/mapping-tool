@@ -418,6 +418,89 @@ dialog#site-dialog::backdrop {
   color: var(--text-secondary);
 }
 
+/* Open data layers panel */
+
+.layers-panel {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  background: var(--surface-1);
+}
+
+.layers-panel__title {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+}
+
+.layers-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+}
+
+.layers-list__item label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.layers-list__swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.layers-status {
+  font-size: 0.8rem;
+  color: #d03b3b;
+  margin: 0.5rem 0 0;
+  min-height: 1.1em;
+}
+
+.feature-popup {
+  font-size: 0.85rem;
+  max-width: 260px;
+}
+
+.feature-popup__layer {
+  margin: 0 0 0.4rem;
+  font-weight: 600;
+}
+
+.feature-popup__table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.feature-popup__table th {
+  text-align: left;
+  padding: 0.1rem 0.5rem 0.1rem 0;
+  color: var(--text-secondary);
+  font-weight: 500;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.feature-popup__table td {
+  text-align: left;
+  word-break: break-word;
+}
+
+@media (prefers-color-scheme: dark) {
+  .leaflet-popup-content-wrapper,
+  .leaflet-popup-tip {
+    background: var(--surface-1);
+    color: var(--text-primary);
+  }
+}
+
 .site-footer {
   text-align: center;
   padding: 1.5rem 1rem 2rem;

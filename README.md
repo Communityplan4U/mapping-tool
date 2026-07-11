@@ -95,6 +95,57 @@ Push this repo and deploy the static files with any static host, e.g.:
 No environment variables or build step are needed since `supabaseUrl` /
 `supabaseAnonKey` are read directly from `js/config.js`.
 
+## Open data map layers
+
+The map can show toggleable overlay layers sourced from the
+[City of Toronto's Open Data Portal](https://open.toronto.ca/) (or any
+other source that publishes GeoJSON) — e.g. parks, green spaces, ward
+boundaries. Residents flip them on with a checkbox and click a shape to
+see its details, which helps them see what's already there before
+proposing a new use.
+
+**How it works:** `data/sources.json` lists the layers (a label, a colour,
+and the source GeoJSON URL) and a bounding box for your neighbourhood.
+Running `scripts/fetch-open-data.js` downloads each source, keeps only the
+shapes that overlap the bounding box, and writes the trimmed result to
+`data/<layer id>.geojson`, which the app loads. Data is fetched and
+trimmed ahead of time rather than live in the browser, so the map stays
+fast and doesn't depend on the city's server being up when a resident
+visits.
+
+**Keeping it fresh:** [`.github/workflows/update-open-data.yml`](.github/workflows/update-open-data.yml)
+runs that script weekly (and can be triggered manually from the repo's
+**Actions** tab → "Update open data layers" → **Run workflow**) and
+commits any changes automatically.
+
+**Adding another dataset** ("other similar files"): find its GeoJSON
+download link on Toronto's Open Data Portal (or elsewhere) and add an
+entry to the `layers` array in `data/sources.json`:
+
+```json
+{
+  "id": "parks",
+  "label": "Parks",
+  "color": "#eda100",
+  "url": "https://.../some-dataset-4326.geojson"
+}
+```
+
+Use a source already in EPSG:4326 (plain latitude/longitude — usually
+flagged in the filename, as in "...-4326.geojson") so no reprojection is
+needed. Then re-run the script (or wait for the next scheduled run, or
+trigger it manually) to generate `data/parks.geojson`.
+
+**Run it locally:**
+
+```bash
+node scripts/fetch-open-data.js
+```
+
+**Adjusting the area covered:** edit the four numbers under `bbox` in
+`data/sources.json` — `minLng`/`minLat`/`maxLng`/`maxLat` — to widen or
+narrow the box features are kept within, then re-run the script.
+
 ## Moderation & limits (read before launching publicly)
 
 - Submissions can't be edited or deleted from the app itself once posted —
@@ -113,9 +164,13 @@ No environment variables or build step are needed since `supabaseUrl` /
 ## File structure
 
 ```
-index.html          Page markup (map, site list, response dialog)
-css/style.css        Styling (light/dark aware)
-js/config.js          Your Supabase keys, neighbourhood, sites, categories
-js/app.js             App logic: map, ranking UI, Supabase reads/writes, results chart
-supabase/schema.sql   Database tables + row-level security policies
+index.html                             Page markup (map, site list, response dialog)
+css/style.css                          Styling (light/dark aware)
+js/config.js                           Your Supabase keys, neighbourhood, sites, categories
+js/app.js                              App logic: map, ranking UI, Supabase reads/writes, results chart, open data layers
+supabase/schema.sql                    Database tables + row-level security policies
+data/sources.json                      Open data layer list + neighbourhood bounding box (edit this)
+data/*.geojson                         Generated layer shapes (do not hand-edit — see below)
+scripts/fetch-open-data.js             Downloads + trims open data sources into data/*.geojson
+.github/workflows/update-open-data.yml Runs that script on a schedule and commits changes
 ```

@@ -1,0 +1,17 @@
+{
+  "bbox": {
+    "_comment": "Rough box around Little Jamaica, Toronto: [minLng, minLat, maxLng, maxLat]. Only features overlapping this box are kept when scripts/fetch-open-data.js runs. Widen these numbers to cover more area.",
+    "minLng": -79.49,
+    "minLat": 43.675,
+    "maxLng": -79.39,
+    "maxLat": 43.705
+  },
+  "layers": [
+    {
+      "id": "green-spaces",
+      "label": "Green Spaces",
+      "color": "#1baf7a",
+      "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/dataset/9a284a84-b9ff-484b-9e30-82f22c1780b9/resource/7a26629c-b642-4093-b33c-a5a21e4f3d22/download/Green%20Spaces%20-%204326.geojson"
+    }
+  ]
+}

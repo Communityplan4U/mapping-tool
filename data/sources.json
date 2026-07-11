@@ -13,6 +13,13 @@
       "color": "#1baf7a",
       "file": "data/raw/green-spaces.geojson",
       "_source": "City of Toronto Open Data Portal, Green Spaces (EPSG:4326). Re-download and replace data/raw/green-spaces.geojson to refresh, then re-run scripts/fetch-open-data.js."
+    },
+    {
+      "id": "parks-rec",
+      "label": "Parks & Recreation Facilities",
+      "color": "#eda100",
+      "file": "data/raw/parks-and-recreation-facilities.geojson",
+      "_source": "City of Toronto Open Data Portal, Parks and Recreation Facilities (EPSG:4326). Re-download and replace data/raw/parks-and-recreation-facilities.geojson to refresh, then re-run scripts/fetch-open-data.js."
     }
   ]
 }

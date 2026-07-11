@@ -27,12 +27,20 @@ launching (see below).
 - **Results** — an aggregated bar chart per site shows which uses have the
   most community support.
 - **Click-anywhere feedback** — not limited to the predefined sites:
-  clicking any point on the map opens a small form (topic + comment) and
-  drops a square marker there, colored by topic (`mapCommentTopics` in
+  clicking any point on the map opens a small form (category + comment)
+  and drops a square marker there, colored by category (`themes` in
   `js/config.js`). A "Community feedback" panel lets residents toggle
-  each topic on/off, the same way the open data layers work, plus a bar
-  chart showing how much feedback each topic has received across the
-  whole map.
+  each category on/off, the same way the open data layers work, plus a
+  bar chart showing how much feedback each category has received across
+  the whole map. Clicking a shape from an **open data layer** opens the
+  same form pre-filled with that layer's category, so residents can also
+  leave feedback about something already on the map instead of only
+  empty ground.
+- **Shared category taxonomy** — open data layers and community feedback
+  both use the same 8 categories (`themes` in `js/config.js`), based on
+  the Little Jamaica Community Development Action Plan's 5 focus areas
+  plus 3 added categories to cover things the plan doesn't name but the
+  map needs. See "Open data map layers" below.
 - **Base layer switcher** — a layers control (top-right on the map) swaps
   between OpenStreetMap street tiles and Esri World Imagery satellite
   tiles, both free with no API key.
@@ -68,15 +76,26 @@ free service the address search box uses), and a dialog opens showing
 that address plus every existing comment left at it — anyone can add
 another comment to the same address rather than each click creating an
 isolated, disconnected pin. One marker is shown per unique address (not
-per comment), colored by whichever topic was posted there first. Markers
-are always square regardless of topic, so a resident's own feedback is
-never visually confused with an open data layer's circle/diamond markers
-or a predefined site's pin.
+per comment), colored by whichever category was posted there first.
+Markers are always square regardless of category, so a resident's own
+feedback is never visually confused with an open data layer's
+circle/diamond/triangle markers or a predefined site's pin.
 
-- **Topics** are defined in `mapCommentTopics` in `js/config.js` — each has
-  an `id`, `label`, and `color`. Add, remove, or recolor topics there; the
-  dropdown and the "Community feedback" toggle panel are both generated
-  from this list.
+You don't have to click empty ground to leave feedback: clicking any
+shape from an **open data layer** opens its popup with a "Leave feedback
+about this" button, which opens this same dialog pre-filled with that
+layer's category. The location used is the feature's own coordinates
+(its point, or the centre of its polygon), and the address field is
+filled from the feature's own data first (a City of Toronto field like
+`ADDRESS_FULL`, `SOURCE_ADDRESS`, `Address`, `AREA_DESC`, etc., depending
+on the dataset) rather than re-reverse-geocoding — falling back to
+reverse geocoding only if the feature has nothing address-like.
+
+- **Categories** are defined in `themes` in `js/config.js` — each has an
+  `id`, `label`, and `color`. Add, remove, or recolor categories there;
+  the dropdown, the "Community feedback" toggle panel, and the "Map
+  layers" panel are all generated from this list. See "Open data map
+  layers" below for how layers are assigned to categories.
 - **Threading by address**: matching is an exact string match against the
   `address` column (same approach the address-search feature already uses
   for its `site_id`) — two clicks that Nominatim resolves to slightly
@@ -179,16 +198,38 @@ The map can show toggleable overlay layers sourced from the
 [City of Toronto's Open Data Portal](https://open.toronto.ca/) (or any
 other source that publishes GeoJSON) — e.g. parks, green spaces, ward
 boundaries. Residents flip them on with a checkbox and click a shape to
-see its details, which helps them see what's already there before
+see its details (and to leave feedback about it — see "Click-anywhere map
+feedback" above), which helps them see what's already there before
 proposing a new use.
 
-**How it works:** `data/sources.json` lists the layers (a label, a colour,
-and where to read the source GeoJSON from) and a bounding box for your
-neighbourhood. Running `scripts/fetch-open-data.js` reads each source,
-keeps only the shapes that overlap the bounding box, and writes the
-trimmed result to `data/<layer id>.geojson`, which the app loads. Data is
-trimmed ahead of time rather than live in the browser, so the map stays
-fast regardless of how big the source file is.
+**Categories, not individual layers:** the "Map layers" panel doesn't list
+every dataset separately — it lists the 8 categories from `themes` in
+`js/config.js` (the same categories "Community feedback" uses), and only
+shows a checkbox for a category if at least one layer is assigned to it.
+Turning a category on loads and shows every layer assigned to it at once;
+turning it off hides all of them. This keeps the panel short regardless of
+how many individual datasets get added later, and means a resident never
+has to figure out which of several similarly-named layers to turn on to
+see, say, everything related to housing.
+
+The current 8 categories are the Little Jamaica Community Development
+Action Plan's 5 focus areas — **Governance**, **Housing**, **Commercial &
+Non-Profit Spaces**, **Employment**, **Cultural Identity & Stewardship** —
+plus 3 added to cover things the plan doesn't name but the map needs:
+**Parks & Public Realm**, **Transportation**, and **Community Services &
+Institutions**. Not every category has to have a matching open data
+layer — Commercial & Non-Profit Spaces and Employment currently exist as
+comment-only categories in "Community feedback", since no fitting City of
+Toronto dataset exists yet for this area. Add a layer for one by giving it
+that `theme` id in `data/sources.json`.
+
+**How it works:** `data/sources.json` lists the layers (a label, which
+`theme` id it belongs to, and where to read the source GeoJSON from) and a
+bounding box for your neighbourhood. Running `scripts/fetch-open-data.js`
+reads each source, keeps only the shapes that overlap the bounding box,
+and writes the trimmed result to `data/<layer id>.geojson`, which the app
+loads. Data is trimmed ahead of time rather than live in the browser, so
+the map stays fast regardless of how big the source file is.
 
 A layer's source is either:
 
@@ -208,17 +249,18 @@ commits any changes automatically. `file`-based layers are re-trimmed on
 the same schedule but only change when you replace the underlying file.
 
 **Adding another dataset** ("other similar files"): find its GeoJSON
-download link on Toronto's Open Data Portal (or elsewhere) and add an
+download link on Toronto's Open Data Portal (or elsewhere), pick which of
+the 8 categories in `themes` (`js/config.js`) it best fits, and add an
 entry to the `layers` array in `data/sources.json` — either:
 
 ```json
-{ "id": "parks", "label": "Parks", "color": "#eda100", "url": "https://.../some-dataset-4326.geojson" }
+{ "id": "parks", "label": "Parks", "theme": "parks-public-realm", "url": "https://.../some-dataset-4326.geojson" }
 ```
 
 or, to commit the file instead of fetching it live:
 
 ```json
-{ "id": "parks", "label": "Parks", "color": "#eda100", "file": "data/raw/parks.geojson" }
+{ "id": "parks", "label": "Parks", "theme": "parks-public-realm", "file": "data/raw/parks.geojson" }
 ```
 
 (and put the downloaded file at `data/raw/parks.geojson`). Use a source
@@ -226,6 +268,9 @@ already in EPSG:4326 (plain latitude/longitude — usually flagged in the
 filename, as in "...-4326.geojson") so no reprojection is needed. Then
 re-run the script (or, for a `url` layer, wait for the next scheduled run)
 to generate `data/parks.geojson`.
+
+The layer's markers/outline are colored using its category's color from
+`themes` — there's no per-layer color to set.
 
 **Run it locally:**
 
@@ -237,18 +282,16 @@ node scripts/fetch-open-data.js
 `data/sources.json` — `minLng`/`minLat`/`maxLng`/`maxLat` — to widen or
 narrow the box features are kept within, then re-run the script.
 
-**Running out of colors:** the palette this project draws from has 8 fixed
-hues, assigned in order as layers were added (see `js/app.js`'s
-`buildGeoJSONLayer`/`addLayerToggle`). Once all 8 are used, don't invent a
-9th color — reuse one and add a second visual channel so identity still
-comes through:
-
-- Point layers: set `"shape": "diamond"` on the layer in `data/sources.json`
-  to render a diamond marker instead of a circle.
-- Polygon/line layers: set `"dashed": true` to render a dashed outline
-  instead of solid.
-
-Both apply automatically to the legend swatch too.
+**Telling layers within the same category apart:** since all layers in a
+category share one color, a category with more than one point layer needs
+a second visual channel so its layers don't look identical on the map.
+Set `"shape"` on a point layer in `data/sources.json` to `"circle"`
+(default), `"diamond"`, or `"triangle"` — e.g. the `community-services`
+category currently has three point layers (Schools, Libraries, Long-Term
+Care), each given a different shape. A category with only one point layer
+doesn't need `"shape"` set at all. Polygon/line layers can similarly be
+set `"dashed": true` to render a dashed outline if two polygon layers ever
+land in the same category — not currently used by any layer.
 
 **Adding a layer from a Shapefile instead of GeoJSON:** not every City of
 Toronto dataset has a ready-made "-4326.geojson" export — some are only
@@ -291,11 +334,13 @@ output coordinates land in the right place before committing.
 
 ```
 index.html                             Page markup (map, site list, response dialog)
+admin.html                             Reporting view markup (planners' read-only tables)
 css/style.css                          Styling (light/dark aware)
-js/config.js                           Your Supabase keys, neighbourhood, sites, categories
+js/config.js                           Your Supabase keys, neighbourhood, sites, categories, themes
 js/app.js                              App logic: map, ranking UI, Supabase reads/writes, results chart, open data layers
+js/admin.js                            Reporting view logic: Supabase reads, tables, CSV export
 supabase/schema.sql                    Database tables + row-level security policies
-data/sources.json                      Open data layer list + neighbourhood bounding box (edit this)
+data/sources.json                      Open data layer list (with theme/shape) + neighbourhood bounding box (edit this)
 data/*.geojson                         Generated layer shapes (do not hand-edit — see below)
 scripts/fetch-open-data.js             Downloads + trims open data sources into data/*.geojson
 .github/workflows/update-open-data.yml Runs that script on a schedule and commits changes

@@ -31,10 +31,12 @@
         This map shows public land sites where your neighbourhood is
         collecting ideas. Pick a site to rank the uses you'd most like to
         see there, leave a comment, and support ideas other residents have
-        already proposed. You can also use the <strong>📍 Add a feedback
-        marker</strong> button on the map, then click any spot, to leave
-        feedback about retail, housing, transportation, public realm,
-        parks, or heritage there.
+        already proposed. Map layers and community feedback are both
+        organized around the same categories, based on the Little
+        Jamaica Community Development Action Plan's focus areas. You can
+        click any shape on the map to leave feedback about it directly,
+        or use the <strong>📍 Add a feedback marker</strong> button to
+        leave feedback anywhere.
       </p>
     </section>
 
@@ -44,8 +46,9 @@
       <div class="layers-panel">
         <h2 class="layers-panel__title">Map layers</h2>
         <p class="hint">
-          Open data from the City of Toronto. Turn a layer on to see it on
-          the map; click a shape for details.
+          Open data from the City of Toronto, grouped by category. Turn a
+          category on to see its layers on the map; click a shape for
+          details, or to leave feedback about it.
         </p>
         <ul id="layers-list" class="layers-list"></ul>
         <p id="layers-status" class="layers-status" role="status"></p>
@@ -54,14 +57,14 @@
       <div class="layers-panel">
         <h2 class="layers-panel__title">Community feedback</h2>
         <p class="hint">
-          Feedback residents have left by clicking the map, grouped by
-          address — anyone can add another comment at a location others
-          have already commented on, and vote on comments. Turn a topic
-          on or off to show or hide its pins.
+          Feedback residents have left, grouped by address and category —
+          anyone can add another comment at a location others have
+          already commented on, and vote on comments. Turn a category on
+          or off to show or hide its pins.
         </p>
         <ul id="comment-topics-list" class="layers-list"></ul>
 
-        <h3 class="layers-panel__subtitle">Feedback by topic</h3>
+        <h3 class="layers-panel__subtitle">Feedback by category</h3>
         <div id="topic-summary-chart" class="viz-root"></div>
       </div>
 

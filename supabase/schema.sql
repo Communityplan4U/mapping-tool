@@ -27,8 +27,9 @@ create table if not exists upvotes (
 );
 
 -- Free-form feedback left by clicking anywhere on the map (not tied to
--- one of the predefined sites), tagged with a topic — see
--- mapCommentTopics in js/config.js for the topic list. Comments are
+-- one of the predefined sites), tagged with a theme — see themes in
+-- js/config.js for the list (the "topic" column name predates that
+-- rename; kept as-is to avoid an unnecessary column rename). Comments are
 -- threaded by "address" (reverse-geocoded client-side when a marker is
 -- placed): multiple residents can each add their own comment at the same
 -- address, similar to how multiple submissions can share one site_id.
@@ -137,3 +138,16 @@ create policy "Public delete upvotes" on upvotes
 drop policy if exists "Public delete map_comment_votes" on map_comment_votes;
 create policy "Public delete map_comment_votes" on map_comment_votes
   for delete using (true);
+
+-- One-time migration: the topic/theme id list was reworked to align with
+-- the Little Jamaica Community Development Action Plan's 5 focus areas
+-- (plus 3 added categories). Existing map_comments rows using the old ids
+-- are remapped so they keep displaying with a real label instead of
+-- falling back to showing their raw (now-unrecognized) id. Safe to re-run
+-- — after the first run no rows match the old ids, so these become no-ops.
+update map_comments set topic = 'commercial-nonprofit' where topic = 'retail';
+update map_comments set topic = 'parks-public-realm'
+  where topic in ('public-realm', 'parks-green-spaces');
+update map_comments set topic = 'cultural-identity'
+  where topic = 'heritage-community-identity';
+-- 'housing' and 'transportation' ids are unchanged, no migration needed.

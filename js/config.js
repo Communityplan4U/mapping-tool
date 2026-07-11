@@ -31,18 +31,42 @@ window.APP_CONFIG = {
     { id: "natural", label: "Leave as natural space" },
   ],
 
-  // Topics residents can pick when leaving feedback by clicking anywhere
-  // on the map (separate from the per-site ranking above). Each gets its
-  // own marker color; markers always render as squares so they're never
-  // confused with the round/diamond markers used by the open data layers
-  // in data/sources.json.
-  mapCommentTopics: [
-    { id: "retail", label: "Retail", color: "#2a78d6" },
-    { id: "housing", label: "Housing", color: "#1baf7a" },
-    { id: "transportation", label: "Transportation", color: "#eda100" },
-    { id: "public-realm", label: "Public Realm", color: "#008300" },
-    { id: "parks-green-spaces", label: "Parks and Green Spaces", color: "#4a3aa7" },
-    { id: "heritage-community-identity", label: "Heritage and Community Identity", color: "#e34948" },
+  // Shared taxonomy used by BOTH the open data layers (the "theme" field
+  // on each entry in data/sources.json) and community feedback (the topic
+  // residents pick when leaving a comment). One taxonomy, one color per
+  // theme, reused everywhere that theme shows up — layer markers, the
+  // "Map layers" and "Community feedback" panel checkboxes, the feedback
+  // dropdown, and the "Feedback by topic" chart.
+  //
+  // Based on the Little Jamaica Community Development Action Plan's 5
+  // focus areas (Governance, Housing, Commercial & Non-Profit Spaces,
+  // Employment, Cultural Identity & Stewardship), plus 3 added categories
+  // for things the CDAP doesn't explicitly name but this tool still needs
+  // to represent (Parks & Public Realm, Transportation, Community
+  // Services & Institutions). Colors are the 8 hues of the fixed palette
+  // (see README.md) — exactly one each, no reuse needed anymore since
+  // there are exactly 8 themes.
+  themes: [
+    { id: "governance", label: "Governance", color: "#2a78d6" },
+    { id: "housing", label: "Housing", color: "#e87ba4" },
+    {
+      id: "commercial-nonprofit",
+      label: "Commercial & Non-Profit Spaces",
+      color: "#eda100",
+    },
+    { id: "employment", label: "Employment", color: "#eb6834" },
+    {
+      id: "cultural-identity",
+      label: "Cultural Identity & Stewardship",
+      color: "#4a3aa7",
+    },
+    { id: "parks-public-realm", label: "Parks & Public Realm", color: "#1baf7a" },
+    { id: "transportation", label: "Transportation", color: "#e34948" },
+    {
+      id: "community-services",
+      label: "Community Services & Institutions",
+      color: "#008300",
+    },
   ],
 
   // Add real public land parcels here as they're identified. To get

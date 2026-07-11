@@ -498,16 +498,6 @@ main {
   flex-shrink: 0;
 }
 
-.layers-list__swatch--diamond {
-  border-radius: 0;
-  transform: rotate(45deg);
-}
-
-.layers-list__swatch--dashed {
-  background: none !important;
-  border: 2px dashed;
-}
-
 .layers-status {
   font-size: 0.8rem;
   color: #d03b3b;
@@ -531,6 +521,24 @@ main {
   transform: rotate(45deg);
   border: 2px solid var(--surface-1);
   box-sizing: border-box;
+}
+
+.triangle-marker-wrapper {
+  background: transparent;
+  border: none;
+}
+
+.triangle-marker {
+  display: block;
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 12px solid;
+}
+
+.feature-feedback-btn {
+  margin-top: 0.5rem;
 }
 
 .search-marker-wrapper {

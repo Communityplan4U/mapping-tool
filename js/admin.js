@@ -5,9 +5,7 @@
   const categoriesById = new Map(
     (config.categories || []).map((c) => [c.id, c])
   );
-  const topicsById = new Map(
-    (config.mapCommentTopics || []).map((t) => [t.id, t])
-  );
+  const topicsById = new Map((config.themes || []).map((t) => [t.id, t]));
   const siteNameById = new Map((config.sites || []).map((s) => [s.id, s.name]));
 
   const isConfigured =

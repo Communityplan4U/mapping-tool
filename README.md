@@ -105,36 +105,49 @@ see its details, which helps them see what's already there before
 proposing a new use.
 
 **How it works:** `data/sources.json` lists the layers (a label, a colour,
-and the source GeoJSON URL) and a bounding box for your neighbourhood.
-Running `scripts/fetch-open-data.js` downloads each source, keeps only the
-shapes that overlap the bounding box, and writes the trimmed result to
-`data/<layer id>.geojson`, which the app loads. Data is fetched and
+and where to read the source GeoJSON from) and a bounding box for your
+neighbourhood. Running `scripts/fetch-open-data.js` reads each source,
+keeps only the shapes that overlap the bounding box, and writes the
+trimmed result to `data/<layer id>.geojson`, which the app loads. Data is
 trimmed ahead of time rather than live in the browser, so the map stays
-fast and doesn't depend on the city's server being up when a resident
-visits.
+fast regardless of how big the source file is.
 
-**Keeping it fresh:** [`.github/workflows/update-open-data.yml`](.github/workflows/update-open-data.yml)
-runs that script weekly (and can be triggered manually from the repo's
+A layer's source is either:
+
+- **`file`** — a GeoJSON file committed in the repo (e.g.
+  `data/raw/green-spaces.geojson`). No network access needed to rebuild
+  the layer; refreshing means re-downloading the file yourself (from
+  [Toronto's Open Data Portal](https://open.toronto.ca/) or elsewhere) and
+  replacing it. This is what `green-spaces` uses.
+- **`url`** — a live GeoJSON download link. The script fetches it fresh
+  each time it runs, so it can be kept in sync automatically (see below)
+  without you re-uploading anything.
+
+**Keeping `url`-based layers fresh:** [`.github/workflows/update-open-data.yml`](.github/workflows/update-open-data.yml)
+runs the script weekly (and can be triggered manually from the repo's
 **Actions** tab → "Update open data layers" → **Run workflow**) and
-commits any changes automatically.
+commits any changes automatically. `file`-based layers are re-trimmed on
+the same schedule but only change when you replace the underlying file.
 
 **Adding another dataset** ("other similar files"): find its GeoJSON
 download link on Toronto's Open Data Portal (or elsewhere) and add an
-entry to the `layers` array in `data/sources.json`:
+entry to the `layers` array in `data/sources.json` — either:
 
 ```json
-{
-  "id": "parks",
-  "label": "Parks",
-  "color": "#eda100",
-  "url": "https://.../some-dataset-4326.geojson"
-}
+{ "id": "parks", "label": "Parks", "color": "#eda100", "url": "https://.../some-dataset-4326.geojson" }
 ```
 
-Use a source already in EPSG:4326 (plain latitude/longitude — usually
-flagged in the filename, as in "...-4326.geojson") so no reprojection is
-needed. Then re-run the script (or wait for the next scheduled run, or
-trigger it manually) to generate `data/parks.geojson`.
+or, to commit the file instead of fetching it live:
+
+```json
+{ "id": "parks", "label": "Parks", "color": "#eda100", "file": "data/raw/parks.geojson" }
+```
+
+(and put the downloaded file at `data/raw/parks.geojson`). Use a source
+already in EPSG:4326 (plain latitude/longitude — usually flagged in the
+filename, as in "...-4326.geojson") so no reprojection is needed. Then
+re-run the script (or, for a `url` layer, wait for the next scheduled run)
+to generate `data/parks.geojson`.
 
 **Run it locally:**
 

@@ -11,7 +11,8 @@
       "id": "green-spaces",
       "label": "Green Spaces",
       "color": "#1baf7a",
-      "url": "https://ckan0.cf.opendata.inter.prod-toronto.ca/dataset/9a284a84-b9ff-484b-9e30-82f22c1780b9/resource/7a26629c-b642-4093-b33c-a5a21e4f3d22/download/Green%20Spaces%20-%204326.geojson"
+      "file": "data/raw/green-spaces.geojson",
+      "_source": "City of Toronto Open Data Portal, Green Spaces (EPSG:4326). Re-download and replace data/raw/green-spaces.geojson to refresh, then re-run scripts/fetch-open-data.js."
     }
   ]
 }

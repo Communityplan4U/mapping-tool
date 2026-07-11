@@ -55,6 +55,11 @@ async function fetchJSON(url) {
   return res.json();
 }
 
+function readLocalJSON(relativePath) {
+  const fullPath = path.join(ROOT, relativePath);
+  return JSON.parse(fs.readFileSync(fullPath, "utf8"));
+}
+
 function normalizeToFeatures(input) {
   if (input.type === "FeatureCollection") return input.features || [];
   if (input.type === "Feature") return [input];
@@ -62,8 +67,16 @@ function normalizeToFeatures(input) {
 }
 
 async function processLayer(layer, bbox) {
-  console.log(`Fetching "${layer.label}" …`);
-  const raw = await fetchJSON(layer.url);
+  let raw;
+  if (layer.file) {
+    console.log(`Reading "${layer.label}" from ${layer.file} …`);
+    raw = readLocalJSON(layer.file);
+  } else if (layer.url) {
+    console.log(`Fetching "${layer.label}" from ${layer.url} …`);
+    raw = await fetchJSON(layer.url);
+  } else {
+    throw new Error(`Layer "${layer.label}" has neither "file" nor "url"`);
+  }
   const features = normalizeToFeatures(raw);
 
   const kept = [];

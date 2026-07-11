@@ -464,6 +464,10 @@ dialog#site-dialog::backdrop {
   min-height: 1.1em;
 }
 
+.layers-status--info {
+  color: var(--text-secondary);
+}
+
 .feature-popup {
   font-size: 0.85rem;
   max-width: 260px;

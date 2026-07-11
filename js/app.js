@@ -422,6 +422,7 @@
   async function toggleDataLayer(layer, checkbox) {
     checkbox.disabled = true;
     layersStatusEl.textContent = "";
+    layersStatusEl.classList.remove("layers-status--info");
     try {
       if (checkbox.checked) {
         let geoLayer = loadedDataLayers.get(layer.id);
@@ -433,6 +434,10 @@
             );
           }
           const geojson = await res.json();
+          if (!geojson.features || geojson.features.length === 0) {
+            layersStatusEl.textContent = `"${layer.label}" has no shapes in this area.`;
+            layersStatusEl.classList.add("layers-status--info");
+          }
           geoLayer = buildGeoJSONLayer(layer, geojson);
           loadedDataLayers.set(layer.id, geoLayer);
         }

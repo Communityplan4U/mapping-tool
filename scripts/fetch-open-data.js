@@ -66,6 +66,13 @@ function normalizeToFeatures(input) {
   throw new Error(`Unexpected top-level GeoJSON type: ${input.type}`);
 }
 
+function matchesPropertyFilter(properties, filter) {
+  if (!filter) return true;
+  return Object.entries(filter).every(
+    ([key, value]) => String((properties || {})[key]) === String(value)
+  );
+}
+
 async function processLayer(layer, bbox) {
   let raw;
   if (layer.file) {
@@ -81,9 +88,14 @@ async function processLayer(layer, bbox) {
 
   const kept = [];
   let skippedNoGeometry = 0;
+  let skippedFilter = 0;
   for (const feature of features) {
     if (!feature.geometry || !feature.geometry.coordinates) {
       skippedNoGeometry++;
+      continue;
+    }
+    if (!matchesPropertyFilter(feature.properties, layer.filter)) {
+      skippedFilter++;
       continue;
     }
     if (bbox && !bboxesOverlap(geometryBBox(feature.geometry), bbox)) continue;
@@ -100,11 +112,12 @@ async function processLayer(layer, bbox) {
   console.log(
     `  kept ${kept.length} of ${features.length} features` +
       (skippedNoGeometry ? ` (${skippedNoGeometry} had no geometry)` : "") +
+      (skippedFilter ? ` (${skippedFilter} excluded by "filter")` : "") +
       ` -> data/${layer.id}.geojson`
   );
   if (kept.length === 0 && features.length > 0) {
     console.warn(
-      `  Warning: 0 features kept for "${layer.label}" out of ${features.length} fetched — check the bbox in data/sources.json covers this area.`
+      `  Warning: 0 features kept for "${layer.label}" out of ${features.length} fetched — check the bbox and "filter" in data/sources.json cover this area/dataset.`
     );
   }
 }

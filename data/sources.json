@@ -118,7 +118,7 @@
     {
       "id": "places-of-worship",
       "label": "Places of Worship",
-      "theme": "cultural-identity",
+      "theme": "commercial-nonprofit",
       "file": "data/raw/places-of-worship.geojson",
       "_source": "City of Toronto Open Data Portal, Places of Worship (EPSG:4326). Re-download and replace data/raw/places-of-worship.geojson to refresh, then re-run scripts/fetch-open-data.js."
     },

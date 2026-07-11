@@ -79,6 +79,14 @@
       "dashed": true,
       "file": "data/raw/major-transit-station-areas.geojson",
       "_source": "City of Toronto Open Data Portal, Major Transit Station Area Delineations (Jan 2026). Source was a shapefile in NAD27 MTM Zone 10 (no \"-4326\" GeoJSON export existed) — converted to EPSG:4326 with pyproj and committed directly as GeoJSON (see conversion notes in README.md). Reuses the School Locations color but as a dashed outline, since all 8 fixed palette hues are already assigned. To refresh: re-download the shapefile (all 4 parts: .shp/.shx/.dbf/.prj), re-run the same conversion, and replace this file."
+    },
+    {
+      "id": "supportive-housing",
+      "label": "Supportive Housing",
+      "color": "#1baf7a",
+      "shape": "diamond",
+      "file": "data/raw/supportive-housing.geojson",
+      "_source": "City of Toronto Open Data Portal, Supportive Housing (already WGS84 per its .prj — no reprojection needed). Source was a shapefile (.shp/.shx/.dbf/.prj); converted straight to GeoJSON with pyshp. Reuses the Green Spaces color but as a diamond marker, since all 8 fixed palette hues are already assigned. To refresh: re-download the shapefile (all 4 parts) and re-run the same conversion."
     }
   ]
 }

@@ -404,10 +404,14 @@
     const li = document.createElement("li");
     li.className = "layers-list__item";
     const color = layer.color || "#2a78d6";
+    const swatchClass =
+      layer.shape === "diamond"
+        ? "layers-list__swatch layers-list__swatch--diamond"
+        : "layers-list__swatch";
     li.innerHTML = `
       <label>
         <input type="checkbox" data-layer-id="${escapeHtml(layer.id)}" />
-        <span class="layers-list__swatch" style="background:${escapeHtml(
+        <span class="${swatchClass}" style="background:${escapeHtml(
           color
         )}"></span>
         ${escapeHtml(layer.label)}
@@ -459,18 +463,32 @@
     return L.geoJSON(geojson, {
       style: () => ({ color, weight: 2, fillColor: color, fillOpacity: 0.15 }),
       pointToLayer: (feature, latlng) =>
-        L.circleMarker(latlng, {
-          radius: 6,
-          color,
-          fillColor: color,
-          fillOpacity: 0.7,
-          weight: 2,
-        }),
+        layer.shape === "diamond"
+          ? L.marker(latlng, { icon: diamondIcon(color) })
+          : L.circleMarker(latlng, {
+              radius: 6,
+              color,
+              fillColor: color,
+              fillOpacity: 0.7,
+              weight: 2,
+            }),
       onEachFeature: (feature, leafletLayer) => {
         leafletLayer.bindPopup(
           buildFeaturePopup(layer.label, feature.properties)
         );
       },
+    });
+  }
+
+  function diamondIcon(color) {
+    return L.divIcon({
+      className: "diamond-marker-wrapper",
+      html: `<span class="diamond-marker" style="background:${escapeHtml(
+        color
+      )}"></span>`,
+      iconSize: [12, 12],
+      iconAnchor: [6, 6],
+      popupAnchor: [0, -6],
     });
   }
 

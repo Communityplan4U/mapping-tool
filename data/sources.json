@@ -63,6 +63,14 @@
       "color": "#2a78d6",
       "file": "data/raw/library-branches.geojson",
       "_source": "Toronto Public Library Open Data, Branch General Information (EPSG:4326). Re-download and replace data/raw/library-branches.geojson to refresh, then re-run scripts/fetch-open-data.js."
+    },
+    {
+      "id": "places-of-worship",
+      "label": "Places of Worship",
+      "color": "#008300",
+      "shape": "diamond",
+      "file": "data/raw/places-of-worship.geojson",
+      "_source": "City of Toronto Open Data Portal, Places of Worship (EPSG:4326). Reuses the Real Estate Asset Inventory (Land) color but as a diamond marker, since all 8 fixed palette hues are already assigned to other layers. Re-download and replace data/raw/places-of-worship.geojson to refresh, then re-run scripts/fetch-open-data.js."
     }
   ]
 }

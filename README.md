@@ -224,6 +224,21 @@ comment-only categories in "Community feedback", since no fitting City of
 Toronto dataset exists yet for this area. Add a layer for one by giving it
 that `theme` id in `data/sources.json`.
 
+**Splitting one source into layers under different categories:** some City
+of Toronto datasets mix locations that belong in different categories —
+for example, the Real Estate Asset Inventory includes both administrative
+land/buildings (Governance) and parks-department land/buildings that
+overlap what the Green Spaces / Parks & Recreation layers already show
+(Parks & Public Realm). Rather than showing the same park twice under two
+categories, `data/sources.json` can list the same source `file`/`url`
+under two layer entries with complementary `filter`/`excludeFilter`
+values, so each feature ends up in exactly one of them — see
+`real-estate-land` / `real-estate-park-land` and `real-estate-buildings` /
+`real-estate-park-buildings` for a worked example. `filter` keeps only
+features matching a property (value can be a single value or an array of
+allowed values); `excludeFilter` uses the same matching but drops features
+instead of keeping them.
+
 **How it works:** `data/sources.json` lists the layers (a label, which
 `theme` id it belongs to, and where to read the source GeoJSON from) and a
 bounding box for your neighbourhood. Running `scripts/fetch-open-data.js`

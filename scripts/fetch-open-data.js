@@ -66,10 +66,24 @@ function normalizeToFeatures(input) {
   throw new Error(`Unexpected top-level GeoJSON type: ${input.type}`);
 }
 
+function valueMatches(actual, expected) {
+  if (Array.isArray(expected)) {
+    return expected.some((v) => String(actual) === String(v));
+  }
+  return String(actual) === String(expected);
+}
+
 function matchesPropertyFilter(properties, filter) {
   if (!filter) return true;
-  return Object.entries(filter).every(
-    ([key, value]) => String((properties || {})[key]) === String(value)
+  return Object.entries(filter).every(([key, value]) =>
+    valueMatches((properties || {})[key], value)
+  );
+}
+
+function matchesExcludeFilter(properties, excludeFilter) {
+  if (!excludeFilter) return false;
+  return Object.entries(excludeFilter).every(([key, value]) =>
+    valueMatches((properties || {})[key], value)
   );
 }
 
@@ -95,6 +109,10 @@ async function processLayer(layer, bbox) {
       continue;
     }
     if (!matchesPropertyFilter(feature.properties, layer.filter)) {
+      skippedFilter++;
+      continue;
+    }
+    if (matchesExcludeFilter(feature.properties, layer.excludeFilter)) {
       skippedFilter++;
       continue;
     }

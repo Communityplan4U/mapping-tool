@@ -89,18 +89,38 @@ async function processLayer(layer, bbox) {
       (skippedNoGeometry ? ` (${skippedNoGeometry} had no geometry)` : "") +
       ` -> data/${layer.id}.geojson`
   );
+  if (kept.length === 0 && features.length > 0) {
+    console.warn(
+      `  Warning: 0 features kept for "${layer.label}" out of ${features.length} fetched — check the bbox in data/sources.json covers this area.`
+    );
+  }
+}
+
+function normalizeBBox(rawBBox) {
+  if (!rawBBox) return null;
+  // Normalize in case minLng/maxLng or minLat/maxLat were entered swapped
+  // (an easy mistake to make by hand) — without this, an inverted box
+  // silently matches zero features instead of failing loudly.
+  const minLng = Math.min(rawBBox.minLng, rawBBox.maxLng);
+  const maxLng = Math.max(rawBBox.minLng, rawBBox.maxLng);
+  const minLat = Math.min(rawBBox.minLat, rawBBox.maxLat);
+  const maxLat = Math.max(rawBBox.minLat, rawBBox.maxLat);
+  if (
+    rawBBox.minLng !== minLng ||
+    rawBBox.maxLng !== maxLng ||
+    rawBBox.minLat !== minLat ||
+    rawBBox.maxLat !== maxLat
+  ) {
+    console.warn(
+      "Warning: bbox in data/sources.json had min/max reversed on one axis — auto-corrected. Fix the values in data/sources.json to silence this."
+    );
+  }
+  return { minLng, minLat, maxLng, maxLat };
 }
 
 async function main() {
   const config = JSON.parse(fs.readFileSync(SOURCES_PATH, "utf8"));
-  const bbox = config.bbox
-    ? {
-        minLng: config.bbox.minLng,
-        minLat: config.bbox.minLat,
-        maxLng: config.bbox.maxLng,
-        maxLat: config.bbox.maxLat,
-      }
-    : null;
+  const bbox = normalizeBBox(config.bbox);
 
   let hadError = false;
   for (const layer of config.layers || []) {

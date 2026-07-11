@@ -1,9 +1,9 @@
 {
   "bbox": {
     "_comment": "Rough box around Little Jamaica, Toronto: [minLng, minLat, maxLng, maxLat]. Only features overlapping this box are kept when scripts/fetch-open-data.js runs. Widen these numbers to cover more area.",
-    "minLng": -79.42351799599568,
+    "minLng": -79.49209135944682,
     "minLat": 43.68237198646844,
-    "maxLng": -79.49209135944682,
+    "maxLng": -79.42351799599568,
     "maxLat": 43.70333458645549
   },
   "layers": [

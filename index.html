@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Community Land Use Tool</title>
+  <meta name="description" content="Tell your neighbourhood how you'd like public land to be used." />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="config-warning" class="banner banner--warning" hidden>
+    ⚠️ This site isn't connected to a database yet. Submissions and votes
+    won't be saved. See <code>README.md</code> to finish setup.
+  </div>
+
+  <header class="site-header">
+    <h1 id="page-title">Community Land Use Tool</h1>
+    <p id="page-subtitle" class="muted">
+      Help decide how public land should be used in your neighbourhood.
+    </p>
+  </header>
+
+  <main>
+    <section class="intro">
+      <p>
+        This map shows public land sites where your neighbourhood is
+        collecting ideas. Pick a site to rank the uses you'd most like to
+        see there, leave a comment, and support ideas other residents have
+        already proposed.
+      </p>
+    </section>
+
+    <section class="map-section">
+      <div id="map" aria-label="Map of public land sites"></div>
+      <ul id="site-list" class="site-list" aria-label="List of public land sites"></ul>
+    </section>
+  </main>
+
+  <dialog id="site-dialog">
+    <form method="dialog" class="dialog-close-form">
+      <button type="submit" class="dialog-close" aria-label="Close">✕</button>
+    </form>
+
+    <h2 id="dialog-site-name"></h2>
+    <p id="dialog-site-description" class="muted"></p>
+
+    <nav class="tabs" role="tablist">
+      <button type="button" class="tab-btn is-active" id="tab-btn-respond" role="tab" aria-selected="true" aria-controls="tab-respond">
+        Add your ranking
+      </button>
+      <button type="button" class="tab-btn" id="tab-btn-ideas" role="tab" aria-selected="false" aria-controls="tab-ideas">
+        Community ideas
+      </button>
+      <button type="button" class="tab-btn" id="tab-btn-results" role="tab" aria-selected="false" aria-controls="tab-results">
+        Results
+      </button>
+    </nav>
+
+    <section id="tab-respond" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-respond">
+      <p class="hint">
+        Drag rows (or use the ▲▼ buttons) so your <strong>most wanted</strong> use
+        is at the top and your <strong>least wanted</strong> is at the bottom.
+      </p>
+      <ol id="ranking-list" class="ranking-list"></ol>
+
+      <label class="field">
+        <span>Nickname <span class="muted">(optional)</span></span>
+        <input type="text" id="nickname-input" maxlength="40" placeholder="e.g. Eglinton Ave resident" />
+      </label>
+
+      <label class="field">
+        <span>Comment <span class="muted">(optional)</span></span>
+        <textarea id="comment-input" maxlength="1000" rows="3" placeholder="Anything else you'd like the community to know?"></textarea>
+      </label>
+
+      <button type="button" id="submit-ranking" class="btn btn--primary">Submit my ranking</button>
+      <p id="submit-status" class="status-msg" role="status"></p>
+    </section>
+
+    <section id="tab-ideas" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-ideas" hidden>
+      <p class="hint">Support the ideas you agree with.</p>
+      <ul id="ideas-list" class="ideas-list"></ul>
+    </section>
+
+    <section id="tab-results" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-results" hidden>
+      <p class="hint">Average support across all submitted rankings for this site.</p>
+      <div id="results-chart" class="viz-root"></div>
+    </section>
+  </dialog>
+
+  <footer class="site-footer">
+    <p class="muted">
+      Built for community land-use planning. Submissions are anonymous and
+      public. See something inappropriate? Contact your neighbourhood
+      organizers.
+    </p>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

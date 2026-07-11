@@ -1,0 +1,401 @@
+(function () {
+  "use strict";
+
+  const config = window.APP_CONFIG;
+  const categoriesById = new Map(config.categories.map((c) => [c.id, c]));
+
+  const isConfigured =
+    config.supabaseUrl &&
+    config.supabaseAnonKey &&
+    !config.supabaseUrl.startsWith("YOUR_") &&
+    !config.supabaseAnonKey.startsWith("YOUR_");
+
+  const db = isConfigured
+    ? window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey)
+    : null;
+
+  if (!isConfigured) {
+    document.getElementById("config-warning").hidden = false;
+  }
+
+  function getVoterToken() {
+    const key = "cplu_voter_token";
+    let token = localStorage.getItem(key);
+    if (!token) {
+      token =
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `voter-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      localStorage.setItem(key, token);
+    }
+    return token;
+  }
+  const voterToken = getVoterToken();
+
+  // ---------- Page header / intro ----------
+  document.getElementById(
+    "page-title"
+  ).textContent = `${config.neighbourhood.name}: Public Land Use Tool`;
+  document.getElementById(
+    "page-subtitle"
+  ).textContent = `Help decide how public land should be used in ${config.neighbourhood.name}.`;
+
+  // ---------- Map ----------
+  const map = L.map("map").setView(
+    config.neighbourhood.center,
+    config.neighbourhood.zoom
+  );
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "&copy; OpenStreetMap contributors",
+  }).addTo(map);
+
+  const markersBySiteId = new Map();
+  config.sites.forEach((site) => {
+    const marker = L.marker([site.lat, site.lng]).addTo(map);
+    marker.bindTooltip(site.name);
+    marker.on("click", () => openSiteDialog(site));
+    markersBySiteId.set(site.id, marker);
+  });
+
+  // ---------- Site list ----------
+  const siteListEl = document.getElementById("site-list");
+  config.sites.forEach((site) => {
+    const li = document.createElement("li");
+    li.className = "site-card";
+    li.innerHTML = `
+      <h3>${escapeHtml(site.name)}</h3>
+      <p>${escapeHtml(site.description || "")}</p>
+      <button type="button" class="btn btn--small">View &amp; respond</button>
+    `;
+    li.querySelector("button").addEventListener("click", () => {
+      openSiteDialog(site);
+      markersBySiteId.get(site.id)?.openTooltip();
+    });
+    siteListEl.appendChild(li);
+  });
+
+  // ---------- Dialog / tabs ----------
+  const dialog = document.getElementById("site-dialog");
+  let currentSite = null;
+
+  const tabButtons = {
+    respond: document.getElementById("tab-btn-respond"),
+    ideas: document.getElementById("tab-btn-ideas"),
+    results: document.getElementById("tab-btn-results"),
+  };
+  const tabPanels = {
+    respond: document.getElementById("tab-respond"),
+    ideas: document.getElementById("tab-ideas"),
+    results: document.getElementById("tab-results"),
+  };
+  Object.keys(tabButtons).forEach((key) => {
+    tabButtons[key].addEventListener("click", () => showTab(key));
+  });
+
+  function showTab(key) {
+    Object.keys(tabButtons).forEach((k) => {
+      const active = k === key;
+      tabButtons[k].classList.toggle("is-active", active);
+      tabButtons[k].setAttribute("aria-selected", String(active));
+      tabPanels[k].hidden = !active;
+    });
+    if (key === "ideas") loadIdeas(currentSite.id);
+    if (key === "results") loadResults(currentSite.id);
+  }
+
+  function openSiteDialog(site) {
+    currentSite = site;
+    document.getElementById("dialog-site-name").textContent = site.name;
+    document.getElementById("dialog-site-description").textContent =
+      site.description || "";
+    document.getElementById("comment-input").value = "";
+    document.getElementById("nickname-input").value = "";
+    document.getElementById("submit-status").textContent = "";
+    document.getElementById("submit-status").className = "status-msg";
+    buildRankingList();
+    showTab("respond");
+    dialog.showModal();
+  }
+
+  // ---------- Ranking list (drag + up/down reorder) ----------
+  const rankingListEl = document.getElementById("ranking-list");
+  let rankingOrder = [];
+
+  function buildRankingList() {
+    rankingOrder = config.categories.map((c) => c.id);
+    renderRankingList();
+  }
+
+  function renderRankingList() {
+    rankingListEl.innerHTML = "";
+    rankingOrder.forEach((catId, index) => {
+      const cat = categoriesById.get(catId);
+      const li = document.createElement("li");
+      li.className = "ranking-row";
+      li.draggable = true;
+      li.dataset.catId = catId;
+      li.innerHTML = `
+        <span class="ranking-rank">${index + 1}</span>
+        <span class="ranking-label">${escapeHtml(cat.label)}</span>
+        <span class="ranking-move-btns">
+          <button type="button" data-dir="up" aria-label="Move up" ${
+            index === 0 ? "disabled" : ""
+          }>▲</button>
+          <button type="button" data-dir="down" aria-label="Move down" ${
+            index === rankingOrder.length - 1 ? "disabled" : ""
+          }>▼</button>
+        </span>
+      `;
+      li.querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          moveItem(catId, btn.dataset.dir === "up" ? -1 : 1);
+        });
+      });
+      li.addEventListener("dragstart", () => {
+        li.classList.add("dragging");
+        li.dataset.dragging = "1";
+      });
+      li.addEventListener("dragend", () => {
+        li.classList.remove("dragging");
+      });
+      li.addEventListener("dragover", (e) => {
+        e.preventDefault();
+      });
+      li.addEventListener("drop", (e) => {
+        e.preventDefault();
+        const draggingEl = rankingListEl.querySelector(".dragging");
+        if (!draggingEl || draggingEl === li) return;
+        const fromId = draggingEl.dataset.catId;
+        const toIndex = rankingOrder.indexOf(catId);
+        rankingOrder = rankingOrder.filter((id) => id !== fromId);
+        rankingOrder.splice(toIndex, 0, fromId);
+        renderRankingList();
+      });
+      rankingListEl.appendChild(li);
+    });
+  }
+
+  function moveItem(catId, delta) {
+    const index = rankingOrder.indexOf(catId);
+    const newIndex = index + delta;
+    if (newIndex < 0 || newIndex >= rankingOrder.length) return;
+    [rankingOrder[index], rankingOrder[newIndex]] = [
+      rankingOrder[newIndex],
+      rankingOrder[index],
+    ];
+    renderRankingList();
+  }
+
+  // ---------- Submit ranking ----------
+  document
+    .getElementById("submit-ranking")
+    .addEventListener("click", async () => {
+      const statusEl = document.getElementById("submit-status");
+      if (!db) {
+        statusEl.textContent =
+          "Backend not configured — see README.md to enable saving.";
+        statusEl.className = "status-msg is-error";
+        return;
+      }
+      const nickname = document.getElementById("nickname-input").value.trim();
+      const comment = document.getElementById("comment-input").value.trim();
+      const submitBtn = document.getElementById("submit-ranking");
+      submitBtn.disabled = true;
+      statusEl.textContent = "Submitting…";
+      statusEl.className = "status-msg";
+
+      const { error } = await db.from("submissions").insert({
+        site_id: currentSite.id,
+        nickname: nickname || null,
+        rankings: rankingOrder,
+        comment: comment || null,
+        voter_token: voterToken,
+      });
+
+      submitBtn.disabled = false;
+      if (error) {
+        statusEl.textContent = `Something went wrong: ${error.message}`;
+        statusEl.className = "status-msg is-error";
+        return;
+      }
+      statusEl.textContent = "Thanks! Your ranking was submitted.";
+      statusEl.className = "status-msg is-ok";
+    });
+
+  // ---------- Community ideas (submissions + upvotes) ----------
+  async function loadIdeas(siteId) {
+    const listEl = document.getElementById("ideas-list");
+    if (!db) {
+      listEl.innerHTML = `<li class="empty-msg">Backend not configured — see README.md.</li>`;
+      return;
+    }
+    listEl.innerHTML = `<li class="empty-msg">Loading…</li>`;
+
+    const { data: submissions, error } = await db
+      .from("submissions")
+      .select("id, nickname, rankings, comment, created_at")
+      .eq("site_id", siteId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      listEl.innerHTML = `<li class="empty-msg">Couldn't load ideas: ${escapeHtml(
+        error.message
+      )}</li>`;
+      return;
+    }
+    if (!submissions.length) {
+      listEl.innerHTML = `<li class="empty-msg">No submissions yet for this site — be the first!</li>`;
+      return;
+    }
+
+    const submissionIds = submissions.map((s) => s.id);
+    const { data: upvotes } = await db
+      .from("upvotes")
+      .select("id, submission_id, voter_token")
+      .in("submission_id", submissionIds);
+
+    const upvotesBySubmission = new Map();
+    (upvotes || []).forEach((u) => {
+      if (!upvotesBySubmission.has(u.submission_id)) {
+        upvotesBySubmission.set(u.submission_id, []);
+      }
+      upvotesBySubmission.get(u.submission_id).push(u);
+    });
+
+    listEl.innerHTML = "";
+    submissions.forEach((sub) => {
+      const votes = upvotesBySubmission.get(sub.id) || [];
+      const myVote = votes.find((v) => v.voter_token === voterToken);
+      const topPicks = (sub.rankings || [])
+        .slice(0, 3)
+        .map((id) => categoriesById.get(id)?.label || id)
+        .join(", ");
+
+      const li = document.createElement("li");
+      li.className = "idea-card";
+      li.innerHTML = `
+        <div class="idea-card__top">
+          <span class="idea-card__author">${escapeHtml(
+            sub.nickname || "Neighbour"
+          )}</span>
+          <span class="idea-card__time">${formatDate(sub.created_at)}</span>
+        </div>
+        <p class="idea-card__top-picks">Top picks: ${escapeHtml(
+          topPicks || "—"
+        )}</p>
+        ${
+          sub.comment
+            ? `<p class="idea-card__comment">${escapeHtml(sub.comment)}</p>`
+            : ""
+        }
+        <button type="button" class="upvote-btn${
+          myVote ? " is-active" : ""
+        }" data-submission-id="${sub.id}">
+          ▲ Support (${votes.length})
+        </button>
+      `;
+      li.querySelector(".upvote-btn").addEventListener("click", (e) =>
+        toggleUpvote(e.currentTarget, sub.id, Boolean(myVote))
+      );
+      listEl.appendChild(li);
+    });
+  }
+
+  async function toggleUpvote(button, submissionId, currentlyVoted) {
+    button.disabled = true;
+    if (currentlyVoted) {
+      await db
+        .from("upvotes")
+        .delete()
+        .eq("submission_id", submissionId)
+        .eq("voter_token", voterToken);
+    } else {
+      await db
+        .from("upvotes")
+        .insert({ submission_id: submissionId, voter_token: voterToken });
+    }
+    button.disabled = false;
+    loadIdeas(currentSite.id);
+  }
+
+  // ---------- Results (aggregate bar chart) ----------
+  async function loadResults(siteId) {
+    const chartEl = document.getElementById("results-chart");
+    if (!db) {
+      chartEl.innerHTML = `<p class="empty-msg">Backend not configured — see README.md.</p>`;
+      return;
+    }
+    chartEl.innerHTML = `<p class="empty-msg">Loading…</p>`;
+
+    const { data: submissions, error } = await db
+      .from("submissions")
+      .select("rankings")
+      .eq("site_id", siteId);
+
+    if (error) {
+      chartEl.innerHTML = `<p class="empty-msg">Couldn't load results: ${escapeHtml(
+        error.message
+      )}</p>`;
+      return;
+    }
+    if (!submissions.length) {
+      chartEl.innerHTML = `<p class="empty-msg">No rankings submitted yet for this site.</p>`;
+      return;
+    }
+
+    const n = config.categories.length;
+    const totals = new Map(config.categories.map((c) => [c.id, 0]));
+    submissions.forEach((sub) => {
+      (sub.rankings || []).forEach((catId, index) => {
+        if (!totals.has(catId)) return;
+        // Rank 0 (most wanted) scores n points, last rank scores 1 point.
+        totals.set(catId, totals.get(catId) + (n - index));
+      });
+    });
+
+    const results = config.categories
+      .map((c) => ({
+        id: c.id,
+        label: c.label,
+        avgScore: totals.get(c.id) / submissions.length,
+      }))
+      .sort((a, b) => b.avgScore - a.avgScore);
+
+    const maxScore = Math.max(...results.map((r) => r.avgScore), 1);
+
+    chartEl.innerHTML = "";
+    results.forEach((r) => {
+      const pct = Math.max((r.avgScore / maxScore) * 100, 1);
+      const row = document.createElement("div");
+      row.className = "result-row";
+      row.innerHTML = `
+        <span class="result-row__label">${escapeHtml(r.label)}</span>
+        <span class="result-row__track">
+          <span class="result-row__bar" style="width:${pct}%"></span>
+        </span>
+        <span class="result-row__value">${r.avgScore.toFixed(1)}</span>
+      `;
+      chartEl.appendChild(row);
+    });
+  }
+
+  // ---------- Helpers ----------
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = String(str);
+    return div.innerHTML;
+  }
+
+  function formatDate(iso) {
+    try {
+      return new Date(iso).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch {
+      return "";
+    }
+  }
+})();

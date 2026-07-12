@@ -7,8 +7,13 @@
   --gridline: #e1e0d9;
   --baseline: #c3c2b7;
   --border: rgba(11, 11, 11, 0.1);
-  --accent: #2a78d6;
-  --accent-strong: #184f95;
+  /* Brand orange, matching communityplan4u.ca — this is a best-effort match
+     eyeballed from a screenshot, not a sampled/official hex. Swap it here
+     (both modes) if you have the real brand value. Darkened slightly off
+     the homepage's brighter orange so button text still clears 4.5:1
+     contrast at this size. */
+  --accent: #c24e1d;
+  --accent-strong: #9c3e16;
   --warning-bg: #fff6e0;
   --warning-border: #eda100;
 }
@@ -23,8 +28,8 @@
     --gridline: #2c2c2a;
     --baseline: #383835;
     --border: rgba(255, 255, 255, 0.18);
-    --accent: #3987e5;
-    --accent-strong: #86b6ef;
+    --accent: #f58652;
+    --accent-strong: #ffa97e;
     --warning-bg: #332b0d;
     --warning-border: #c98500;
   }
@@ -40,6 +45,12 @@ body {
   background: var(--page-plane);
   color: var(--text-primary);
   line-height: 1.5;
+  accent-color: var(--accent);
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
 }
 
 .muted {
@@ -66,6 +77,19 @@ body {
 .site-header h1 {
   margin: 0 0 0.25rem;
   font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.brand-mark {
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
 }
 
 .contribution-counter {
@@ -74,7 +98,8 @@ body {
   padding: 0.3rem 0.9rem;
   border-radius: 999px;
   background: var(--gridline);
-  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-1));
+  color: var(--accent-strong);
   font-size: 0.8rem;
   font-weight: 600;
 }
@@ -131,11 +156,12 @@ main {
 
 .btn {
   font: inherit;
-  border-radius: 6px;
+  font-weight: 600;
+  border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--surface-1);
   color: var(--text-primary);
-  padding: 0.45rem 0.9rem;
+  padding: 0.45rem 1.1rem;
   cursor: pointer;
 }
 
@@ -147,6 +173,7 @@ main {
 
 .btn--primary:hover {
   background: var(--accent-strong);
+  border-color: var(--accent-strong);
 }
 
 .btn--small {

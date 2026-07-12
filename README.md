@@ -37,10 +37,10 @@ launching (see below).
   leave feedback about something already on the map instead of only
   empty ground.
 - **Shared category taxonomy** — open data layers and community feedback
-  both use the same 8 categories (`themes` in `js/config.js`), based on
-  the Little Jamaica Community Development Action Plan's 5 focus areas
-  plus 3 added categories to cover things the plan doesn't name but the
-  map needs. See "Open data map layers" below.
+  both use the same 7 categories (`themes` in `js/config.js`), based on
+  4 of the Little Jamaica Community Development Action Plan's 5 focus
+  areas plus 3 added categories to cover things the plan doesn't name but
+  the map needs. See "Open data map layers" below.
 - **Base layer switcher** — a layers control (top-right on the map) swaps
   between [CARTO Positron](https://carto.com/basemaps) (a light, minimal
   street basemap chosen to stay out of the way of the site's own colors)
@@ -204,7 +204,7 @@ feedback" above), which helps them see what's already there before
 proposing a new use.
 
 **Categories, not individual layers:** the "Map layers" panel doesn't list
-every dataset separately — it lists the 8 categories from `themes` in
+every dataset separately — it lists the categories from `themes` in
 `js/config.js` (the same categories "Community feedback" uses), and only
 shows a checkbox for a category if at least one layer is assigned to it.
 Turning a category on loads and shows every layer assigned to it at once;
@@ -213,28 +213,33 @@ how many individual datasets get added later, and means a resident never
 has to figure out which of several similarly-named layers to turn on to
 see, say, everything related to housing.
 
-The current 8 categories are the Little Jamaica Community Development
-Action Plan's 5 focus areas — **Governance**, **Housing**, **Commercial &
-Non-Profit Spaces**, **Employment**, **Cultural Identity & Stewardship** —
-plus 3 added to cover things the plan doesn't name but the map needs:
-**Parks & Public Realm**, **Transportation**, and **Community Services &
-Institutions**. Not every category has to have a matching open data
-layer — Commercial & Non-Profit Spaces and Employment currently exist as
-comment-only categories in "Community feedback", since no fitting City of
-Toronto dataset exists yet for this area. Add a layer for one by giving it
-that `theme` id in `data/sources.json`.
+The current 7 categories are 4 of the Little Jamaica Community Development
+Action Plan's 5 focus areas — **Housing**, **Commercial & Non-Profit
+Spaces**, **Employment**, **Cultural Identity & Stewardship** — plus 3
+added to cover things the plan doesn't name but the map needs: **Parks &
+Public Realm**, **Transportation**, and **Public Facilities**. The 5th CDAP
+area, Governance, was tried and removed: every open-data location that
+could plausibly belong to it turned out to either duplicate another
+category or be routine City land-holding with nothing resident-facing to
+say about it, so it isn't offered as a map layer or feedback category —
+see the git history around the "Reclassify miscategorized Real Estate
+Asset Inventory items" commits for the full reasoning if reviving it later.
+Not every remaining category has to have a matching open data layer either
+— Commercial & Non-Profit Spaces and Employment partly exist as
+comment-only categories in "Community feedback", since City of Toronto
+open data only goes so far. Add a layer for one by giving it that `theme`
+id in `data/sources.json`.
 
 **Splitting one source into layers under different categories:** some City
 of Toronto datasets mix locations that belong in different categories —
-for example, the Real Estate Asset Inventory includes administrative
-land/buildings (Governance), parks-department land/buildings that overlap
-what the Green Spaces / Parks & Recreation layers already show (Parks &
-Public Realm), and carparks (Transportation). Rather than showing the same
-location twice under two categories, `data/sources.json` can list the same
-source `file`/`url` under multiple layer entries with complementary
-`filter`/`excludeFilter` values, so each feature ends up in exactly one of
-them — see the `real-estate-*` layers for a worked example. A `filter`/
-`excludeFilter` value can be:
+for example, the Real Estate Asset Inventory includes parks-department
+land/buildings that overlap what the Green Spaces / Parks & Recreation
+layers already show (Parks & Public Realm), and carparks (Transportation).
+Rather than showing the same location twice under two categories,
+`data/sources.json` can list the same source `file`/`url` under multiple
+layer entries with complementary `filter`/`excludeFilter` values, so each
+feature ends up in exactly one of them — see the `real-estate-*` layers
+for a worked example. A `filter`/`excludeFilter` value can be:
 
 - a plain value — exact match against that property;
 - an array of values — matches if the property equals any of them;
@@ -275,7 +280,7 @@ the same schedule but only change when you replace the underlying file.
 
 **Adding another dataset** ("other similar files"): find its GeoJSON
 download link on Toronto's Open Data Portal (or elsewhere), pick which of
-the 8 categories in `themes` (`js/config.js`) it best fits, and add an
+the categories in `themes` (`js/config.js`) it best fits, and add an
 entry to the `layers` array in `data/sources.json` — either:
 
 ```json

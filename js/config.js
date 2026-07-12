@@ -39,15 +39,19 @@ window.APP_CONFIG = {
   // dropdown, and the "Feedback by topic" chart.
   //
   // Based on the Little Jamaica Community Development Action Plan's 5
-  // focus areas (Governance, Housing, Commercial & Non-Profit Spaces,
-  // Employment, Cultural Identity & Stewardship), plus 3 added categories
-  // for things the CDAP doesn't explicitly name but this tool still needs
-  // to represent (Parks & Public Realm, Transportation, Community
-  // Services & Institutions). Colors are the 8 hues of the fixed palette
-  // (see README.md) — exactly one each, no reuse needed anymore since
-  // there are exactly 8 themes.
+  // focus areas (Housing, Commercial & Non-Profit Spaces, Employment,
+  // Cultural Identity & Stewardship — Governance was one of the 5 too, but
+  // was removed: every open-data location that could plausibly belong to
+  // it turned out to duplicate another category or be routine City
+  // land-holding with nothing resident-facing to say, so it's not offered
+  // as a map layer or feedback category), plus 3 added categories for
+  // things the CDAP doesn't explicitly name but this tool still needs to
+  // represent (Parks & Public Realm, Transportation, Public Facilities).
+  // Colors are 7 of the 8 hues of the fixed palette (see
+  // README.md) — the blue slot Governance used is retired along with it,
+  // not reassigned, so re-adding a category later has an obvious color to
+  // use.
   themes: [
-    { id: "governance", label: "Governance", color: "#2a78d6" },
     { id: "housing", label: "Housing", color: "#e87ba4" },
     {
       id: "commercial-nonprofit",

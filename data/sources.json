@@ -63,9 +63,10 @@
         { "Building Type": "Library" },
         { "Building Type": "Boiler House/Meter House" },
         { "Building Description": "FORMER HYDRO BUILDING" },
-        { "Building Description": "UNISON HEALTH & COMMUNITY SERVICES - DENTAL CLINIC" }
+        { "Building Description": "UNISON HEALTH & COMMUNITY SERVICES - DENTAL CLINIC" },
+        { "Building Description": "RAWLINSON CHILD CARE CENTRE" }
       ],
-      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Building (EPSG:4326), unfiltered except the buildings excluded above — each either duplicates a location already shown by another layer (Libraries — see the Library Branches layer) or belongs under a different category and is shown instead by one of the real-estate-* layers below (see each layer's own _source note for which)."
+      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Building (EPSG:4326), unfiltered except the buildings excluded above — each either duplicates a location already shown by another layer (Libraries — see the Library Branches layer), belongs under a different category and is shown instead by one of the real-estate-* layers below (see each layer's own _source note for which), or is dropped outright (Rawlinson Child Care Centre)."
     },
     {
       "id": "real-estate-parking-buildings",
@@ -255,9 +256,10 @@
         { "Property Type": "Library Facility" },
         { "Property Type": ["Vacant Land", "Reserve Strip", "Road Allowance"] },
         { "Property Type": ["Water Management", "Administrative Faci."] },
-        { "Property Description": "YORK-WESTON METER HOUSE" }
+        { "Property Description": "YORK-WESTON METER HOUSE" },
+        { "Property Type": "Other Misc. Use" }
       ],
-      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Land (EPSG:4326), excluding parcels covered by the real-estate-* layers below (each grouped under whichever category it actually belongs to instead of Governance — see each layer's own _source note for which), plus parcels dropped outright because they duplicate a location already shown elsewhere (Libraries — see the Library Branches layer; the Nia Centre for the Arts land record — see the real-estate-commercial-buildings layer for its building; and the York Civic Centre & Coronation Park combined parcel — see the real-estate-public-facility-buildings layer for the Civic Centre building and the Green Spaces layer for Coronation Park). Re-download and replace data/raw/land-asset-inventory.geojson to refresh, then re-run scripts/fetch-open-data.js."
+      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Land (EPSG:4326), excluding parcels covered by the real-estate-* layers below (each grouped under whichever category it actually belongs to instead of Governance — see each layer's own _source note for which), plus parcels dropped outright because they duplicate a location already shown elsewhere (Libraries — see the Library Branches layer; the Nia Centre for the Arts land record — see the real-estate-commercial-buildings layer for its building; and the York Civic Centre & Coronation Park combined parcel — see the real-estate-public-facility-buildings layer for the Civic Centre building and the Green Spaces layer for Coronation Park) or was dropped outright as not worth showing (\"Other Misc. Use\" parcels: a future road connection stub and a rear parcel behind 27 Earnscliffe Rd). Re-download and replace data/raw/land-asset-inventory.geojson to refresh, then re-run scripts/fetch-open-data.js."
     },
     {
       "id": "real-estate-park-land",

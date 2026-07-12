@@ -49,6 +49,11 @@ create table if not exists upvotes (
 -- directly (see RLS policies below — reads are public on this table like
 -- every other one here), so it's "not shown in the UI," not encrypted or
 -- access-controlled at the database level.
+-- year_last_there is optional and only meaningful for the "losing"
+-- feedback type (see askYear in feedbackTypes, js/config.js) — the year
+-- the person believes the place was last there. Shown publicly next to
+-- the sentiment label, since it's part of the displacement record the
+-- "losing" type exists to build.
 create table if not exists map_comments (
   id uuid primary key default gen_random_uuid(),
   lat double precision not null,
@@ -56,6 +61,7 @@ create table if not exists map_comments (
   address text,
   topic text not null,
   sentiment text not null,
+  year_last_there integer,
   comment text not null,
   name text,
   contact text,
@@ -66,6 +72,7 @@ alter table map_comments add column if not exists address text;
 alter table map_comments add column if not exists sentiment text;
 alter table map_comments add column if not exists name text;
 alter table map_comments add column if not exists contact text;
+alter table map_comments add column if not exists year_last_there integer;
 
 -- Up/down votes on individual map_comments rows (distinct from the
 -- upvote-only "support" mechanic on site submissions). One row per

@@ -30,7 +30,7 @@
       <p>
         This map shows public land sites where your neighbourhood is
         collecting ideas. Pick a site to rank the uses you'd most like to
-        see there, leave a comment, and support ideas other residents have
+        see there, add an idea/archive entry, and support ideas other residents have
         already proposed. Map layers and community feedback are both
         organized around the same categories, based on the Little
         Jamaica Community Development Action Plan's focus areas. You can
@@ -58,8 +58,8 @@
         <h2 class="layers-panel__title">Community feedback</h2>
         <p class="hint">
           Feedback residents have left, grouped by address and category —
-          anyone can add another comment at a location others have
-          already commented on, and vote on comments. Turn a category on
+          anyone can add another idea/archive entry at a location others
+          have already added one, and vote on entries. Turn a category on
           or off to show or hide its pins.
         </p>
         <ul id="comment-topics-list" class="layers-list"></ul>
@@ -86,26 +86,26 @@
     <h3 class="layers-panel__subtitle">Two ways to leave feedback</h3>
     <p>
       <strong>Click any shape or pin on the map</strong> — a school, park,
-      vacant lot, or existing comment — to leave feedback about that
-      specific place. To leave feedback somewhere without a shape, use
-      the <strong>📍 Add feedback marker</strong> button, then click the
-      map where you'd like to comment.
+      vacant lot, or existing idea/archive entry — to leave feedback about
+      that specific place. To leave feedback somewhere without a shape,
+      use the <strong>📍 Add feedback marker</strong> button, then click
+      the map where you'd like to add one.
     </p>
 
-    <h3 class="layers-panel__subtitle">What happens to your comment</h3>
+    <h3 class="layers-panel__subtitle">What happens to your idea/archive entry</h3>
     <p>
-      Comments and rankings post immediately and are visible to everyone
-      — there's no review queue before that happens. Other residents can
-      vote on comments and rank site uses too; look for the tally next to
-      each one.
+      Idea/archive entries and rankings post immediately and are visible
+      to everyone — there's no review queue before that happens. Other
+      residents can vote on entries and rank site uses too; look for the
+      tally next to each one.
     </p>
 
     <h3 class="layers-panel__subtitle">Moderation</h3>
     <p>
       Submissions are anonymous and public — there's no login, just a
       private token in your browser so you can toggle your own votes.
-      Adding your name or contact info when commenting is always
-      optional; your name is shown alongside your comment if you add
+      Adding your name or contact info when adding an idea/archive entry
+      is always optional; your name is shown alongside it if you add
       one, and your contact info is only used by neighbourhood
       organizers to follow up, never shown publicly. Nothing is reviewed
       before it posts; neighbourhood organizers remove anything
@@ -148,7 +148,7 @@
       </label>
 
       <label class="field">
-        <span>Comment <span class="muted">(optional)</span></span>
+        <span>Idea/Archive <span class="muted">(optional)</span></span>
         <textarea id="comment-input" maxlength="1000" rows="3" placeholder="Anything else you'd like the community to know?"></textarea>
       </label>
 
@@ -189,7 +189,7 @@
     <ul id="map-comment-thread-list" class="ideas-list"></ul>
 
     <div id="map-comment-compose">
-      <h3 class="layers-panel__subtitle">Add your comment</h3>
+      <h3 class="layers-panel__subtitle">Add your idea/archive</h3>
 
       <label class="field">
         <span>What type of feedback is this?</span>
@@ -205,9 +205,14 @@
 
       <p id="map-comment-sentiment-hint" class="hint" hidden></p>
 
+      <label class="field" id="map-comment-year-field" hidden>
+        <span>What year was it last there? <span class="muted">(optional)</span></span>
+        <input type="number" id="map-comment-year" inputmode="numeric" min="1900" max="2100" placeholder="e.g. 2019" />
+      </label>
+
       <label class="field">
-        <span>Comment</span>
-        <textarea id="map-comment-text" maxlength="1000" rows="3" placeholder="What would you like to see here, or what's your concern about this spot?"></textarea>
+        <span>Idea/Archive</span>
+        <textarea id="map-comment-text" maxlength="1000" rows="3" placeholder="What was, is currently, or should be here"></textarea>
       </label>
 
       <label class="field">
@@ -221,7 +226,7 @@
         <span class="hint">Only visible to neighbourhood organizers, never shown publicly.</span>
       </label>
 
-      <button type="button" id="submit-map-comment" class="btn btn--primary">Submit feedback</button>
+      <button type="button" id="submit-map-comment" class="btn btn--primary">Submit idea/archive</button>
       <p id="map-comment-status" class="status-msg" role="status"></p>
     </div>
   </div>

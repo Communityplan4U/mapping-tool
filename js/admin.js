@@ -127,7 +127,7 @@
     const { data, error } = await db
       .from("map_comments")
       .select(
-        "topic, sentiment, comment, name, contact, lat, lng, address, created_at"
+        "topic, sentiment, year_last_there, comment, name, contact, lat, lng, address, created_at"
       )
       .order("created_at", { ascending: false });
 
@@ -137,8 +137,8 @@
     }
 
     latestMapComments = data || [];
-    summaryEl.textContent = `${latestMapComments.length.toLocaleString()} comment${
-      latestMapComments.length === 1 ? "" : "s"
+    summaryEl.textContent = `${latestMapComments.length.toLocaleString()} idea/archive ${
+      latestMapComments.length === 1 ? "entry" : "entries"
     }`;
 
     tbody.innerHTML = latestMapComments
@@ -148,6 +148,9 @@
             <td>${escapeHtml(topicsById.get(row.topic)?.label || row.topic)}</td>
             <td>${escapeHtml(
               sentimentsById.get(row.sentiment)?.label || row.sentiment || ""
+            )}</td>
+            <td>${escapeHtml(
+              row.year_last_there != null ? String(row.year_last_there) : ""
             )}</td>
             <td>${escapeHtml(row.comment || "")}</td>
             <td>${escapeHtml(row.name || "")}</td>
@@ -167,7 +170,7 @@
     .addEventListener("click", () => {
       downloadCSV(
         "site-submissions.csv",
-        ["Site", "Nickname", "Top picks", "Comment", "Submitted"],
+        ["Site", "Nickname", "Top picks", "Idea/Archive", "Submitted"],
         latestSubmissions.map((row) => [
           siteLabel(row.site_id),
           row.nickname || "Neighbour",
@@ -186,7 +189,8 @@
         [
           "Topic",
           "Feedback type",
-          "Comment",
+          "Year last there",
+          "Idea/Archive",
           "Name",
           "Contact",
           "Address",
@@ -197,6 +201,7 @@
         latestMapComments.map((row) => [
           topicsById.get(row.topic)?.label || row.topic,
           sentimentsById.get(row.sentiment)?.label || row.sentiment || "",
+          row.year_last_there ?? "",
           row.comment || "",
           row.name || "",
           row.contact || "",

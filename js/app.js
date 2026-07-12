@@ -661,10 +661,14 @@
   const mapCommentSentimentHint = document.getElementById(
     "map-comment-sentiment-hint"
   );
+  const mapCommentYearField = document.getElementById(
+    "map-comment-year-field"
+  );
   mapCommentSentimentSelect.addEventListener("change", () => {
-    const hint = sentimentsById.get(mapCommentSentimentSelect.value)?.hint;
-    mapCommentSentimentHint.textContent = hint || "";
-    mapCommentSentimentHint.hidden = !hint;
+    const type = sentimentsById.get(mapCommentSentimentSelect.value);
+    mapCommentSentimentHint.textContent = type?.hint || "";
+    mapCommentSentimentHint.hidden = !type?.hint;
+    mapCommentYearField.hidden = !type?.askYear;
   });
 
   // Short/new threads open in the centered dialog, unchanged. A thread
@@ -704,6 +708,8 @@
     // choice.
     mapCommentSentimentSelect.value = "";
     mapCommentSentimentHint.hidden = true;
+    mapCommentYearField.hidden = true;
+    document.getElementById("map-comment-year").value = "";
     // Name/contact are deliberately NOT reset here — if someone leaves
     // feedback at several spots in one visit, they shouldn't have to
     // retype who they are each time.
@@ -756,7 +762,9 @@
   async function fetchCommentThread(address, lat, lng) {
     let query = db
       .from("map_comments")
-      .select("id, topic, sentiment, comment, name, created_at");
+      .select(
+        "id, topic, sentiment, year_last_there, comment, name, created_at"
+      );
     query = address
       ? query.eq("address", address)
       : query.eq("lat", lat).eq("lng", lng);
@@ -787,13 +795,13 @@
   function renderCommentThread(comments, votesByComment, address, lat, lng, error) {
     const listEl = document.getElementById("map-comment-thread-list");
     if (error) {
-      listEl.innerHTML = `<li class="empty-msg">Couldn't load comments: ${escapeHtml(
+      listEl.innerHTML = `<li class="empty-msg">Couldn't load idea/archive entries: ${escapeHtml(
         error.message
       )}</li>`;
       return;
     }
     if (!comments.length) {
-      listEl.innerHTML = `<li class="empty-msg">No comments yet at this location — be the first!</li>`;
+      listEl.innerHTML = `<li class="empty-msg">No idea/archive entries yet at this location — be the first!</li>`;
       return;
     }
 
@@ -821,7 +829,11 @@
           sentiment
             ? `<span class="idea-card__sentiment">${escapeHtml(
                 sentiment.label
-              )}</span>`
+              )}${
+                c.year_last_there
+                  ? ` · Last there in ${escapeHtml(String(c.year_last_there))}`
+                  : ""
+              }</span>`
             : ""
         }
         <p class="idea-card__comment">${escapeHtml(c.comment)}</p>
@@ -905,7 +917,8 @@
         .getElementById("map-comment-text")
         .value.trim();
       if (!comment) {
-        statusEl.textContent = "Please add a comment before submitting.";
+        statusEl.textContent =
+          "Please add an idea/archive entry before submitting.";
         statusEl.className = "status-msg is-error";
         return;
       }
@@ -921,6 +934,8 @@
       const contact = document
         .getElementById("map-comment-contact")
         .value.trim();
+      const yearRaw = document.getElementById("map-comment-year").value.trim();
+      const year = yearRaw ? Number(yearRaw) : null;
 
       const submitBtn = document.getElementById("submit-map-comment");
       submitBtn.disabled = true;
@@ -934,6 +949,7 @@
         address,
         topic: mapCommentTopicSelect.value,
         sentiment,
+        year_last_there: year,
         comment,
         name: name || null,
         contact: contact || null,
@@ -950,6 +966,7 @@
       statusEl.textContent = "Thanks! Your feedback was submitted.";
       statusEl.className = "status-msg is-ok";
       document.getElementById("map-comment-text").value = "";
+      document.getElementById("map-comment-year").value = "";
       ensureLocationMarker(lat, lng, address, row.topic);
       refreshContributionCounter();
       loadTopicSummary();

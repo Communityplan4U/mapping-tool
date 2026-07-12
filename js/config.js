@@ -37,14 +37,17 @@ window.APP_CONFIG = {
   // than folding into a generic "concern" bucket: a record of
   // displacement/loss at volume is evidence a generic concern option
   // wouldn't surface on its own. The optional "hint" is shown next to the
-  // comment box when that option is selected — a nudge, not a required
-  // field, so it doesn't need a schema change to add one for another
-  // option later.
+  // idea/archive box when that option is selected — a nudge, not a
+  // required field, so it doesn't need a schema change to add one for
+  // another option later. "askYear" is the same kind of opt-in extra: it
+  // shows a "what year was it last there" field, generic to any type
+  // rather than hardcoded to "losing" specifically.
   feedbackTypes: [
     {
       id: "losing",
       label: "A place being displaced or that is no longer there",
       hint: "If you can, include the name of the place and a link to a photo of it — it helps build the record of what's been lost.",
+      askYear: true,
     },
     { id: "concern", label: "A concern — something that doesn't feel right" },
     { id: "working", label: "Something that's working — keep it" },

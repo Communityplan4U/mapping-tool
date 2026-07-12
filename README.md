@@ -3,7 +3,7 @@
 A simple web tool for community members to say how they'd like public land
 in their neighbourhood to be used. Residents see designated public sites on
 a map, rank possible uses for each site (park, housing, garden, etc.),
-leave a comment, and support ideas other residents have submitted.
+add an idea/archive entry, and support ideas other residents have submitted.
 
 Currently configured for **Little Jamaica, Toronto**. No sites are
 configured yet — add real public land parcels to `js/config.js` before
@@ -21,13 +21,14 @@ launching (see below).
 - **Contribution counter** — a live count of all submitted rankings, shown
   in the header.
 - **Per-site survey** — residents drag (or use ▲▼) to rank a fixed list of
-  possible uses from most to least wanted, plus an optional comment.
+  possible uses from most to least wanted, plus an optional idea/archive
+  entry.
 - **Community ideas** — everyone's submitted rankings/comments are listed
   per site, and residents can upvote ("support") the ones they agree with.
 - **Results** — an aggregated bar chart per site shows which uses have the
   most community support.
 - **Click-anywhere feedback** — not limited to the predefined sites:
-  clicking any point on the map opens a small form (category + comment)
+  clicking any point on the map opens a small form (category + idea/archive)
   and drops a square marker there, colored by category (`themes` in
   `js/config.js`). A "Community feedback" panel lets residents toggle
   each category on/off, the same way the open data layers work, plus a
@@ -100,14 +101,22 @@ reverse geocoding only if the feature has nothing address-like.
   from this list. See "Open data map layers" below for how layers are
   assigned to categories.
 - **Feedback type** is a second, required dropdown — separate from
-  category — for what *kind* of thing the comment is (a loss, a concern,
+  category — for what *kind* of thing the entry is (a loss, a concern,
   something working, an idea). Defined in `feedbackTypes` in
-  `js/config.js`. It's a plain tag on the comment, not something other
-  residents vote on separately from the comment itself. Any type can
-  carry an optional `hint` string, shown next to the comment box when
+  `js/config.js`. It's a plain tag on the entry, not something other
+  residents vote on separately from the entry itself. Any type can carry
+  an optional `hint` string, shown next to the idea/archive box when
   that type is selected — currently used on "A place being displaced or
   that is no longer there" to prompt naming the place and linking a
   photo of it.
+- **Year last there** is an optional field that only appears when the
+  "A place being displaced or that is no longer there" feedback type is
+  selected — the year the person believes the place was last there.
+  Controlled by an `askYear` flag on a `feedbackTypes` entry (same
+  opt-in mechanism as `hint`, so it isn't hardcoded to this one type).
+  Stored as `year_last_there` and shown publicly next to the sentiment
+  label, since it's part of the displacement record this feedback type
+  exists to build.
 - **Name and contact info** are optional fields on every map comment.
   Name is shown publicly next to the comment, same as the nickname on
   site submissions. Contact is never shown in the public app — it only

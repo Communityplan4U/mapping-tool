@@ -1094,7 +1094,7 @@
           return L.marker(latlng, { icon: triangleIcon(color) });
         }
         return L.circleMarker(latlng, {
-          radius: 6,
+          radius: layer.radius || 6,
           color,
           fillColor: color,
           fillOpacity: 0.7,

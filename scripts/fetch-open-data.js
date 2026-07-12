@@ -231,6 +231,17 @@ async function processLayer(layer, bbox) {
     footprintsMatched = applyFootprints(kept, layer.footprintSource, bbox);
   }
 
+  if (layer.augment) {
+    const rules = Array.isArray(layer.augment) ? layer.augment : [layer.augment];
+    for (const feature of kept) {
+      for (const rule of rules) {
+        if (matchesPropertyFilter(feature.properties, rule.filter)) {
+          Object.assign(feature.properties, rule.properties);
+        }
+      }
+    }
+  }
+
   const geojson = { type: "FeatureCollection", features: kept };
   const outPath = path.join(OUT_DIR, `${layer.id}.geojson`);
   fs.writeFileSync(outPath, JSON.stringify(geojson));

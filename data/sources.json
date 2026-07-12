@@ -141,16 +141,29 @@
       "filter": {
         "Building Description": [
           "FAIRBANK MEMORIAL PARK - OUTDOOR POOL SERVICE BLDG",
-          "FAIRBANK MEMORIAL PARK - COMMUNITY CENTRE",
-          "KEELESDALE PARK - CHRIS TONKS ARENA",
           "KEELESDALE PARK - BASEBALL CLUBHOUSE & CHANGE / WASHROOM",
           "BERT ROBINSON PARK - MAINTENANCE BLDG",
-          "CEDARVALE PARK - PHIL WHITE ARENA",
           "FAIRBANK MEMORIAL PARK - GREENHOUSE",
           "CHARLES CACCIA PARK SEWAGE PUMPING STATION"
         ]
       },
-      "_source": "Same source file as the Real Estate Asset Inventory - Building dataset, filtered down to buildings that sit within named parks already covered by the green-spaces layer (Fairbank Memorial Park, Keelesdale Park, Bert Robinson Park, Cedarvale Park, Charles Caccia Park) — grouped under Parks & Public Realm."
+      "_source": "Same source file as the Real Estate Asset Inventory - Building dataset, filtered down to buildings that sit within named parks already covered by the green-spaces layer (Fairbank Memorial Park, Keelesdale Park, Bert Robinson Park, Charles Caccia Park) — grouped under Parks & Public Realm. Arenas and Community Recreation Centres are handled separately below (real-estate-park-recreation-buildings), since those duplicate entries in the Parks & Recreation Facilities dataset under slightly different names."
+    },
+    {
+      "id": "real-estate-park-recreation-buildings",
+      "label": "Real Estate Asset Inventory (Park Arenas & Recreation Centres)",
+      "theme": "parks-public-realm",
+      "shape": "circle",
+      "radius": 10,
+      "file": "data/raw/building-asset-inventory.geojson",
+      "filter": {
+        "Building Description": [
+          "FAIRBANK MEMORIAL PARK - COMMUNITY CENTRE",
+          "KEELESDALE PARK - CHRIS TONKS ARENA",
+          "CEDARVALE PARK - PHIL WHITE ARENA"
+        ]
+      },
+      "_source": "Same source file as real-estate-park-buildings, filtered down to the arenas and the community recreation centre — deliberately NOT footprint-matched (unlike the rest of real-estate-park-buildings), so they render as a plain circle instead of tracing the building outline, since these also duplicate entries in Toronto's Parks & Recreation Facilities dataset (Chris Tonks Arena, Phil White Arena, Fairbank Memorial Community Centre) that were removed from Public Facilities in favour of these. Radius 10px — a bit larger than the default 6px circleMarker, since these are bigger facilities than a typical point amenity, but still small enough not to visually compete with the park polygon underneath."
     },
     {
       "id": "real-estate-utility-buildings",
@@ -222,7 +235,15 @@
       "theme": "community-services",
       "file": "data/raw/land-asset-inventory.geojson",
       "filter": { "Property Type": "School" },
-      "_source": "Same source file as the Real Estate Asset Inventory - Land dataset, filtered down to parcels typed \"School\" — grouped under Public Facilities."
+      "augment": [
+        {
+          "filter": { "Property Description": "VAUGHAN ROAD C.I." },
+          "properties": {
+            "Community Use": "Vaughan Road Academy also operates as a City of Toronto community centre (Parks, Forestry & Recreation), including its on-site indoor pool (see the real-estate-public-facility-buildings layer) — listed separately in Toronto's Parks and Recreation Facilities dataset, merged into this record instead of showing a third marker for the same site."
+          }
+        }
+      ],
+      "_source": "Same source file as the Real Estate Asset Inventory - Land dataset, filtered down to parcels typed \"School\" — grouped under Public Facilities. Vaughan Road C.I. doesn't appear in School Locations (schools layer), so its community-centre note lives here rather than there — see that layer's _source note for the equivalent case at St Nicholas of Bari."
     },
     {
       "id": "real-estate-public-facility-land",
@@ -308,22 +329,13 @@
       "_source": "City of Toronto Open Data Portal, Green Spaces (EPSG:4326). Re-download and replace data/raw/green-spaces.geojson to refresh, then re-run scripts/fetch-open-data.js."
     },
     {
-      "id": "parks-rec",
-      "label": "Parks & Recreation Facilities",
-      "theme": "community-services",
-      "shape": "circle",
-      "file": "data/raw/parks-and-recreation-facilities.geojson",
-      "excludeFilter": { "TYPE": "Park" },
-      "_source": "City of Toronto Open Data Portal, Parks and Recreation Facilities (EPSG:4326), excluding parcels typed \"Park\" (shown instead by parks-rec-parks below, under Parks & Public Realm). Re-download and replace data/raw/parks-and-recreation-facilities.geojson to refresh, then re-run scripts/fetch-open-data.js."
-    },
-    {
       "id": "parks-rec-parks",
-      "label": "Parks & Recreation Facilities (Parks)",
+      "label": "Parks & Recreation Facilities",
       "theme": "parks-public-realm",
       "shape": "circle",
       "file": "data/raw/parks-and-recreation-facilities.geojson",
       "filter": { "TYPE": "Park" },
-      "_source": "Same source file as parks-rec, filtered down to parcels typed \"Park\" — grouped under Parks & Public Realm instead of Public Facilities."
+      "_source": "City of Toronto Open Data Portal, Parks and Recreation Facilities (EPSG:4326), filtered down to parcels typed \"Park\" — grouped under Parks & Public Realm. The dataset's \"Community Centre\"/\"Civic Centre\"-typed entries are dropped entirely: every one of them duplicated a location already shown by a Real Estate Asset Inventory layer, under a slightly different name (see git history around the \"York Recreation Centre / York Civic Centre / Arenas\" cleanup for the full mapping)."
     },
     {
       "id": "major-transit-station-areas",
@@ -343,7 +355,15 @@
         "data/raw/land-asset-inventory.geojson"
       ],
       "excludeFilter": { "SCHOOL_TYPE_DESC": "Private" },
-      "_source": "City of Toronto Open Data Portal, School Locations (EPSG:4326), excluding private schools (SCHOOL_TYPE_DESC=Private). Re-download and replace data/raw/school-locations.geojson to refresh, then re-run scripts/fetch-open-data.js."
+      "augment": [
+        {
+          "filter": { "NAME": "ST NICHOLAS OF BARI CATHOLIC ELEMENTARY SCHOOL" },
+          "properties": {
+            "Community Use": "Also operates as a City of Toronto community centre (Parks, Forestry & Recreation) — listed separately in Toronto's Parks and Recreation Facilities dataset, merged into this one record here to avoid a duplicate marker."
+          }
+        }
+      ],
+      "_source": "City of Toronto Open Data Portal, School Locations (EPSG:4326), excluding private schools (SCHOOL_TYPE_DESC=Private). St Nicholas of Bari Catholic Elementary School gets an added \"Community Use\" property noting its dual role as a community centre, rather than showing a second marker for it — see real-estate-school-land's _source note for Vaughan Road C.I.'s equivalent case. Re-download and replace data/raw/school-locations.geojson to refresh, then re-run scripts/fetch-open-data.js."
     },
     {
       "id": "libraries",

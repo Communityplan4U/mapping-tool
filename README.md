@@ -255,6 +255,21 @@ filter objects to drop features matching *any* of several unrelated
 reasons (e.g. "is a park" OR "is a carpark") — see `real-estate-land`'s
 `excludeFilter`.
 
+**Merging a duplicate into its "real" record instead of dropping it
+silently:** sometimes two City datasets describe the same real-world place
+under different names (a school that's also run as an after-hours
+community centre, say), and you don't want a second marker for it, but
+you also don't want to lose the information that it serves that second
+purpose. Set `"augment"` on a layer to a `{ "filter": {...}, "properties":
+{...} }` object (or an array of them) — for every feature in that layer
+matching `filter`, the `properties` are merged in, so they show up in that
+feature's popup like any other field. The duplicate record from the other
+dataset is then usually dropped entirely via that other layer's
+`excludeFilter`/`filter` rather than shown. See `schools`' and
+`real-estate-school-land`'s `augment` entries (St Nicholas of Bari
+Catholic School and Vaughan Road Academy, both of which also operate as
+City community centres) for a worked example.
+
 **How it works:** `data/sources.json` lists the layers (a label, which
 `theme` id it belongs to, and where to read the source GeoJSON from) and a
 bounding box for your neighbourhood. Running `scripts/fetch-open-data.js`
@@ -319,13 +334,20 @@ category share one color, a category with more than one point layer needs
 a second visual channel so its layers don't look identical on the map.
 Set `"shape"` on a point layer in `data/sources.json` to `"circle"`
 (default), `"diamond"`, or `"triangle"` — e.g. the `parks-public-realm`
-category currently has two point layers (Parks & Recreation Facilities,
-Real Estate Asset Inventory (Park Buildings)), each given a different
-shape. A category with only one point layer doesn't need `"shape"` set at
-all. Polygon/line layers can similarly be set `"dashed": true` to render a
-dashed outline when two polygon layers land in the same category — e.g.
-Real Estate Asset Inventory (Park Land) is dashed to stay distinct from
-Green Spaces' solid outline.
+category has several point layers sharing those 3 shapes across them (a
+category can have more point layers than there are shapes; when that
+happens, pick the pairing that's least likely to be confused up close,
+since they're still distinguishable by clicking for the popup). A category
+with only one point layer doesn't need `"shape"` set at all. Circle
+markers also take an optional `"radius"` (pixels, default 6) — e.g.
+Real Estate Asset Inventory (Park Arenas & Recreation Centres) uses `10`
+so a handful of larger facilities read as slightly bigger dots without
+tracing their exact building outline (see "Drawing the actual property
+shape instead of a point" below for why that layer skips
+`footprintSource` on purpose). Polygon/line layers can similarly be set
+`"dashed": true` to render a dashed outline when two polygon layers land
+in the same category — e.g. Real Estate Asset Inventory (Park Land) is
+dashed to stay distinct from Green Spaces' solid outline.
 
 **Drawing the actual property shape instead of a point:** most open data
 locations are just a single lat/lng (a School's or Library's address

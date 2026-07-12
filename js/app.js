@@ -159,28 +159,10 @@
     });
   }
 
-  // Fullscreen control (native Fullscreen API, no plugin needed).
-  const FullscreenControl = L.Control.extend({
-    options: { position: "topleft" },
-    onAdd: function () {
-      const container = L.DomUtil.create(
-        "div",
-        "leaflet-bar leaflet-control leaflet-control-custom"
-      );
-      const button = L.DomUtil.create("a", "", container);
-      button.href = "#";
-      button.title = "Toggle fullscreen";
-      button.setAttribute("role", "button");
-      button.setAttribute("aria-label", "Toggle fullscreen map");
-      button.innerHTML = "⛶";
-      L.DomEvent.on(button, "click", L.DomEvent.stop).on(button, "click", () =>
-        toggleMapFullscreen()
-      );
-      return container;
-    },
-  });
-  map.addControl(new FullscreenControl());
-
+  // View controls: fullscreen + share, grouped into one connected bar
+  // (rather than two separate floating squares) since they're both
+  // "adjust how you're viewing the map" actions, distinct from search
+  // (finding a place) and from adding feedback (the map's primary action).
   function toggleMapFullscreen() {
     const el = map.getContainer();
     if (!document.fullscreenElement) {
@@ -194,29 +176,41 @@
   map.on("fullscreenchange", () => map.invalidateSize());
   document.addEventListener("fullscreenchange", () => map.invalidateSize());
 
-  // Share control (copies this page's URL to the clipboard).
-  const ShareControl = L.Control.extend({
+  const ViewControls = L.Control.extend({
     options: { position: "topleft" },
     onAdd: function () {
       const container = L.DomUtil.create(
         "div",
-        "leaflet-bar leaflet-control leaflet-control-custom"
+        "leaflet-bar leaflet-control leaflet-control-custom map-controls-group"
       );
-      const button = L.DomUtil.create("a", "", container);
-      button.href = "#";
-      button.title = "Copy link to this map";
-      button.setAttribute("role", "button");
-      button.setAttribute("aria-label", "Copy link to this map");
-      button.innerHTML = "🔗";
-      L.DomEvent.on(button, "click", L.DomEvent.stop).on(
-        button,
+
+      const fullscreenBtn = L.DomUtil.create("a", "", container);
+      fullscreenBtn.href = "#";
+      fullscreenBtn.title = "Toggle fullscreen";
+      fullscreenBtn.setAttribute("role", "button");
+      fullscreenBtn.setAttribute("aria-label", "Toggle fullscreen map");
+      fullscreenBtn.innerHTML = "⛶";
+      L.DomEvent.on(fullscreenBtn, "click", L.DomEvent.stop).on(
+        fullscreenBtn,
+        "click",
+        () => toggleMapFullscreen()
+      );
+
+      const shareBtn = L.DomUtil.create("a", "", container);
+      shareBtn.href = "#";
+      shareBtn.title = "Copy link to this map";
+      shareBtn.setAttribute("role", "button");
+      shareBtn.setAttribute("aria-label", "Copy link to this map");
+      shareBtn.innerHTML = "🔗";
+      L.DomEvent.on(shareBtn, "click", L.DomEvent.stop).on(
+        shareBtn,
         "click",
         async () => {
           try {
             await navigator.clipboard.writeText(window.location.href);
-            button.innerHTML = "✅";
+            shareBtn.innerHTML = "✅";
             setTimeout(() => {
-              button.innerHTML = "🔗";
+              shareBtn.innerHTML = "🔗";
             }, 1500);
           } catch {
             // Clipboard API may be unavailable (e.g. insecure context) —
@@ -224,23 +218,26 @@
           }
         }
       );
+
       return container;
     },
   });
-  map.addControl(new ShareControl());
+  map.addControl(new ViewControls());
 
   // Add-marker toggle: click this button to arm "placing" mode (cursor
   // becomes a crosshair), then click anywhere on the map to leave a
   // feedback marker there. Plain map clicks do nothing on their own —
   // this makes leaving feedback a deliberate action instead of firing on
-  // every click while panning/exploring.
+  // every click while panning/exploring. Kept as its own group, spaced
+  // apart from the view controls above, since it's the map's primary
+  // action rather than a view/navigation toggle.
   let addMarkerMode = false;
   const AddMarkerControl = L.Control.extend({
     options: { position: "topleft" },
     onAdd: function () {
       const container = L.DomUtil.create(
         "div",
-        "leaflet-bar leaflet-control leaflet-control-custom"
+        "leaflet-bar leaflet-control leaflet-control-custom map-controls-group map-add-marker-control"
       );
       const button = L.DomUtil.create("a", "", container);
       button.href = "#";

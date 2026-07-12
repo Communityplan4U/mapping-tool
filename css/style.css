@@ -670,6 +670,44 @@ main {
   cursor: crosshair;
 }
 
+/* Map control grouping/spacing: zoom, then search, then view controls
+   (fullscreen/share), then add-marker — each visually separated instead
+   of one dense stack, so they read as distinct groups of related actions. */
+
+.leaflet-top.leaflet-left .leaflet-control-geocoder {
+  margin-top: 10px;
+}
+
+.map-controls-group {
+  margin-top: 10px !important;
+}
+
+.map-add-marker-control a {
+  font-size: 1.3rem;
+}
+
+/* Address search: the most common first action on this map, so it gets
+   more visual weight than the utility icon buttons below it — a wider
+   box, its own shadow, and a brand-colored border instead of blending in
+   as just another small grey control. */
+
+.leaflet-control-geocoder {
+  border-radius: 999px !important;
+  box-shadow: 0 2px 8px rgba(11, 11, 11, 0.15) !important;
+  border: 1.5px solid var(--accent) !important;
+  overflow: hidden;
+}
+
+.leaflet-control-geocoder-form input {
+  min-width: 190px;
+  font-size: 0.9rem !important;
+  padding: 0.4rem 0.5rem !important;
+}
+
+.leaflet-control-geocoder-icon {
+  background-size: 16px 16px !important;
+}
+
 .site-footer {
   text-align: center;
   padding: 1.5rem 1rem 2rem;

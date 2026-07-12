@@ -807,6 +807,43 @@ body.feedback-loading * {
   margin: 0 0 0.5rem;
 }
 
+.feature-popup__owner {
+  font-size: 0.8rem;
+  margin: 0 0 0.5rem;
+}
+
+.feature-popup__owner-tag {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--gridline);
+  color: var(--text-secondary);
+  margin-bottom: 0.3rem;
+}
+
+/* The one case worth a visually distinct flag: land that looks
+   City-owned but isn't (see the Eglinton-corridor Metrolinx example in
+   the popup audit) — reuses the same warning tokens as the "backend not
+   configured" banner elsewhere in the app. */
+.feature-popup__owner-tag--verify {
+  background: var(--warning-bg);
+  color: var(--warning-border);
+}
+
+.feature-popup__owner-body {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.feature-popup__owner-body strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
 .feature-popup__details {
   margin-top: 0.55rem;
   font-size: 0.78rem;

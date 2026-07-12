@@ -9,6 +9,7 @@
   "popupTemplates": {
     "building": {
       "titleField": "Building Description",
+      "ownerHint": {"mode": "fields", "ownerField": "Owner", "jurisdictionField": "Jurisdiction", "managementField": "Management"},
       "addressField": "Address",
       "detailFields": [
         {
@@ -29,6 +30,7 @@
     },
     "land": {
       "titleField": "Property Description",
+      "ownerHint": {"mode": "fields", "ownerField": "Owner", "jurisdictionField": "Jurisdiction", "managementField": "Management"},
       "addressField": "Address",
       "detailFields": [
         {
@@ -345,6 +347,7 @@
     },
     {
       "id": "community-housing",
+      "ownerHint": {"mode": "fixed", "type": "city_agency", "agency": "Toronto Community Housing Corporation"},
       "titleField": "DEV_NAME",
       "detailFields": [{"key": "TTL_RES_UNIT", "label": "Total units"}, {"key": "RGI_UNITS", "label": "RGI units"}, {"key": "YR_BUILT", "label": "Built", "raw": true}],
       "label": "Toronto Community Housing",
@@ -359,6 +362,7 @@
     },
     {
       "id": "supportive-housing",
+      "ownerHint": {"mode": "fixed", "type": "private"},
       "titleField": "NAME",
       "addressField": "ADDRESS_FULL",
       "detailFields": [{"key": "TELEPHONE", "label": "Phone"}],
@@ -374,6 +378,7 @@
     },
     {
       "id": "places-of-worship",
+      "ownerHint": {"mode": "fixed", "type": "private"},
       "titleField": "FTH_ORGANIZATION",
       "addressField": "ADDRESS_FULL",
       "detailFields": [{"key": "FTH_FAITH", "label": "Faith"}, {"key": "FTH_DENOMINATION", "label": "Denomination"}],
@@ -388,6 +393,7 @@
     },
     {
       "id": "green-spaces",
+      "ownerHint": {"mode": "fixed", "type": "city", "agency": "Parks, Forestry & Recreation"},
       "titleField": "AREA_NAME",
       "detailFields": [{"key": "AREA_CLASS", "label": "Type", "valueMap": {"OTHER_CEMETERY": "Cemetery", "OTHER_CITY": "City-owned green space", "OTHER_HYDRO": "Hydro corridor", "OTHER_PROVINCIAL_FEDERAL": "Provincial/federal land", "OTHER_ROAD": "Road allowance"}}],
       "label": "Green Spaces",
@@ -397,6 +403,7 @@
     },
     {
       "id": "parks-rec-parks",
+      "ownerHint": {"mode": "fixed", "type": "city", "agency": "Parks, Forestry & Recreation"},
       "titleField": "ASSET_NAME",
       "addressField": "ADDRESS",
       "detailFields": [{"key": "TYPE", "label": "Type"}, {"key": "AMENITIES", "label": "Amenities"}],
@@ -420,6 +427,7 @@
     },
     {
       "id": "schools",
+      "ownerHint": {"mode": "field", "type": "school_board", "agencyField": "BOARD_NAME"},
       "titleField": "NAME",
       "addressField": "ADDRESS_FULL",
       "detailFields": [{"key": "SCHOOL_TYPE_DESC", "label": "Type"}, {"key": "BOARD_NAME", "label": "Board"}],
@@ -444,6 +452,7 @@
     },
     {
       "id": "libraries",
+      "ownerHint": {"mode": "fixed", "type": "city_agency", "agency": "Toronto Public Library"},
       "titleField": "BranchName",
       "addressField": "Address",
       "detailFields": [{"key": "Telephone", "label": "Phone"}, {"key": "SquareFootage", "label": "Size", "unit": "ft²"}],

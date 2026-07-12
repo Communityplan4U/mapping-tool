@@ -1517,7 +1517,144 @@
       linkField: layer.linkField || base.linkField || null,
       linkLabel: layer.linkLabel || base.linkLabel || "More info",
       detailFields: layer.detailFields || base.detailFields || [],
+      ownerHint: layer.ownerHint || base.ownerHint || null,
     };
+  }
+
+  // "Who owns/governs this" — deliberately generic, not a specific
+  // contact. We can derive ownership from data already in the app
+  // (Owner/Jurisdiction/Management on Real Estate Asset Inventory
+  // records, or a fixed value for layers that are consistently one kind
+  // of owner, like Toronto Community Housing). We do NOT fabricate named
+  // staff contacts or emails — only stable, always-correct pointers
+  // (311, "your Ward Councillor") plus which body to start with.
+  const OWNER_TYPE_META = {
+    city: {
+      tagLabel: "City of Toronto",
+      tagClass: "feature-popup__owner-tag--city",
+      note:
+        "Start with 311 (toronto.ca/311) and your Ward Councillor. Most changes here go through City Council, not a single department — this is the door, not the decision.",
+    },
+    city_agency: {
+      tagLabel: "City agency",
+      tagClass: "feature-popup__owner-tag--agency",
+      note:
+        "City-owned but run separately from City Hall's usual departments. 311 can help route you if you're not sure who to ask.",
+    },
+    school_board: {
+      tagLabel: "School board",
+      tagClass: "feature-popup__owner-tag--school",
+      note:
+        "School boards set their own rules for community use of their property — contact the board directly, not the City.",
+    },
+    external: {
+      tagLabel: "Not the City — verify",
+      tagClass: "feature-popup__owner-tag--verify",
+      note:
+        "This may look like City land, but it isn't. Writing to the City here likely won't reach the right office — contact this owner directly, and loop in your Ward Councillor.",
+    },
+    private: {
+      tagLabel: "Privately owned",
+      tagClass: "feature-popup__owner-tag--private",
+      note:
+        "This is privately owned. Changes here are up to the owner — there's no City department to petition about it.",
+    },
+  };
+
+  // A handful of City-owned bodies that operate at arm's length from
+  // City Hall's usual departments — worth flagging as their own kind of
+  // "city", not lumped in with e.g. Parks or Transportation Services.
+  const CITY_AGENCY_KEYWORDS = [
+    "toronto parking authority",
+    "toronto transit commission",
+    "toronto community housing",
+    "toronto public library",
+  ];
+
+  // Owner values the source data uses as its own generic placeholder —
+  // not an actual name, so prefer the more specific Jurisdiction/
+  // Management value instead when this is what Owner says.
+  const GENERIC_OWNER_LABELS = new Set([
+    "third party",
+    "third party organization",
+    "not-for-profit organization",
+  ]);
+
+  function buildOwnershipInfo(layer, properties) {
+    const hint = resolvePopupConfig(layer).ownerHint;
+    if (!hint) return null;
+    const props = properties || {};
+
+    if (hint.mode === "fixed") {
+      return { type: hint.type, agency: hint.agency || null };
+    }
+
+    if (hint.mode === "field") {
+      const agency = props[hint.agencyField];
+      if (isBlankValue(agency)) return null;
+      return { type: hint.type, agency: String(agency).trim() };
+    }
+
+    if (hint.mode === "fields") {
+      const ownerRaw = props[hint.ownerField];
+      const governingRaw =
+        (!isBlankValue(props[hint.jurisdictionField]) &&
+          props[hint.jurisdictionField]) ||
+        (!isBlankValue(props[hint.managementField]) &&
+          props[hint.managementField]) ||
+        ownerRaw;
+      if (isBlankValue(governingRaw)) return null;
+
+      const ownerTrim = isBlankValue(ownerRaw) ? "" : String(ownerRaw).trim();
+      const isCityOwned =
+        !ownerTrim || ownerTrim.toLowerCase() === "city of toronto";
+      const governingName = String(governingRaw).trim();
+
+      if (!isCityOwned) {
+        const displayName = GENERIC_OWNER_LABELS.has(ownerTrim.toLowerCase())
+          ? governingName
+          : ownerTrim;
+        // A named school board isn't a surprise/"verify this" case the
+        // way Metrolinx-on-Eglinton is — it's a well-identified owner
+        // with its own known process, same as the document's owner_type
+        // taxonomy treats it separately from generic external land.
+        const isSchoolBoard = /school board/i.test(displayName);
+        return {
+          type: isSchoolBoard ? "school_board" : "external",
+          agency: displayName,
+        };
+      }
+
+      const isAgency = CITY_AGENCY_KEYWORDS.some((k) =>
+        governingName.toLowerCase().includes(k)
+      );
+      return {
+        type: isAgency ? "city_agency" : "city",
+        agency: governingName,
+      };
+    }
+
+    return null;
+  }
+
+  function buildOwnershipBlock(layer, properties) {
+    const info = buildOwnershipInfo(layer, properties);
+    if (!info) return "";
+    const meta = OWNER_TYPE_META[info.type];
+    if (!meta) return "";
+    const agencyLine = info.agency
+      ? `<strong>${escapeHtml(toTitleCase(info.agency))}.</strong> `
+      : "";
+    return `
+      <div class="feature-popup__owner">
+        <span class="feature-popup__owner-tag ${
+          meta.tagClass
+        }">${escapeHtml(meta.tagLabel)}</span>
+        <p class="feature-popup__owner-body">${agencyLine}${escapeHtml(
+      meta.note
+    )}</p>
+      </div>
+    `;
   }
 
   // Most source fields are ALL CAPS; a handful (screen names, station
@@ -1623,6 +1760,7 @@
               )} ↗</a>`
             : ""
         }
+        ${buildOwnershipBlock(layer, props)}
         <button type="button" class="btn btn--small feature-feedback-btn">Leave feedback about this</button>
         ${
           rawRows.length

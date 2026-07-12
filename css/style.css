@@ -197,6 +197,72 @@ main {
   background: rgba(0, 0, 0, 0.5);
 }
 
+/* Feedback side panel — used instead of .app-dialog once a thread already
+   has 1+ comments, so the list gets its own scroll region and the compose
+   form stays reachable instead of both competing for one fixed-height box.
+   Map stays visible/interactive behind it (no backdrop), so it's opened
+   and closed via its own button/Escape rather than dialog semantics. */
+
+.side-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(420px, 100vw);
+  background: var(--surface-1);
+  color: var(--text-primary);
+  box-shadow: -8px 0 28px rgba(11, 11, 11, 0.28);
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  padding: 1.1rem 1.25rem 0;
+  transform: translateX(100%);
+  visibility: hidden;
+  transition: transform 0.22s ease, visibility 0.22s;
+}
+
+.side-panel.is-open {
+  transform: translateX(0);
+  visibility: visible;
+}
+
+.side-panel__close {
+  align-self: flex-end;
+  margin: -0.3rem -0.3rem 0.2rem 0;
+}
+
+.side-panel #map-comment-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding-bottom: 1.1rem;
+}
+
+.side-panel #map-comment-thread-list {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  margin-bottom: 0.75rem;
+}
+
+.side-panel #map-comment-compose {
+  flex-shrink: 0;
+  border-top: 1px solid var(--gridline);
+  padding-top: 0.75rem;
+}
+
+body.feedback-loading,
+body.feedback-loading * {
+  cursor: progress;
+}
+
+@media (max-width: 480px) {
+  .side-panel {
+    width: 100vw;
+  }
+}
+
 .dialog-close-form {
   display: flex;
   justify-content: flex-end;

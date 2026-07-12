@@ -455,6 +455,8 @@
   loadTopicSummary();
 
   const mapCommentDialog = document.getElementById("map-comment-dialog");
+  const mapCommentPanel = document.getElementById("map-comment-panel");
+  const mapCommentContent = document.getElementById("map-comment-content");
   const mapCommentTopicSelect = document.getElementById("map-comment-topic");
   (config.themes || []).forEach((topic) => {
     const opt = document.createElement("option");
@@ -463,43 +465,84 @@
     mapCommentTopicSelect.appendChild(opt);
   });
 
+  // Short/new threads open in the centered dialog, unchanged. A thread
+  // that already has 1+ comments opens in the slide-out panel instead, so
+  // the list gets its own scroll region and the compose form stays
+  // reachable instead of both competing for one fixed-height box. Which
+  // one to use can only be known after checking for existing comments —
+  // feedback can start from an existing comment marker, from a brand new
+  // map click, or from clicking a City open-data feature that may or may
+  // not already have feedback on it — so the check runs every time.
+  let panelFocusReturnTo = null;
+
+  function closeMapCommentPanel() {
+    mapCommentPanel.classList.remove("is-open");
+    if (panelFocusReturnTo && typeof panelFocusReturnTo.focus === "function") {
+      panelFocusReturnTo.focus();
+    }
+    panelFocusReturnTo = null;
+  }
+  document
+    .getElementById("map-comment-panel-close")
+    .addEventListener("click", closeMapCommentPanel);
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && mapCommentPanel.classList.contains("is-open")) {
+      closeMapCommentPanel();
+    }
+  });
+
   async function openMapCommentDialog({ lat, lng, address, presetTopic }) {
     pendingCommentLocation = { lat, lng, address: address || null };
     if (presetTopic) mapCommentTopicSelect.value = presetTopic;
-    const addressEl = document.getElementById("map-comment-address");
     document.getElementById("map-comment-text").value = "";
     const statusEl = document.getElementById("map-comment-status");
     statusEl.textContent = "";
     statusEl.className = "status-msg";
-    mapCommentDialog.showModal();
 
-    if (address) {
-      addressEl.textContent = address;
-      loadCommentThread(address, lat, lng);
-      return;
+    document.body.classList.add("feedback-loading");
+
+    let resolvedAddress = address || null;
+    if (!resolvedAddress) {
+      resolvedAddress = await reverseGeocode(lat, lng);
+      // The lookup may finish after the dialog was reopened for somewhere
+      // else — only apply it if still relevant.
+      if (pendingCommentLocation && pendingCommentLocation.lat === lat) {
+        pendingCommentLocation.address = resolvedAddress;
+      }
     }
-    addressEl.textContent = "Looking up address…";
-    document.getElementById(
-      "map-comment-thread-list"
-    ).innerHTML = `<li class="empty-msg">Loading…</li>`;
-    const resolved = await reverseGeocode(lat, lng);
-    // The dialog may have been closed (or reopened for somewhere else)
-    // while the lookup was in flight — only apply it if still relevant.
-    if (pendingCommentLocation && pendingCommentLocation.lat === lat) {
-      pendingCommentLocation.address = resolved;
+
+    let comments = [];
+    let votesByComment = new Map();
+    let error = null;
+    if (db) {
+      const result = await fetchCommentThread(resolvedAddress, lat, lng);
+      comments = result.comments || [];
+      votesByComment = result.votesByComment || new Map();
+      error = result.error || null;
     }
-    addressEl.textContent = resolved || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-    loadCommentThread(resolved, lat, lng);
+
+    document.body.classList.remove("feedback-loading");
+
+    document.getElementById("map-comment-address").textContent =
+      resolvedAddress || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    renderCommentThread(comments, votesByComment, resolvedAddress, lat, lng, error);
+    mapCommentContent.hidden = false;
+
+    if (comments.length >= 1) {
+      if (mapCommentDialog.open) mapCommentDialog.close();
+      mapCommentPanel.appendChild(mapCommentContent);
+      panelFocusReturnTo = document.activeElement;
+      mapCommentPanel.classList.add("is-open");
+      document.getElementById("map-comment-panel-close").focus();
+    } else {
+      mapCommentPanel.classList.remove("is-open");
+      mapCommentDialog.appendChild(mapCommentContent);
+      if (!mapCommentDialog.open) mapCommentDialog.showModal();
+    }
   }
 
-  async function loadCommentThread(address, lat, lng) {
-    const listEl = document.getElementById("map-comment-thread-list");
-    if (!db) {
-      listEl.innerHTML = "";
-      return;
-    }
-    listEl.innerHTML = `<li class="empty-msg">Loading…</li>`;
-
+  async function fetchCommentThread(address, lat, lng) {
     let query = db
       .from("map_comments")
       .select("id, topic, comment, created_at");
@@ -510,16 +553,8 @@
       ascending: false,
     });
 
-    if (error) {
-      listEl.innerHTML = `<li class="empty-msg">Couldn't load comments: ${escapeHtml(
-        error.message
-      )}</li>`;
-      return;
-    }
-    if (!comments.length) {
-      listEl.innerHTML = `<li class="empty-msg">No comments yet at this location — be the first!</li>`;
-      return;
-    }
+    if (error) return { comments: null, votesByComment: null, error };
+    if (!comments.length) return { comments: [], votesByComment: new Map() };
 
     const commentIds = comments.map((c) => c.id);
     const { data: votes } = await db
@@ -534,6 +569,22 @@
       }
       votesByComment.get(v.comment_id).push(v);
     });
+
+    return { comments, votesByComment };
+  }
+
+  function renderCommentThread(comments, votesByComment, address, lat, lng, error) {
+    const listEl = document.getElementById("map-comment-thread-list");
+    if (error) {
+      listEl.innerHTML = `<li class="empty-msg">Couldn't load comments: ${escapeHtml(
+        error.message
+      )}</li>`;
+      return;
+    }
+    if (!comments.length) {
+      listEl.innerHTML = `<li class="empty-msg">No comments yet at this location — be the first!</li>`;
+      return;
+    }
 
     listEl.innerHTML = "";
     comments.forEach((c) => {
@@ -578,6 +629,23 @@
     });
   }
 
+  async function refreshCommentThread(address, lat, lng) {
+    if (!db) return;
+    const { comments, votesByComment, error } = await fetchCommentThread(
+      address,
+      lat,
+      lng
+    );
+    renderCommentThread(
+      comments || [],
+      votesByComment || new Map(),
+      address,
+      lat,
+      lng,
+      error
+    );
+  }
+
   async function toggleCommentVote(commentId, direction, myVote, address, lat, lng) {
     if (!db) return;
     if (myVote) {
@@ -592,7 +660,7 @@
         .from("map_comment_votes")
         .insert({ comment_id: commentId, voter_token: voterToken, direction });
     }
-    loadCommentThread(address, lat, lng);
+    refreshCommentThread(address, lat, lng);
   }
 
   map.on("click", (e) => {
@@ -649,7 +717,7 @@
       ensureLocationMarker(lat, lng, address, row.topic);
       refreshContributionCounter();
       loadTopicSummary();
-      loadCommentThread(address, lat, lng);
+      refreshCommentThread(address, lat, lng);
     });
 
   const markersBySiteId = new Map();

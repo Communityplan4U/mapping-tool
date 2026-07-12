@@ -313,7 +313,17 @@
       "theme": "community-services",
       "shape": "circle",
       "file": "data/raw/parks-and-recreation-facilities.geojson",
-      "_source": "City of Toronto Open Data Portal, Parks and Recreation Facilities (EPSG:4326). Re-download and replace data/raw/parks-and-recreation-facilities.geojson to refresh, then re-run scripts/fetch-open-data.js."
+      "excludeFilter": { "TYPE": "Park" },
+      "_source": "City of Toronto Open Data Portal, Parks and Recreation Facilities (EPSG:4326), excluding parcels typed \"Park\" (shown instead by parks-rec-parks below, under Parks & Public Realm). Re-download and replace data/raw/parks-and-recreation-facilities.geojson to refresh, then re-run scripts/fetch-open-data.js."
+    },
+    {
+      "id": "parks-rec-parks",
+      "label": "Parks & Recreation Facilities (Parks)",
+      "theme": "parks-public-realm",
+      "shape": "circle",
+      "file": "data/raw/parks-and-recreation-facilities.geojson",
+      "filter": { "TYPE": "Park" },
+      "_source": "Same source file as parks-rec, filtered down to parcels typed \"Park\" — grouped under Parks & Public Realm instead of Public Facilities."
     },
     {
       "id": "major-transit-station-areas",

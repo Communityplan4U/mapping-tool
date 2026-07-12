@@ -41,9 +41,28 @@
             "Police Station/Facility"
           ]
         },
-        { "Building Description": "COMMERCIAL BLDG FOR TPA" }
+        { "Building Description": "COMMERCIAL BLDG FOR TPA" },
+        {
+          "Building Type": [
+            "Yard Storage Building",
+            "Yard Garage",
+            "Garage & Office & Warehouse",
+            "Yard Service Building",
+            "Yard Workshop",
+            "Portable Office/Storage",
+            "Salt Dome/Storage",
+            "Transfer Station",
+            "Weigh Scale Building",
+            "Workshop & Office & Garage"
+          ]
+        },
+        { "Building Type": "Civic Centre" },
+        { "Building Description": "LEASED SPACE FOR CONSTITUENCY OFFICE" },
+        { "Building Type": ["Community Recreation Centre", "Community Centre"] },
+        { "Building Description": "YORK CIVIC CENTRE - SILVERTHORN DAY CARE CENTRE" },
+        { "Building Type": "Library" }
       ],
-      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Building (EPSG:4326), unfiltered except the buildings excluded above — each duplicates or belongs under a different category, and is shown instead by one of the real-estate-* layers below grouped under that category (see each layer's own _source note for which)."
+      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Building (EPSG:4326), unfiltered except the buildings excluded above — each either duplicates a location already shown by another layer (Libraries — see the Library Branches layer) or belongs under a different category and is shown instead by one of the real-estate-* layers below (see each layer's own _source note for which)."
     },
     {
       "id": "real-estate-parking-buildings",
@@ -115,14 +134,50 @@
         "data/raw/property-boundaries.geojson",
         "data/raw/land-asset-inventory.geojson"
       ],
+      "filter": [
+        {
+          "Building Type": [
+            "Swimming Pool - Indoor",
+            "Fire Hall/Facility",
+            "Police Station/Facility",
+            "Civic Centre",
+            "Community Recreation Centre",
+            "Community Centre"
+          ]
+        },
+        { "Building Description": "LEASED SPACE FOR CONSTITUENCY OFFICE" },
+        { "Building Description": "YORK CIVIC CENTRE - SILVERTHORN DAY CARE CENTRE" }
+      ],
+      "excludeFilter": {
+        "Building Description": "FAIRBANK MEMORIAL PARK - COMMUNITY CENTRE"
+      },
+      "_source": "Same source file as real-estate-buildings, filtered down to the Vaughan Road Academy indoor pool, fire halls, police stations, York Civic Centre, the constituency office, community/recreation centres, and the York Civic Centre - Silverthorn Day Care Centre — grouped under Public Facilities instead of Governance. Excludes the Fairbank Memorial Park Community Centre specifically, since its \"Community Recreation Centre\" type would otherwise also match here — it's already shown by real-estate-park-buildings under Parks & Public Realm, since it sits within Fairbank Memorial Park."
+    },
+    {
+      "id": "real-estate-works-buildings",
+      "label": "Real Estate Asset Inventory (Public Works Buildings)",
+      "theme": "transportation",
+      "shape": "triangle",
+      "file": "data/raw/building-asset-inventory.geojson",
+      "footprintSource": [
+        "data/raw/property-boundaries.geojson",
+        "data/raw/land-asset-inventory.geojson"
+      ],
       "filter": {
         "Building Type": [
-          "Swimming Pool - Indoor",
-          "Fire Hall/Facility",
-          "Police Station/Facility"
+          "Yard Storage Building",
+          "Yard Garage",
+          "Garage & Office & Warehouse",
+          "Yard Service Building",
+          "Yard Workshop",
+          "Portable Office/Storage",
+          "Salt Dome/Storage",
+          "Transfer Station",
+          "Weigh Scale Building",
+          "Workshop & Office & Garage"
         ]
       },
-      "_source": "Same source file as real-estate-buildings, filtered down to the Vaughan Road Academy indoor pool, fire halls, and police stations — grouped under Public Facilities instead of Governance."
+      "_source": "Same source file as real-estate-buildings, filtered down to the Castlefield Yard / Ingram Yard operations buildings and the fire warehouse & mechanical building — grouped under Transportation instead of Governance."
     },
     {
       "id": "real-estate-park-buildings",
@@ -163,9 +218,19 @@
         { "Property Type": "Residential" },
         { "Property Type": "Walkway" },
         { "Property Type": ["EMS/Fire", "Police Facility"] },
-        { "Property Description": { "contains": "EGLINTON - SCOTT METER HOUSE" } }
+        { "Property Description": { "contains": "EGLINTON - SCOTT METER HOUSE" } },
+        { "Property Type": ["Service Yard", "Waste Management"] },
+        { "Property Description": { "contains": "AMENDING AGREEMENT WITH METROLINX" } },
+        { "Property Type": "Commercial/Retail" },
+        {
+          "Property Description": [
+            "NIA CENTRE FOR ARTS & UNIVERSITY HEALTH NETWORK",
+            "YORK CIVIC CENTRE & CORONATION PARK"
+          ]
+        },
+        { "Property Type": "Library Facility" }
       ],
-      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Land (EPSG:4326), excluding parcels covered by the real-estate-* layers below, each grouped under whichever category it actually belongs to instead of Governance (see each layer's own _source note for which). Re-download and replace data/raw/land-asset-inventory.geojson to refresh, then re-run scripts/fetch-open-data.js."
+      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Land (EPSG:4326), excluding parcels covered by the real-estate-* layers below (each grouped under whichever category it actually belongs to instead of Governance — see each layer's own _source note for which), plus parcels dropped outright because they duplicate a location already shown elsewhere (Libraries — see the Library Branches layer; the Nia Centre for the Arts land record — see the real-estate-commercial-buildings layer for its building; and the York Civic Centre & Coronation Park combined parcel — see the real-estate-public-facility-buildings layer for the Civic Centre building and the Green Spaces layer for Coronation Park). Re-download and replace data/raw/land-asset-inventory.geojson to refresh, then re-run scripts/fetch-open-data.js."
     },
     {
       "id": "real-estate-park-land",
@@ -189,8 +254,11 @@
       "label": "Real Estate Asset Inventory (Railway Land)",
       "theme": "parks-public-realm",
       "file": "data/raw/land-asset-inventory.geojson",
-      "filter": { "Property Type": "Railway Land" },
-      "_source": "Same source file as real-estate-land, filtered down to parcels typed \"Railway Land\" (Metrolinx easements) — grouped under Parks & Public Realm instead of Governance."
+      "filter": [
+        { "Property Type": "Railway Land" },
+        { "Property Description": { "contains": "AMENDING AGREEMENT WITH METROLINX" } }
+      ],
+      "_source": "Same source file as real-estate-land, filtered down to parcels typed \"Railway Land\" (Metrolinx easements) plus the Metrolinx amending agreement parcel — grouped under Parks & Public Realm instead of Governance."
     },
     {
       "id": "real-estate-school-land",
@@ -208,9 +276,10 @@
       "file": "data/raw/land-asset-inventory.geojson",
       "filter": [
         { "Property Type": ["EMS/Fire", "Police Facility"] },
-        { "Property Description": { "contains": "EGLINTON - SCOTT METER HOUSE" } }
+        { "Property Description": { "contains": "EGLINTON - SCOTT METER HOUSE" } },
+        { "Property Type": "Commercial/Retail", "Property Description": "VACANT LAND" }
       ],
-      "_source": "Same source file as real-estate-land, filtered down to parcels typed \"EMS/Fire\" or \"Police Facility\", plus the Eglinton - Scott Meter House — grouped under Public Facilities instead of Governance."
+      "_source": "Same source file as real-estate-land, filtered down to parcels typed \"EMS/Fire\" or \"Police Facility\", the Eglinton - Scott Meter House, and the \"Commercial/Retail\"-typed vacant land at 2475 Eglinton Ave W (matched on both type and description together, since another \"Commercial/Retail\" parcel — a future carpark — belongs under Transportation instead) — grouped under Public Facilities instead of Governance."
     },
     {
       "id": "real-estate-housing-land",
@@ -219,6 +288,14 @@
       "file": "data/raw/land-asset-inventory.geojson",
       "filter": { "Property Type": ["Shelter/Housing", "Residential"] },
       "_source": "Same source file as real-estate-land, filtered down to parcels typed \"Shelter/Housing\" (Beech Hall Housing Co-op) or \"Residential\" — grouped under Housing instead of Governance."
+    },
+    {
+      "id": "real-estate-works-land",
+      "label": "Real Estate Asset Inventory (Public Works Land)",
+      "theme": "transportation",
+      "file": "data/raw/land-asset-inventory.geojson",
+      "filter": { "Property Type": ["Service Yard", "Waste Management"] },
+      "_source": "Same source file as real-estate-land, filtered down to parcels typed \"Service Yard\" or \"Waste Management\" (Castlefield Yard, Ingram Yard, Ingram Transfer Station) — grouped under Transportation instead of Governance."
     },
     {
       "id": "real-estate-parking-land",

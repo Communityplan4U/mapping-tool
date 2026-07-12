@@ -311,12 +311,31 @@ narrow the box features are kept within, then re-run the script.
 category share one color, a category with more than one point layer needs
 a second visual channel so its layers don't look identical on the map.
 Set `"shape"` on a point layer in `data/sources.json` to `"circle"`
-(default), `"diamond"`, or `"triangle"` — e.g. the `community-services`
-category currently has three point layers (Schools, Libraries, Long-Term
-Care), each given a different shape. A category with only one point layer
-doesn't need `"shape"` set at all. Polygon/line layers can similarly be
-set `"dashed": true` to render a dashed outline if two polygon layers ever
-land in the same category — not currently used by any layer.
+(default), `"diamond"`, or `"triangle"` — e.g. the `parks-public-realm`
+category currently has two point layers (Parks & Recreation Facilities,
+Real Estate Asset Inventory (Park Buildings)), each given a different
+shape. A category with only one point layer doesn't need `"shape"` set at
+all. Polygon/line layers can similarly be set `"dashed": true` to render a
+dashed outline when two polygon layers land in the same category — e.g.
+Real Estate Asset Inventory (Park Land) is dashed to stay distinct from
+Green Spaces' solid outline.
+
+**Drawing the actual property shape instead of a point:** most open data
+locations are just a single lat/lng (a School's or Library's address
+point, say) with no building outline of their own, so by default they
+render as a small circle/diamond/triangle marker. Set `"footprintSource"`
+on a point layer to the path of a polygon GeoJSON file (typically
+`data/raw/land-asset-inventory.geojson`, since the Real Estate Asset
+Inventory already has real property boundary polygons for City-owned
+land) and `scripts/fetch-open-data.js` will, for every point in that
+layer, look for a polygon in the footprint source it falls inside and use
+that polygon's outline instead of a marker — feature properties (popup
+content, "Leave feedback about this", etc.) are otherwise unchanged.
+Points with no containing polygon (privately-owned locations, e.g. most
+Places of Worship) are left as points and keep rendering as a marker, so
+this is safe to add to any point layer speculatively — check the "X
+matched to a property footprint" count the script prints per layer to see
+how many actually got one.
 
 **Adding a layer from a Shapefile instead of GeoJSON:** not every City of
 Toronto dataset has a ready-made "-4326.geojson" export — some are only

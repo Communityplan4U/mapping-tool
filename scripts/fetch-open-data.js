@@ -106,6 +106,82 @@ function matchesExcludeFilter(properties, excludeFilter) {
   return matchesAnyFilterGroup(properties, excludeFilter);
 }
 
+// Even-odd ray-casting test for a single linear ring (closed [lng,lat] loop).
+function pointInRing(lng, lat, ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i];
+    const [xj, yj] = ring[j];
+    const crosses =
+      yi > lat !== yj > lat &&
+      lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi;
+    if (crosses) inside = !inside;
+  }
+  return inside;
+}
+
+// A point is inside a Polygon/MultiPolygon if it's inside some ring[0]
+// (outer boundary) and not inside any of that same polygon's later rings
+// (holes).
+function pointInPolygonGeometry(lng, lat, geometry) {
+  const polygons =
+    geometry.type === "MultiPolygon"
+      ? geometry.coordinates
+      : [geometry.coordinates];
+  for (const rings of polygons) {
+    if (!rings.length || !pointInRing(lng, lat, rings[0])) continue;
+    const inHole = rings
+      .slice(1)
+      .some((hole) => pointInRing(lng, lat, hole));
+    if (!inHole) return true;
+  }
+  return false;
+}
+
+function pointCoordOf(geometry) {
+  if (geometry.type === "Point") return geometry.coordinates;
+  if (geometry.type === "MultiPoint") return geometry.coordinates[0] || null;
+  return null;
+}
+
+const footprintCache = new Map(); // source path -> bbox-trimmed polygon geometries
+
+function loadFootprintPolygons(sourcePath, bbox) {
+  if (footprintCache.has(sourcePath)) return footprintCache.get(sourcePath);
+  const features = normalizeToFeatures(readLocalJSON(sourcePath));
+  const polygons = [];
+  for (const feature of features) {
+    const geometry = feature.geometry;
+    if (!geometry) continue;
+    if (geometry.type !== "Polygon" && geometry.type !== "MultiPolygon")
+      continue;
+    if (bbox && !bboxesOverlap(geometryBBox(geometry), bbox)) continue;
+    polygons.push(geometry);
+  }
+  footprintCache.set(sourcePath, polygons);
+  return polygons;
+}
+
+// Replaces each point feature's geometry with the footprint polygon it
+// falls inside, when one is found — leaves features with no match as
+// points, so the app falls back to drawing a marker for those.
+function applyFootprints(kept, footprintSource, bbox) {
+  const polygons = loadFootprintPolygons(footprintSource, bbox);
+  let matched = 0;
+  for (const feature of kept) {
+    const coord = pointCoordOf(feature.geometry);
+    if (!coord) continue;
+    const footprint = polygons.find((geometry) =>
+      pointInPolygonGeometry(coord[0], coord[1], geometry)
+    );
+    if (footprint) {
+      feature.geometry = footprint;
+      matched++;
+    }
+  }
+  return matched;
+}
+
 async function processLayer(layer, bbox) {
   let raw;
   if (layer.file) {
@@ -143,6 +219,11 @@ async function processLayer(layer, bbox) {
     });
   }
 
+  let footprintsMatched = 0;
+  if (layer.footprintSource) {
+    footprintsMatched = applyFootprints(kept, layer.footprintSource, bbox);
+  }
+
   const geojson = { type: "FeatureCollection", features: kept };
   const outPath = path.join(OUT_DIR, `${layer.id}.geojson`);
   fs.writeFileSync(outPath, JSON.stringify(geojson));
@@ -150,6 +231,9 @@ async function processLayer(layer, bbox) {
     `  kept ${kept.length} of ${features.length} features` +
       (skippedNoGeometry ? ` (${skippedNoGeometry} had no geometry)` : "") +
       (skippedFilter ? ` (${skippedFilter} excluded by "filter")` : "") +
+      (layer.footprintSource
+        ? ` (${footprintsMatched} matched to a property footprint)`
+        : "") +
       ` -> data/${layer.id}.geojson`
   );
   if (kept.length === 0 && features.length > 0) {

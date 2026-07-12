@@ -12,6 +12,7 @@
       "label": "Real Estate Asset Inventory (Buildings)",
       "theme": "governance",
       "file": "data/raw/building-asset-inventory.geojson",
+      "footprintSource": "data/raw/land-asset-inventory.geojson",
       "excludeFilter": [
         {
           "Building Description": [
@@ -34,6 +35,7 @@
       "label": "Real Estate Asset Inventory (Parking Buildings)",
       "theme": "transportation",
       "file": "data/raw/building-asset-inventory.geojson",
+      "footprintSource": "data/raw/land-asset-inventory.geojson",
       "filter": { "Building Description": { "contains": "CARPARK" } },
       "_source": "Same source file as real-estate-buildings, filtered down to buildings whose description contains \"CARPARK\" — grouped under Transportation instead of Governance."
     },
@@ -43,6 +45,7 @@
       "theme": "parks-public-realm",
       "shape": "diamond",
       "file": "data/raw/building-asset-inventory.geojson",
+      "footprintSource": "data/raw/land-asset-inventory.geojson",
       "filter": {
         "Building Description": [
           "FAIRBANK MEMORIAL PARK - OUTDOOR POOL SERVICE BLDG",
@@ -105,6 +108,7 @@
       "theme": "housing",
       "shape": "circle",
       "file": "data/raw/community-housing.geojson",
+      "footprintSource": "data/raw/land-asset-inventory.geojson",
       "_source": "City of Toronto Open Data Portal, Toronto Community Housing Data (EPSG:4326). Re-download and replace data/raw/community-housing.geojson to refresh, then re-run scripts/fetch-open-data.js."
     },
     {
@@ -113,6 +117,7 @@
       "theme": "housing",
       "shape": "diamond",
       "file": "data/raw/supportive-housing.geojson",
+      "footprintSource": "data/raw/land-asset-inventory.geojson",
       "_source": "City of Toronto Open Data Portal, Supportive Housing (already WGS84 per its .prj — no reprojection needed). Source was a shapefile (.shp/.shx/.dbf/.prj); converted straight to GeoJSON with pyshp. To refresh: re-download the shapefile (all 4 parts) and re-run the same conversion."
     },
     {
@@ -120,6 +125,7 @@
       "label": "Places of Worship",
       "theme": "commercial-nonprofit",
       "file": "data/raw/places-of-worship.geojson",
+      "footprintSource": "data/raw/land-asset-inventory.geojson",
       "_source": "City of Toronto Open Data Portal, Places of Worship (EPSG:4326). Re-download and replace data/raw/places-of-worship.geojson to refresh, then re-run scripts/fetch-open-data.js."
     },
     {
@@ -150,6 +156,7 @@
       "theme": "community-services",
       "shape": "circle",
       "file": "data/raw/school-locations.geojson",
+      "footprintSource": "data/raw/land-asset-inventory.geojson",
       "_source": "City of Toronto Open Data Portal, School Locations - all types (EPSG:4326). Re-download and replace data/raw/school-locations.geojson to refresh, then re-run scripts/fetch-open-data.js."
     },
     {
@@ -158,6 +165,7 @@
       "theme": "community-services",
       "shape": "diamond",
       "file": "data/raw/library-branches.geojson",
+      "footprintSource": "data/raw/land-asset-inventory.geojson",
       "_source": "Toronto Public Library Open Data, Branch General Information (EPSG:4326). Re-download and replace data/raw/library-branches.geojson to refresh, then re-run scripts/fetch-open-data.js."
     }
   ]

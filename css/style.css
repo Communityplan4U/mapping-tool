@@ -39,6 +39,14 @@
   box-sizing: border-box;
 }
 
+/* Author display rules (e.g. .field { display: block }) silently override
+   the browser's built-in [hidden] { display: none }, so JS toggling
+   el.hidden looks like it worked while the element stays visible. This
+   guard makes the hidden attribute always win. */
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -242,12 +250,18 @@ main {
 .side-panel #map-comment-thread-list {
   flex: 1;
   overflow-y: auto;
-  min-height: 0;
+  /* Keep some of the thread visible even when the compose form below is
+     taller than the leftover space — without this, a tall form crushes
+     the list to zero height and the panel looks like an empty thread. */
+  min-height: 6rem;
   margin-bottom: 0.75rem;
 }
 
 .side-panel #map-comment-compose {
-  flex-shrink: 0;
+  /* Let the form give up height (scrolling internally) rather than
+     crushing the thread list above it — see min-height note above. */
+  min-height: 0;
+  overflow-y: auto;
   border-top: 1px solid var(--gridline);
   padding-top: 0.75rem;
 }

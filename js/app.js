@@ -491,7 +491,7 @@
     const [commentsResult, submissionsResult] = await Promise.all([
       db
         .from("map_comments")
-        .select("id, topic, created_at")
+        .select("id, topic, lat, lng, address, created_at")
         .order("created_at", { ascending: false })
         .limit(ACTIVITY_FEED_FETCH_LIMIT),
       db
@@ -505,6 +505,9 @@
       type: "comment",
       created_at: c.created_at,
       topic: topicsById.get(c.topic) || null,
+      lat: c.lat,
+      lng: c.lng,
+      address: c.address,
     }));
     const submissions = (submissionsResult.data || []).map((s) => ({
       type: "submission",
@@ -542,10 +545,18 @@
         : `A ranking was submitted for ${
             item.site ? item.site.name : "a site"
           }`;
+      // Comments always have a location. Submissions only open something
+      // if their site is still in config.sites — an old submission for a
+      // since-removed site has nothing to jump to.
+      const clickable = isComment || !!item.site;
 
       const li = document.createElement("li");
-      li.className = "activity-item";
-      li.innerHTML = `
+      const row = document.createElement(clickable ? "button" : "div");
+      row.className = clickable
+        ? "activity-item activity-item--clickable"
+        : "activity-item";
+      if (clickable) row.type = "button";
+      row.innerHTML = `
         <span class="activity-item__dot" style="background:${escapeHtml(
           color || "var(--text-muted)"
         )}"></span>
@@ -554,6 +565,22 @@
           item.created_at
         )}</span>
       `;
+      if (clickable) {
+        row.addEventListener("click", () => {
+          if (isComment) {
+            openMapCommentDialog({
+              lat: item.lat,
+              lng: item.lng,
+              address: item.address,
+            });
+          } else {
+            openSiteDialog(item.site);
+            showTab("ideas");
+            markersBySiteId.get(item.site.id)?.openTooltip();
+          }
+        });
+      }
+      li.appendChild(row);
       listEl.appendChild(li);
     });
 

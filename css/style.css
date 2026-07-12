@@ -519,6 +519,24 @@ body.feedback-loading * {
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  padding: 0.2rem 0.3rem;
+  margin: 0 -0.3rem;
+  color: inherit;
+}
+
+.activity-item--clickable {
+  cursor: pointer;
+}
+
+.activity-item--clickable:hover,
+.activity-item--clickable:focus-visible {
+  background: var(--page-plane);
 }
 
 .activity-item__dot {

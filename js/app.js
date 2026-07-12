@@ -99,6 +99,37 @@
     )
     .addTo(map);
 
+  // Study-area boundary — always visible for orientation (which of these
+  // shapes are actually "in scope" for this tool), not a feedback layer,
+  // so it's added directly rather than through the toggleable theme/layer
+  // system. interactive: false means Leaflet never attaches pointer
+  // events to it at all: no popup, no click-swallowing, so clicking
+  // inside the boundary (including to place a feedback marker) reaches
+  // the map and whatever's actually underneath it, same as clicking
+  // outside the boundary would.
+  fetch("data/little-jamaica-boundary.geojson")
+    .then((res) => (res.ok ? res.json() : null))
+    .then((geojson) => {
+      if (!geojson) return;
+      // Matches --accent in css/style.css (light mode) — Leaflet's SVG
+      // renderer sets this as a presentation attribute, not a CSS
+      // property, so a var() reference wouldn't reliably resolve here.
+      L.geoJSON(geojson, {
+        interactive: false,
+        style: () => ({
+          color: "#c24e1d",
+          weight: 2,
+          dashArray: "6 4",
+          fill: true,
+          fillOpacity: 0.04,
+        }),
+      }).addTo(map);
+    })
+    .catch(() => {
+      // Boundary is a nice-to-have overlay — if it's missing or fails to
+      // load, the map still works fine without it.
+    });
+
   // Address search (OpenStreetMap Nominatim geocoding, no API key needed).
   // Guarded in case the CDN script fails to load — the map still works
   // without it.

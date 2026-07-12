@@ -428,7 +428,8 @@ js/app.js                              App logic: map, ranking UI, Supabase read
 js/admin.js                            Reporting view logic: Supabase reads, tables, CSV export
 supabase/schema.sql                    Database tables + row-level security policies
 data/sources.json                      Open data layer list (with theme) + neighbourhood bounding box (edit this)
-data/*.geojson                         Generated layer shapes (do not hand-edit — see below)
+data/little-jamaica-boundary.geojson   Study-area outline, always shown, non-interactive (hand-provided, not generated)
+data/*.geojson (all others)            Generated layer shapes (do not hand-edit — see below)
 scripts/fetch-open-data.js             Downloads + trims open data sources into data/*.geojson
 .github/workflows/update-open-data.yml Runs that script on a schedule and commits changes
 ```

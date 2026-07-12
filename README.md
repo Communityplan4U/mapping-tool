@@ -324,18 +324,42 @@ Green Spaces' solid outline.
 locations are just a single lat/lng (a School's or Library's address
 point, say) with no building outline of their own, so by default they
 render as a small circle/diamond/triangle marker. Set `"footprintSource"`
-on a point layer to the path of a polygon GeoJSON file (typically
-`data/raw/land-asset-inventory.geojson`, since the Real Estate Asset
-Inventory already has real property boundary polygons for City-owned
-land) and `scripts/fetch-open-data.js` will, for every point in that
-layer, look for a polygon in the footprint source it falls inside and use
-that polygon's outline instead of a marker — feature properties (popup
+on a point layer to the path of a polygon GeoJSON file — or an array of
+paths, tried in order, so a broader source can be backed up by a narrower
+one — and `scripts/fetch-open-data.js` will, for every point in that
+layer, look for a polygon in the footprint source(s) it falls inside and
+use that polygon's outline instead of a marker. Feature properties (popup
 content, "Leave feedback about this", etc.) are otherwise unchanged.
-Points with no containing polygon (privately-owned locations, e.g. most
-Places of Worship) are left as points and keep rendering as a marker, so
-this is safe to add to any point layer speculatively — check the "X
-matched to a property footprint" count the script prints per layer to see
-how many actually got one.
+Points with no containing polygon are left as points and keep rendering
+as a marker, so this is safe to add to any point layer speculatively —
+check the "X matched to a property footprint" count the script prints per
+layer to see how many actually got one.
+
+Every point layer currently uses
+`["data/raw/property-boundaries.geojson", "data/raw/land-asset-inventory.geojson"]`
+— City of Toronto's **Property Boundaries** dataset first (every parcel in
+the city, public or private, so it covers privately-owned locations like
+Places of Worship and Supportive Housing too), falling back to the Real
+Estate Asset Inventory - Land for anything Property Boundaries doesn't
+catch. `data/raw/property-boundaries.geojson` is a hand-trimmed extract
+(not the full citywide file, which is too large to commit) — see
+"Refreshing `property-boundaries.geojson`" below for how to regenerate it.
+
+**Refreshing `property-boundaries.geojson`:** this file needs to stay
+small enough to commit, so it can't be fetched live like the other
+sources. The City of Toronto's full Property Boundaries download
+(https://open.toronto.ca/dataset/property-boundaries/) covers the whole
+city and is far too large for GitHub. To refresh it:
+
+1. Download the full GeoJSON from the dataset page.
+2. Trim it to just this project's bounding box (the same `minLng`/`minLat`/
+   `maxLng`/`maxLat` values from the top of `data/sources.json`) using
+   [mapshaper.org](https://mapshaper.org) (drag in the file, then in the
+   **Console** tab run `-clip bbox=minLng,minLat,maxLng,maxLat` with this
+   project's actual numbers) or `ogr2ogr -clipsrc minLng minLat maxLng
+   maxLat` if you have GDAL installed.
+3. Replace `data/raw/property-boundaries.geojson` with the trimmed result
+   and re-run `node scripts/fetch-open-data.js`.
 
 **Adding a layer from a Shapefile instead of GeoJSON:** not every City of
 Toronto dataset has a ready-made "-4326.geojson" export — some are only

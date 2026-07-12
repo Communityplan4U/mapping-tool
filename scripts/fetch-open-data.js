@@ -165,8 +165,15 @@ function loadFootprintPolygons(sourcePath, bbox) {
 // Replaces each point feature's geometry with the footprint polygon it
 // falls inside, when one is found — leaves features with no match as
 // points, so the app falls back to drawing a marker for those.
+// footprintSource may be a single path or an array of paths tried in order
+// (first source's polygons take priority over later ones).
 function applyFootprints(kept, footprintSource, bbox) {
-  const polygons = loadFootprintPolygons(footprintSource, bbox);
+  const sources = Array.isArray(footprintSource)
+    ? footprintSource
+    : [footprintSource];
+  const polygons = sources.flatMap((source) =>
+    loadFootprintPolygons(source, bbox)
+  );
   let matched = 0;
   for (const feature of kept) {
     const coord = pointCoordOf(feature.geometry);

@@ -661,11 +661,6 @@ main {
   font-size: 1.1rem;
 }
 
-.leaflet-control-custom a.is-active {
-  background: var(--accent);
-  color: #fff;
-}
-
 .leaflet-container.add-marker-mode {
   cursor: crosshair;
 }
@@ -682,8 +677,63 @@ main {
   margin-top: 10px !important;
 }
 
-.map-add-marker-control a {
-  font-size: 1.3rem;
+/* Add-feedback CTA: a real labeled button, not an icon lost in the control
+   stack — the map's single primary action gets its own visual weight,
+   bottom-right for mobile thumb reach. Solid brand color instead of the
+   grey/white utility-button look used elsewhere, so it reads as "the
+   thing to do on this page" the way the City's own "Add Marker" pill
+   does — just in our own colors, not theirs. */
+
+.map-add-marker-cta {
+  margin: 0 10px 10px 0 !important;
+}
+
+.map-add-marker-cta__button {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.65rem 1.15rem;
+  border-radius: 999px;
+  box-shadow: 0 2px 10px rgba(11, 11, 11, 0.28);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.map-add-marker-cta__button:hover {
+  background: var(--accent-strong);
+}
+
+.map-add-marker-cta__button:active {
+  transform: scale(0.97);
+}
+
+.map-add-marker-cta__button.is-active {
+  background: #211d1a;
+}
+
+.map-add-marker-cta__button.is-active:hover {
+  background: #34302b;
+}
+
+.map-add-marker-cta__icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.map-add-marker-cta__label {
+  line-height: 1;
+}
+
+@media (max-width: 480px) {
+  .map-add-marker-cta__button {
+    padding: 0.6rem 0.95rem;
+    font-size: 0.85rem;
+  }
 }
 
 /* Address search: the most common first action on this map, so it gets

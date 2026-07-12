@@ -224,22 +224,31 @@
   });
   map.addControl(new ViewControls());
 
-  // Add-marker toggle: click this button to arm "placing" mode (cursor
-  // becomes a crosshair), then click anywhere on the map to leave a
-  // feedback marker there. Plain map clicks do nothing on their own —
-  // this makes leaving feedback a deliberate action instead of firing on
-  // every click while panning/exploring. Kept as its own group, spaced
-  // apart from the view controls above, since it's the map's primary
-  // action rather than a view/navigation toggle.
+  // Add-marker CTA: the map's single primary action, so it gets its own
+  // labeled floating button (bottom-right, easy thumb reach on mobile)
+  // rather than living as an icon-only control in the utility stack —
+  // click it to arm "placing" mode (cursor becomes a crosshair), then
+  // click anywhere on the map to leave a feedback marker there. Plain map
+  // clicks do nothing on their own — this makes leaving feedback a
+  // deliberate action instead of firing on every click while panning.
   let addMarkerMode = false;
+  function addMarkerButtonContent(active) {
+    const icon = active ? "✕" : "📍";
+    const label = active ? "Cancel adding a marker" : "Add feedback marker";
+    return `<span class="map-add-marker-cta__icon" aria-hidden="true">${icon}</span><span class="map-add-marker-cta__label">${label}</span>`;
+  }
   const AddMarkerControl = L.Control.extend({
-    options: { position: "topleft" },
+    options: { position: "bottomright" },
     onAdd: function () {
       const container = L.DomUtil.create(
         "div",
-        "leaflet-bar leaflet-control leaflet-control-custom map-controls-group map-add-marker-control"
+        "leaflet-control map-add-marker-cta"
       );
-      const button = L.DomUtil.create("a", "", container);
+      const button = L.DomUtil.create(
+        "a",
+        "map-add-marker-cta__button",
+        container
+      );
       button.href = "#";
       button.title = "Add a feedback marker";
       button.setAttribute("role", "button");
@@ -247,7 +256,7 @@
         "aria-label",
         "Add a feedback marker — click, then click the map"
       );
-      button.innerHTML = "📍";
+      button.innerHTML = addMarkerButtonContent(false);
       L.DomEvent.on(button, "click", L.DomEvent.stop).on(button, "click", () =>
         setAddMarkerMode(!addMarkerMode)
       );
@@ -266,7 +275,7 @@
     map.getContainer().classList.toggle("add-marker-mode", active);
     const button = addMarkerControl._button;
     button.classList.toggle("is-active", active);
-    button.innerHTML = active ? "✕" : "📍";
+    button.innerHTML = addMarkerButtonContent(active);
     button.title = active ? "Cancel adding a marker" : "Add a feedback marker";
   }
 

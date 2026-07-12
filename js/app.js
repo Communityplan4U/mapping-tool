@@ -1276,11 +1276,13 @@
   const layersListEl = document.getElementById("layers-list");
   const layersStatusEl = document.getElementById("layers-status");
   const loadedDataLayers = new Map(); // layer.id -> built L.geoJSON layer
+  let popupTemplates = {}; // shared per-layer popup field mappings — see buildFeaturePopup()
 
   fetch("data/sources.json")
     .then((res) => (res.ok ? res.json() : null))
     .then((sourcesConfig) => {
       if (!sourcesConfig || !Array.isArray(sourcesConfig.layers)) return;
+      popupTemplates = sourcesConfig.popupTemplates || {};
       const layersByTheme = new Map();
       sourcesConfig.layers.forEach((layer) => {
         const key = layer.theme;
@@ -1390,7 +1392,7 @@
       },
       onEachFeature: (feature, leafletLayer) => {
         leafletLayer.bindPopup(
-          buildFeaturePopup(layer.label, theme, feature.properties)
+          buildFeaturePopup(layer, theme, feature.properties)
         );
         // Path-based layers (polygons, circleMarkers) bubble clicks to the
         // map by default, which would also open the "leave feedback here"
@@ -1434,8 +1436,9 @@
   }
 
   // Datasets use wildly different property naming conventions for
-  // addresses across the 11 layers — check the common ones before falling
-  // back to reverse-geocoding the feature's location.
+  // addresses — check the common ones before falling back to
+  // reverse-geocoding the feature's location. Only used when a layer has
+  // no curated addressField of its own (see resolvePopupConfig below).
   const ADDRESS_PROPERTY_CANDIDATES = [
     "ADDRESS_FULL",
     "Address",
@@ -1451,12 +1454,14 @@
     "NAME",
   ];
 
-  function extractFeatureAddress(properties) {
+  function extractFeatureAddress(layer, properties) {
+    const config = resolvePopupConfig(layer);
+    if (config.addressField && !isBlankValue(properties?.[config.addressField])) {
+      return String(properties[config.addressField]).trim();
+    }
     for (const key of ADDRESS_PROPERTY_CANDIDATES) {
       const value = properties && properties[key];
-      if (value !== null && value !== undefined && String(value).trim()) {
-        return String(value).trim();
-      }
+      if (!isBlankValue(value)) return String(value).trim();
     }
     return null;
   }
@@ -1477,25 +1482,158 @@
     openMapCommentDialog({
       lat: latlng.lat,
       lng: latlng.lng,
-      address: extractFeatureAddress(feature.properties) || undefined,
+      address: extractFeatureAddress(layer, feature.properties) || undefined,
       presetTopic: theme.id,
     });
   }
 
-  function buildFeaturePopup(layerLabel, theme, properties) {
-    const rows = Object.entries(properties || {})
-      .filter(([, v]) => v !== null && v !== undefined && String(v).trim() !== "")
-      .slice(0, 12)
+  // Popups: a curated title/address/up-to-3 details/note by default (see
+  // per-layer titleField/addressField/detailFields/noteField/linkField in
+  // data/sources.json, or a shared popupTemplate for the many Real Estate
+  // Asset Inventory layers that all share one schema), plus the complete
+  // raw record behind a "Full record" disclosure for anyone who wants it —
+  // nothing from the source data is actually hidden, just not the default
+  // view. A layer with no curated title for a given feature (not yet
+  // mapped, or blank for this particular record) falls back to the old
+  // "dump every field" behaviour entirely.
+
+  // The City's own source files use the literal text "None"/"NULL" as
+  // their null placeholder — treat those as blank too, not as real values.
+  function isBlankValue(v) {
+    if (v === null || v === undefined) return true;
+    const s = String(v).trim();
+    if (s === "") return true;
+    return /^(none|null|n\/a)$/i.test(s);
+  }
+
+  function resolvePopupConfig(layer) {
+    const base = layer.popupTemplate
+      ? popupTemplates[layer.popupTemplate] || {}
+      : {};
+    return {
+      titleField: layer.titleField || base.titleField || null,
+      addressField: layer.addressField || base.addressField || null,
+      noteField: layer.noteField || base.noteField || null,
+      linkField: layer.linkField || base.linkField || null,
+      linkLabel: layer.linkLabel || base.linkLabel || "More info",
+      detailFields: layer.detailFields || base.detailFields || [],
+    };
+  }
+
+  // Most source fields are ALL CAPS; a handful (screen names, station
+  // names) already come pre-formatted. Only touch strings with no
+  // lowercase letters at all, so already-correct casing is never altered
+  // — and treat an apostrophe as staying inside a word ("George's", not
+  // "George'S") while a period still starts a new capitalized token
+  // ("C.I.", not "C.i.").
+  function toTitleCase(str) {
+    const s = String(str).trim();
+    if (!s || /[a-z]/.test(s)) return s;
+    return s
+      .toLowerCase()
+      .replace(/(^|[\s\-/.])([a-z])/g, (m, sep, ch) => sep + ch.toUpperCase());
+  }
+
+  function formatDetailValue(raw, unit, rawFormat) {
+    const s = String(raw).trim();
+    // A year ("1964") shouldn't be comma-grouped like a quantity would be
+    // ("1,964") — detail fields that are years mark themselves rawFormat.
+    const numeric = !rawFormat && /^-?[\d,]+(\.\d+)?$/.test(s);
+    const text = numeric ? Number(s.replace(/,/g, "")).toLocaleString() : s;
+    return unit ? `${text} ${unit}` : text;
+  }
+
+  function buildRawRecordRows(properties) {
+    return Object.entries(properties || {})
+      .filter(([, v]) => !isBlankValue(v))
       .map(
         ([k, v]) =>
           `<tr><th>${escapeHtml(k)}</th><td>${escapeHtml(String(v))}</td></tr>`
-      )
-      .join("");
+      );
+  }
+
+  function buildFeaturePopup(layer, theme, properties) {
+    const props = properties || {};
+    const config = resolvePopupConfig(layer);
+    const rawRows = buildRawRecordRows(props);
+    const titleRaw = config.titleField ? props[config.titleField] : null;
+
+    if (isBlankValue(titleRaw)) {
+      // No curated title for this layer, or this specific record is
+      // missing it — fall back to the original "every field" popup
+      // rather than showing a blank or misleading curated card.
+      return `
+        <div class="feature-popup">
+          <p class="feature-popup__layer">${escapeHtml(layer.label)}</p>
+          <table class="feature-popup__table">${rawRows.slice(0, 12).join("")}</table>
+          <button type="button" class="btn btn--small feature-feedback-btn">Leave feedback about this</button>
+        </div>
+      `;
+    }
+
+    const title = toTitleCase(String(titleRaw));
+    const address =
+      config.addressField && !isBlankValue(props[config.addressField])
+        ? toTitleCase(String(props[config.addressField]))
+        : null;
+    const note =
+      config.noteField && !isBlankValue(props[config.noteField])
+        ? String(props[config.noteField]).trim()
+        : null;
+    const chips = config.detailFields
+      .map((d) => {
+        const raw = props[d.key];
+        if (isBlankValue(raw)) return null;
+        const value =
+          (d.valueMap && d.valueMap[String(raw).trim()]) ||
+          formatDetailValue(raw, d.unit, d.raw);
+        return { label: d.label, value };
+      })
+      .filter(Boolean)
+      .slice(0, 3);
+    const link =
+      config.linkField && !isBlankValue(props[config.linkField])
+        ? { url: String(props[config.linkField]).trim(), label: config.linkLabel }
+        : null;
+
     return `
       <div class="feature-popup">
-        <p class="feature-popup__layer">${escapeHtml(layerLabel)}</p>
-        <table class="feature-popup__table">${rows}</table>
+        <p class="feature-popup__layer">${escapeHtml(layer.label)}</p>
+        <p class="feature-popup__title">${escapeHtml(title)}</p>
+        ${address ? `<p class="feature-popup__address">${escapeHtml(address)}</p>` : ""}
+        ${note ? `<p class="feature-popup__note">${escapeHtml(note)}</p>` : ""}
+        ${
+          chips.length
+            ? `<div class="feature-popup__chips">${chips
+                .map(
+                  (c) =>
+                    `<span class="feature-popup__chip"><b>${escapeHtml(
+                      c.label
+                    )}:</b> ${escapeHtml(c.value)}</span>`
+                )
+                .join("")}</div>`
+            : ""
+        }
+        ${
+          link
+            ? `<a href="${escapeHtml(
+                link.url
+              )}" target="_blank" rel="noopener" class="feature-popup__link">${escapeHtml(
+                link.label
+              )} ↗</a>`
+            : ""
+        }
         <button type="button" class="btn btn--small feature-feedback-btn">Leave feedback about this</button>
+        ${
+          rawRows.length
+            ? `<details class="feature-popup__details">
+                <summary>Full record (${rawRows.length} field${
+                rawRows.length === 1 ? "" : "s"
+              })</summary>
+                <table class="feature-popup__table">${rawRows.join("")}</table>
+              </details>`
+            : ""
+        }
       </div>
     `;
   }

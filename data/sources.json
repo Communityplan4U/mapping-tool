@@ -6,9 +6,47 @@
     "maxLng": -79.42351799599568,
     "maxLat": 43.70333458645549
   },
+  "popupTemplates": {
+    "building": {
+      "titleField": "Building Description",
+      "addressField": "Address",
+      "detailFields": [
+        {
+          "key": "Building Type",
+          "label": "Type"
+        },
+        {
+          "key": "Year Built",
+          "label": "Built",
+          "raw": true
+        },
+        {
+          "key": "Gross Floor Area (M2)",
+          "label": "Size",
+          "unit": "m²"
+        }
+      ]
+    },
+    "land": {
+      "titleField": "Property Description",
+      "addressField": "Address",
+      "detailFields": [
+        {
+          "key": "Property Type",
+          "label": "Type"
+        },
+        {
+          "key": "Area (M2)",
+          "label": "Size",
+          "unit": "m²"
+        }
+      ]
+    }
+  },
   "layers": [
     {
       "id": "real-estate-parking-buildings",
+      "popupTemplate": "building",
       "label": "Real Estate Asset Inventory (Parking Buildings)",
       "theme": "transportation",
       "file": "data/raw/building-asset-inventory.geojson",
@@ -24,6 +62,7 @@
     },
     {
       "id": "real-estate-transit-buildings",
+      "popupTemplate": "building",
       "label": "Real Estate Asset Inventory (Transit Buildings)",
       "theme": "transportation",
       "shape": "diamond",
@@ -37,6 +76,7 @@
     },
     {
       "id": "real-estate-commercial-buildings",
+      "popupTemplate": "building",
       "label": "Real Estate Asset Inventory (Commercial & Non-Profit Buildings)",
       "theme": "commercial-nonprofit",
       "shape": "diamond",
@@ -55,6 +95,7 @@
     },
     {
       "id": "real-estate-housing-buildings",
+      "popupTemplate": "building",
       "label": "Real Estate Asset Inventory (Housing Buildings)",
       "theme": "housing",
       "shape": "triangle",
@@ -74,6 +115,7 @@
     },
     {
       "id": "real-estate-public-facility-buildings",
+      "popupTemplate": "building",
       "label": "Real Estate Asset Inventory (Public Facility Buildings)",
       "theme": "community-services",
       "shape": "triangle",
@@ -104,6 +146,7 @@
     },
     {
       "id": "real-estate-works-buildings",
+      "popupTemplate": "building",
       "label": "Real Estate Asset Inventory (Public Works Buildings)",
       "theme": "transportation",
       "shape": "triangle",
@@ -130,6 +173,7 @@
     },
     {
       "id": "real-estate-park-buildings",
+      "popupTemplate": "building",
       "label": "Real Estate Asset Inventory (Park Buildings)",
       "theme": "parks-public-realm",
       "shape": "diamond",
@@ -151,6 +195,7 @@
     },
     {
       "id": "real-estate-park-recreation-buildings",
+      "popupTemplate": "building",
       "label": "Real Estate Asset Inventory (Park Arenas & Recreation Centres)",
       "theme": "parks-public-realm",
       "shape": "circle",
@@ -167,6 +212,7 @@
     },
     {
       "id": "real-estate-utility-buildings",
+      "popupTemplate": "building",
       "label": "Real Estate Asset Inventory (Utility Buildings)",
       "theme": "community-services",
       "shape": "triangle",
@@ -183,6 +229,7 @@
     },
     {
       "id": "real-estate-park-land",
+      "popupTemplate": "land",
       "label": "Real Estate Asset Inventory (Park Land)",
       "theme": "parks-public-realm",
       "dashed": true,
@@ -192,6 +239,7 @@
     },
     {
       "id": "real-estate-walkway-land",
+      "popupTemplate": "land",
       "label": "Real Estate Asset Inventory (Walkway Land)",
       "theme": "parks-public-realm",
       "file": "data/raw/land-asset-inventory.geojson",
@@ -200,6 +248,7 @@
     },
     {
       "id": "real-estate-vacant-land",
+      "popupTemplate": "land",
       "label": "Real Estate Asset Inventory (Vacant / Held Land)",
       "theme": "parks-public-realm",
       "file": "data/raw/land-asset-inventory.geojson",
@@ -208,6 +257,7 @@
     },
     {
       "id": "real-estate-utility-land",
+      "popupTemplate": "land",
       "label": "Real Estate Asset Inventory (Utility Land)",
       "theme": "parks-public-realm",
       "file": "data/raw/land-asset-inventory.geojson",
@@ -220,6 +270,7 @@
     },
     {
       "id": "real-estate-railway-land",
+      "popupTemplate": "land",
       "label": "Real Estate Asset Inventory (Railway Land)",
       "theme": "parks-public-realm",
       "file": "data/raw/land-asset-inventory.geojson",
@@ -231,6 +282,8 @@
     },
     {
       "id": "real-estate-school-land",
+      "popupTemplate": "land",
+      "noteField": "Community Use",
       "label": "Real Estate Asset Inventory (School Land)",
       "theme": "community-services",
       "file": "data/raw/land-asset-inventory.geojson",
@@ -247,6 +300,7 @@
     },
     {
       "id": "real-estate-public-facility-land",
+      "popupTemplate": "land",
       "label": "Real Estate Asset Inventory (Public Facility Land)",
       "theme": "community-services",
       "dashed": true,
@@ -260,6 +314,7 @@
     },
     {
       "id": "real-estate-housing-land",
+      "popupTemplate": "land",
       "label": "Real Estate Asset Inventory (Housing Land)",
       "theme": "housing",
       "file": "data/raw/land-asset-inventory.geojson",
@@ -268,6 +323,7 @@
     },
     {
       "id": "real-estate-works-land",
+      "popupTemplate": "land",
       "label": "Real Estate Asset Inventory (Public Works Land)",
       "theme": "transportation",
       "file": "data/raw/land-asset-inventory.geojson",
@@ -276,6 +332,7 @@
     },
     {
       "id": "real-estate-parking-land",
+      "popupTemplate": "land",
       "label": "Real Estate Asset Inventory (Parking Land)",
       "theme": "transportation",
       "dashed": true,
@@ -288,6 +345,8 @@
     },
     {
       "id": "community-housing",
+      "titleField": "DEV_NAME",
+      "detailFields": [{"key": "TTL_RES_UNIT", "label": "Total units"}, {"key": "RGI_UNITS", "label": "RGI units"}, {"key": "YR_BUILT", "label": "Built", "raw": true}],
       "label": "Toronto Community Housing",
       "theme": "housing",
       "shape": "circle",
@@ -300,6 +359,9 @@
     },
     {
       "id": "supportive-housing",
+      "titleField": "NAME",
+      "addressField": "ADDRESS_FULL",
+      "detailFields": [{"key": "TELEPHONE", "label": "Phone"}],
       "label": "Supportive Housing",
       "theme": "housing",
       "shape": "diamond",
@@ -312,6 +374,9 @@
     },
     {
       "id": "places-of-worship",
+      "titleField": "FTH_ORGANIZATION",
+      "addressField": "ADDRESS_FULL",
+      "detailFields": [{"key": "FTH_FAITH", "label": "Faith"}, {"key": "FTH_DENOMINATION", "label": "Denomination"}],
       "label": "Places of Worship",
       "theme": "commercial-nonprofit",
       "file": "data/raw/places-of-worship.geojson",
@@ -323,6 +388,8 @@
     },
     {
       "id": "green-spaces",
+      "titleField": "AREA_NAME",
+      "detailFields": [{"key": "AREA_CLASS", "label": "Type", "valueMap": {"OTHER_CEMETERY": "Cemetery", "OTHER_CITY": "City-owned green space", "OTHER_HYDRO": "Hydro corridor", "OTHER_PROVINCIAL_FEDERAL": "Provincial/federal land", "OTHER_ROAD": "Road allowance"}}],
       "label": "Green Spaces",
       "theme": "parks-public-realm",
       "file": "data/raw/green-spaces.geojson",
@@ -330,6 +397,11 @@
     },
     {
       "id": "parks-rec-parks",
+      "titleField": "ASSET_NAME",
+      "addressField": "ADDRESS",
+      "detailFields": [{"key": "TYPE", "label": "Type"}, {"key": "AMENITIES", "label": "Amenities"}],
+      "linkField": "URL",
+      "linkLabel": "Parks & Rec page",
       "label": "Parks & Recreation Facilities",
       "theme": "parks-public-realm",
       "shape": "circle",
@@ -339,6 +411,8 @@
     },
     {
       "id": "major-transit-station-areas",
+      "titleField": "StationName",
+      "detailFields": [{"key": "MTSA_Type", "label": "Type"}],
       "label": "Major Transit Station Areas",
       "theme": "urban-community-planning",
       "file": "data/raw/major-transit-station-areas.geojson",
@@ -346,6 +420,9 @@
     },
     {
       "id": "schools",
+      "titleField": "NAME",
+      "addressField": "ADDRESS_FULL",
+      "detailFields": [{"key": "SCHOOL_TYPE_DESC", "label": "Type"}, {"key": "BOARD_NAME", "label": "Board"}],
       "label": "School Locations",
       "theme": "community-services",
       "shape": "circle",
@@ -367,6 +444,12 @@
     },
     {
       "id": "libraries",
+      "titleField": "BranchName",
+      "addressField": "Address",
+      "detailFields": [{"key": "Telephone", "label": "Phone"}, {"key": "SquareFootage", "label": "Size", "unit": "ft²"}],
+      "noteField": "Hours",
+      "linkField": "Website",
+      "linkLabel": "Branch website",
       "label": "Library Branches",
       "theme": "community-services",
       "shape": "diamond",

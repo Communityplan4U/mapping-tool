@@ -228,7 +228,8 @@
             "YORK CIVIC CENTRE & CORONATION PARK"
           ]
         },
-        { "Property Type": "Library Facility" }
+        { "Property Type": "Library Facility" },
+        { "Property Type": ["Vacant Land", "Reserve Strip", "Road Allowance"] }
       ],
       "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Land (EPSG:4326), excluding parcels covered by the real-estate-* layers below (each grouped under whichever category it actually belongs to instead of Governance — see each layer's own _source note for which), plus parcels dropped outright because they duplicate a location already shown elsewhere (Libraries — see the Library Branches layer; the Nia Centre for the Arts land record — see the real-estate-commercial-buildings layer for its building; and the York Civic Centre & Coronation Park combined parcel — see the real-estate-public-facility-buildings layer for the Civic Centre building and the Green Spaces layer for Coronation Park). Re-download and replace data/raw/land-asset-inventory.geojson to refresh, then re-run scripts/fetch-open-data.js."
     },
@@ -248,6 +249,14 @@
       "file": "data/raw/land-asset-inventory.geojson",
       "filter": { "Property Type": "Walkway" },
       "_source": "Same source file as real-estate-land, filtered down to parcels typed \"Walkway\" (including the Westview Greenbelt Trail) — grouped under Parks & Public Realm instead of Governance."
+    },
+    {
+      "id": "real-estate-vacant-land",
+      "label": "Real Estate Asset Inventory (Vacant / Held Land)",
+      "theme": "parks-public-realm",
+      "file": "data/raw/land-asset-inventory.geojson",
+      "filter": { "Property Type": ["Vacant Land", "Reserve Strip", "Road Allowance"] },
+      "_source": "Same source file as real-estate-land, filtered down to parcels typed \"Vacant Land\", \"Reserve Strip\", or \"Road Allowance\" — grouped under Parks & Public Realm instead of Governance."
     },
     {
       "id": "real-estate-railway-land",

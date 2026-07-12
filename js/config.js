@@ -44,13 +44,12 @@ window.APP_CONFIG = {
   // was removed: every open-data location that could plausibly belong to
   // it turned out to duplicate another category or be routine City
   // land-holding with nothing resident-facing to say, so it's not offered
-  // as a map layer or feedback category), plus 3 added categories for
+  // as a map layer or feedback category), plus 4 added categories for
   // things the CDAP doesn't explicitly name but this tool still needs to
-  // represent (Parks & Public Realm, Transportation, Public Facilities).
-  // Colors are 7 of the 8 hues of the fixed palette (see
-  // README.md) — the blue slot Governance used is retired along with it,
-  // not reassigned, so re-adding a category later has an obvious color to
-  // use.
+  // represent (Parks & Public Realm, Transportation, Public Facilities,
+  // Urban & Community Planning). Colors are the 8 hues of the fixed
+  // palette (see README.md) — Urban & Community Planning reclaims the
+  // blue slot Governance retired.
   themes: [
     { id: "housing", label: "Housing", color: "#e87ba4" },
     {
@@ -70,6 +69,11 @@ window.APP_CONFIG = {
       id: "community-services",
       label: "Public Facilities",
       color: "#008300",
+    },
+    {
+      id: "urban-community-planning",
+      label: "Urban and Community Planning",
+      color: "#2a78d6",
     },
   ],
 

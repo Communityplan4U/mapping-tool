@@ -155,7 +155,7 @@
     {
       "id": "real-estate-utility-buildings",
       "label": "Real Estate Asset Inventory (Utility Buildings)",
-      "theme": "parks-public-realm",
+      "theme": "community-services",
       "shape": "triangle",
       "file": "data/raw/building-asset-inventory.geojson",
       "footprintSource": [
@@ -310,7 +310,7 @@
     {
       "id": "parks-rec",
       "label": "Parks & Recreation Facilities",
-      "theme": "parks-public-realm",
+      "theme": "community-services",
       "shape": "circle",
       "file": "data/raw/parks-and-recreation-facilities.geojson",
       "_source": "City of Toronto Open Data Portal, Parks and Recreation Facilities (EPSG:4326). Re-download and replace data/raw/parks-and-recreation-facilities.geojson to refresh, then re-run scripts/fetch-open-data.js."
@@ -318,7 +318,7 @@
     {
       "id": "major-transit-station-areas",
       "label": "Major Transit Station Areas",
-      "theme": "transportation",
+      "theme": "urban-community-planning",
       "file": "data/raw/major-transit-station-areas.geojson",
       "_source": "City of Toronto Open Data Portal, Major Transit Station Area Delineations (Jan 2026). Source was a shapefile in NAD27 MTM Zone 10 (no \"-4326\" GeoJSON export existed) — converted to EPSG:4326 with pyproj and committed directly as GeoJSON (see conversion notes in README.md). To refresh: re-download the shapefile (all 4 parts: .shp/.shx/.dbf/.prj), re-run the same conversion, and replace this file."
     },

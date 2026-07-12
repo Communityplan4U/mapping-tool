@@ -37,9 +37,9 @@ launching (see below).
   leave feedback about something already on the map instead of only
   empty ground.
 - **Shared category taxonomy** — open data layers and community feedback
-  both use the same 7 categories (`themes` in `js/config.js`), based on
+  both use the same 8 categories (`themes` in `js/config.js`), based on
   4 of the Little Jamaica Community Development Action Plan's 5 focus
-  areas plus 3 added categories to cover things the plan doesn't name but
+  areas plus 4 added categories to cover things the plan doesn't name but
   the map needs. See "Open data map layers" below.
 - **Base layer switcher** — a layers control (top-right on the map) swaps
   between [CARTO Positron](https://carto.com/basemaps) (a light, minimal
@@ -213,18 +213,20 @@ how many individual datasets get added later, and means a resident never
 has to figure out which of several similarly-named layers to turn on to
 see, say, everything related to housing.
 
-The current 7 categories are 4 of the Little Jamaica Community Development
+The current 8 categories are 4 of the Little Jamaica Community Development
 Action Plan's 5 focus areas — **Housing**, **Commercial & Non-Profit
-Spaces**, **Employment**, **Cultural Identity & Stewardship** — plus 3
+Spaces**, **Employment**, **Cultural Identity & Stewardship** — plus 4
 added to cover things the plan doesn't name but the map needs: **Parks &
-Public Realm**, **Transportation**, and **Public Facilities**. The 5th CDAP
-area, Governance, was tried and removed: every open-data location that
-could plausibly belong to it turned out to either duplicate another
-category or be routine City land-holding with nothing resident-facing to
-say about it, so it isn't offered as a map layer or feedback category —
-see the git history around the "Reclassify miscategorized Real Estate
-Asset Inventory items" commits for the full reasoning if reviving it later.
-Not every remaining category has to have a matching open data layer either
+Public Realm**, **Transportation**, **Public Facilities**, and **Urban and
+Community Planning**. The 5th CDAP area, Governance, was tried and
+removed: every open-data location that could plausibly belong to it turned
+out to either duplicate another category or be routine City land-holding
+with nothing resident-facing to say about it, so it isn't offered as a map
+layer or feedback category — see the git history around the "Reclassify
+miscategorized Real Estate Asset Inventory items" commits for the full
+reasoning if reviving it later. Urban and Community Planning reclaims the
+color slot Governance's removal freed up. Not every remaining category has
+to have a matching open data layer either
 — Commercial & Non-Profit Spaces and Employment partly exist as
 comment-only categories in "Community feedback", since City of Toronto
 open data only goes so far. Add a layer for one by giving it that `theme`

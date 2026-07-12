@@ -64,7 +64,8 @@
         { "Building Type": "Boiler House/Meter House" },
         { "Building Description": "FORMER HYDRO BUILDING" },
         { "Building Description": "UNISON HEALTH & COMMUNITY SERVICES - DENTAL CLINIC" },
-        { "Building Description": "RAWLINSON CHILD CARE CENTRE" }
+        { "Building Description": "RAWLINSON CHILD CARE CENTRE" },
+        { "Building Type": "Animal Shelter" }
       ],
       "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Building (EPSG:4326), unfiltered except the buildings excluded above — each either duplicates a location already shown by another layer (Libraries — see the Library Branches layer), belongs under a different category and is shown instead by one of the real-estate-* layers below (see each layer's own _source note for which), or is dropped outright (Rawlinson Child Care Centre)."
     },
@@ -151,7 +152,8 @@
             "Police Station/Facility",
             "Civic Centre",
             "Community Recreation Centre",
-            "Community Centre"
+            "Community Centre",
+            "Animal Shelter"
           ]
         },
         { "Building Description": "LEASED SPACE FOR CONSTITUENCY OFFICE" },
@@ -160,7 +162,7 @@
       "excludeFilter": {
         "Building Description": "FAIRBANK MEMORIAL PARK - COMMUNITY CENTRE"
       },
-      "_source": "Same source file as real-estate-buildings, filtered down to the Vaughan Road Academy indoor pool, fire halls, police stations, York Civic Centre, the constituency office, community/recreation centres, and the York Civic Centre - Silverthorn Day Care Centre — grouped under Public Facilities instead of Governance. Excludes the Fairbank Memorial Park Community Centre specifically, since its \"Community Recreation Centre\" type would otherwise also match here — it's already shown by real-estate-park-buildings under Parks & Public Realm, since it sits within Fairbank Memorial Park."
+      "_source": "Same source file as real-estate-buildings, filtered down to the Vaughan Road Academy indoor pool, fire halls, police stations, York Civic Centre, the constituency office, community/recreation centres, the York Civic Centre - Silverthorn Day Care Centre, and the former Animal Services building — grouped under Public Facilities instead of Governance. Excludes the Fairbank Memorial Park Community Centre specifically, since its \"Community Recreation Centre\" type would otherwise also match here — it's already shown by real-estate-park-buildings under Parks & Public Realm, since it sits within Fairbank Memorial Park."
     },
     {
       "id": "real-estate-works-buildings",

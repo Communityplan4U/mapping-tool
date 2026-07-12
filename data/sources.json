@@ -62,7 +62,8 @@
         { "Building Description": "YORK CIVIC CENTRE - SILVERTHORN DAY CARE CENTRE" },
         { "Building Type": "Library" },
         { "Building Type": "Boiler House/Meter House" },
-        { "Building Description": "FORMER HYDRO BUILDING" }
+        { "Building Description": "FORMER HYDRO BUILDING" },
+        { "Building Description": "UNISON HEALTH & COMMUNITY SERVICES - DENTAL CLINIC" }
       ],
       "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Building (EPSG:4326), unfiltered except the buildings excluded above — each either duplicates a location already shown by another layer (Libraries — see the Library Branches layer) or belongs under a different category and is shown instead by one of the real-estate-* layers below (see each layer's own _source note for which)."
     },
@@ -104,8 +105,13 @@
         "data/raw/property-boundaries.geojson",
         "data/raw/land-asset-inventory.geojson"
       ],
-      "filter": { "Building Description": "NIA CENTRE FOR THE ARTS" },
-      "_source": "Same source file as real-estate-buildings, filtered down to the Nia Centre for the Arts — grouped under Commercial & Non-Profit Spaces instead of Governance."
+      "filter": {
+        "Building Description": [
+          "NIA CENTRE FOR THE ARTS",
+          "UNISON HEALTH & COMMUNITY SERVICES - DENTAL CLINIC"
+        ]
+      },
+      "_source": "Same source file as real-estate-buildings, filtered down to the Nia Centre for the Arts and the Unison Health & Community Services Dental Clinic — grouped under Commercial & Non-Profit Spaces instead of Governance."
     },
     {
       "id": "real-estate-housing-buildings",

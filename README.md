@@ -103,7 +103,23 @@ reverse geocoding only if the feature has nothing address-like.
   category — for what *kind* of thing the comment is (a loss, a concern,
   something working, an idea). Defined in `feedbackTypes` in
   `js/config.js`. It's a plain tag on the comment, not something other
-  residents vote on separately from the comment itself.
+  residents vote on separately from the comment itself. Any type can
+  carry an optional `hint` string, shown next to the comment box when
+  that type is selected — currently used on "A place being displaced or
+  that is no longer there" to prompt naming the place and linking a
+  photo of it.
+- **Name and contact info** are optional fields on every map comment.
+  Name is shown publicly next to the comment, same as the nickname on
+  site submissions. Contact is never shown in the public app — it only
+  appears in `admin.html`'s reporting table and CSV export, for a
+  neighbourhood organizer to follow up with that person directly.
+  **This is a UI convention, not real access control**: `admin.html`
+  reads with the same public anon key as the main map (this app has no
+  login system), so anyone with that key — which is not secret, it's
+  embedded in `js/config.js` — could query `map_comments.contact`
+  directly. Don't collect contact info you're not comfortable being
+  readable by anyone with the anon key unless you add real access
+  control (e.g. Supabase Auth gating `admin.html`) first.
 - **Threading by address**: matching is an exact string match against the
   `address` column (same approach the address-search feature already uses
   for its `site_id`) — two clicks that Nominatim resolves to slightly

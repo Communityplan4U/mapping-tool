@@ -126,7 +126,9 @@
 
     const { data, error } = await db
       .from("map_comments")
-      .select("topic, sentiment, comment, lat, lng, address, created_at")
+      .select(
+        "topic, sentiment, comment, name, contact, lat, lng, address, created_at"
+      )
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -148,6 +150,8 @@
               sentimentsById.get(row.sentiment)?.label || row.sentiment || ""
             )}</td>
             <td>${escapeHtml(row.comment || "")}</td>
+            <td>${escapeHtml(row.name || "")}</td>
+            <td>${escapeHtml(row.contact || "")}</td>
             <td>${escapeHtml(
               row.address || `${row.lat.toFixed(5)}, ${row.lng.toFixed(5)}`
             )}</td>
@@ -183,6 +187,8 @@
           "Topic",
           "Feedback type",
           "Comment",
+          "Name",
+          "Contact",
           "Address",
           "Latitude",
           "Longitude",
@@ -192,6 +198,8 @@
           topicsById.get(row.topic)?.label || row.topic,
           sentimentsById.get(row.sentiment)?.label || row.sentiment || "",
           row.comment || "",
+          row.name || "",
+          row.contact || "",
           row.address || "",
           row.lat,
           row.lng,

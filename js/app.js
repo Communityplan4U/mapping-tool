@@ -655,6 +655,18 @@
     mapCommentSentimentSelect.appendChild(opt);
   });
 
+  // A nudge, not a required field — e.g. "losing" encourages naming the
+  // place and linking a photo, without needing dedicated form fields for
+  // just that one option.
+  const mapCommentSentimentHint = document.getElementById(
+    "map-comment-sentiment-hint"
+  );
+  mapCommentSentimentSelect.addEventListener("change", () => {
+    const hint = sentimentsById.get(mapCommentSentimentSelect.value)?.hint;
+    mapCommentSentimentHint.textContent = hint || "";
+    mapCommentSentimentHint.hidden = !hint;
+  });
+
   // Short/new threads open in the centered dialog, unchanged. A thread
   // that already has 1+ comments opens in the slide-out panel instead, so
   // the list gets its own scroll region and the compose form stays
@@ -691,6 +703,10 @@
     // one — it's required, and each comment should get a deliberate
     // choice.
     mapCommentSentimentSelect.value = "";
+    mapCommentSentimentHint.hidden = true;
+    // Name/contact are deliberately NOT reset here — if someone leaves
+    // feedback at several spots in one visit, they shouldn't have to
+    // retype who they are each time.
     const statusEl = document.getElementById("map-comment-status");
     statusEl.textContent = "";
     statusEl.className = "status-msg";
@@ -740,7 +756,7 @@
   async function fetchCommentThread(address, lat, lng) {
     let query = db
       .from("map_comments")
-      .select("id, topic, sentiment, comment, created_at");
+      .select("id, topic, sentiment, comment, name, created_at");
     query = address
       ? query.eq("address", address)
       : query.eq("lat", lat).eq("lng", lng);
@@ -797,7 +813,9 @@
           <span class="idea-card__author" style="color:${escapeHtml(
             topic ? topic.color : "inherit"
           )}">${escapeHtml(topic ? topic.label : c.topic)}</span>
-          <span class="idea-card__time">${formatDate(c.created_at)}</span>
+          <span class="idea-card__time">${formatDate(c.created_at)}${
+        c.name ? ` · ${escapeHtml(c.name)}` : ""
+      }</span>
         </div>
         ${
           sentiment
@@ -899,6 +917,11 @@
         return;
       }
 
+      const name = document.getElementById("map-comment-name").value.trim();
+      const contact = document
+        .getElementById("map-comment-contact")
+        .value.trim();
+
       const submitBtn = document.getElementById("submit-map-comment");
       submitBtn.disabled = true;
       statusEl.textContent = "Submitting…";
@@ -912,6 +935,8 @@
         topic: mapCommentTopicSelect.value,
         sentiment,
         comment,
+        name: name || null,
+        contact: contact || null,
         voter_token: voterToken,
       };
       const { error } = await db.from("map_comments").insert(row);

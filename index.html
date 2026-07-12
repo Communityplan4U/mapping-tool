@@ -104,9 +104,13 @@
     <p>
       Submissions are anonymous and public — there's no login, just a
       private token in your browser so you can toggle your own votes.
-      Nothing is reviewed before it posts; neighbourhood organizers
-      remove anything inappropriate (personal attacks, hate speech, spam)
-      after the fact. See something that should come down? Contact your
+      Adding your name or contact info when commenting is always
+      optional; your name is shown alongside your comment if you add
+      one, and your contact info is only used by neighbourhood
+      organizers to follow up, never shown publicly. Nothing is reviewed
+      before it posts; neighbourhood organizers remove anything
+      inappropriate (personal attacks, hate speech, spam) after the
+      fact. See something that should come down? Contact your
       neighbourhood organizers.
     </p>
   </dialog>
@@ -199,9 +203,22 @@
         <select id="map-comment-topic"></select>
       </label>
 
+      <p id="map-comment-sentiment-hint" class="hint" hidden></p>
+
       <label class="field">
         <span>Comment</span>
         <textarea id="map-comment-text" maxlength="1000" rows="3" placeholder="What would you like to see here, or what's your concern about this spot?"></textarea>
+      </label>
+
+      <label class="field">
+        <span>Name <span class="muted">(optional)</span></span>
+        <input type="text" id="map-comment-name" maxlength="60" placeholder="e.g. Eglinton Ave resident" />
+      </label>
+
+      <label class="field">
+        <span>Contact info <span class="muted">(optional)</span></span>
+        <input type="text" id="map-comment-contact" maxlength="120" placeholder="Email or phone, if you're open to being contacted" />
+        <span class="hint">Only visible to neighbourhood organizers, never shown publicly.</span>
       </label>
 
       <button type="button" id="submit-map-comment" class="btn btn--primary">Submit feedback</button>

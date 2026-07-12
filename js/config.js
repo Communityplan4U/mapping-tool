@@ -36,9 +36,16 @@ window.APP_CONFIG = {
   // Required when leaving feedback. "losing" gets its own option rather
   // than folding into a generic "concern" bucket: a record of
   // displacement/loss at volume is evidence a generic concern option
-  // wouldn't surface on its own.
+  // wouldn't surface on its own. The optional "hint" is shown next to the
+  // comment box when that option is selected — a nudge, not a required
+  // field, so it doesn't need a schema change to add one for another
+  // option later.
   feedbackTypes: [
-    { id: "losing", label: "A place I'm losing, or have lost" },
+    {
+      id: "losing",
+      label: "A place being displaced or that is no longer there",
+      hint: "If you can, include the name of the place and a link to a photo of it — it helps build the record of what's been lost.",
+    },
     { id: "concern", label: "A concern — something that doesn't feel right" },
     { id: "working", label: "Something that's working — keep it" },
     { id: "idea", label: "An idea or suggestion for the future" },

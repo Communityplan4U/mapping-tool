@@ -40,6 +40,15 @@ create table if not exists upvotes (
 -- Required in the app, but nullable here: existing rows predating this
 -- column have no value, and Postgres won't let a NOT NULL column be added
 -- to a table that already has rows without one.
+-- name and contact are both optional and both provided by the person
+-- leaving feedback, not required for anonymous use. name is shown
+-- publicly alongside the comment (same as nickname on submissions).
+-- contact is NOT shown anywhere in the public app — only in admin.html's
+-- reporting table and CSV export, for a neighbourhood organizer to follow
+-- up. It's still readable by anyone with the anon key querying the table
+-- directly (see RLS policies below — reads are public on this table like
+-- every other one here), so it's "not shown in the UI," not encrypted or
+-- access-controlled at the database level.
 create table if not exists map_comments (
   id uuid primary key default gen_random_uuid(),
   lat double precision not null,
@@ -48,11 +57,15 @@ create table if not exists map_comments (
   topic text not null,
   sentiment text not null,
   comment text not null,
+  name text,
+  contact text,
   voter_token text not null,
   created_at timestamptz not null default now()
 );
 alter table map_comments add column if not exists address text;
 alter table map_comments add column if not exists sentiment text;
+alter table map_comments add column if not exists name text;
+alter table map_comments add column if not exists contact text;
 
 -- Up/down votes on individual map_comments rows (distinct from the
 -- upvote-only "support" mechanic on site submissions). One row per
@@ -94,7 +107,15 @@ grant select, insert, delete on map_comment_votes to anon, authenticated;
 
 -- Anyone using the public anon key can read all submissions, upvotes, map
 -- comments, and their votes — results need to be visible to every
--- visitor, not just their own.
+-- visitor, not just their own. This includes map_comments.contact:
+-- the app's UI never displays it outside admin.html, but that's a
+-- front-end convention, not real access control — this app has no
+-- login system, so admin.html reads with the exact same public anon
+-- key as the main map. Anyone who queries this table directly with
+-- that key (which is not secret — it's embedded in js/config.js) can
+-- read contact info too. If that's not an acceptable risk for real
+-- contact details, this needs real access control (e.g. Supabase Auth
+-- gating admin.html) before launch, not just hiding it in the UI.
 drop policy if exists "Public read submissions" on submissions;
 create policy "Public read submissions" on submissions
   for select using (true);

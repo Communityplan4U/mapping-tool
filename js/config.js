@@ -64,7 +64,7 @@ window.APP_CONFIG = {
     { id: "transportation", label: "Transportation", color: "#e34948" },
     {
       id: "community-services",
-      label: "Community Services & Institutions",
+      label: "Public Facilities",
       color: "#008300",
     },
   ],

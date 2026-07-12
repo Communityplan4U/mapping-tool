@@ -68,7 +68,7 @@
         { "Property Type": "Parking Facility" },
         { "Property Type": "School" }
       ],
-      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Land (EPSG:4326), excluding parcels typed \"Park/Rec/Open Space\" (shown instead by real-estate-park-land below, under Parks & Public Realm), parcels described as a \"CARPARK\" or typed \"Parking Facility\" (shown instead by real-estate-parking-land below, under Transportation), and parcels typed \"School\" (shown instead by real-estate-school-land below, under Community Services & Institutions). Re-download and replace data/raw/land-asset-inventory.geojson to refresh, then re-run scripts/fetch-open-data.js."
+      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Land (EPSG:4326), excluding parcels typed \"Park/Rec/Open Space\" (shown instead by real-estate-park-land below, under Parks & Public Realm), parcels described as a \"CARPARK\" or typed \"Parking Facility\" (shown instead by real-estate-parking-land below, under Transportation), and parcels typed \"School\" (shown instead by real-estate-school-land below, under Public Facilities). Re-download and replace data/raw/land-asset-inventory.geojson to refresh, then re-run scripts/fetch-open-data.js."
     },
     {
       "id": "real-estate-park-land",
@@ -85,7 +85,7 @@
       "theme": "community-services",
       "file": "data/raw/land-asset-inventory.geojson",
       "filter": { "Property Type": "School" },
-      "_source": "Same source file as real-estate-land, filtered down to parcels typed \"School\" — grouped under Community Services & Institutions instead of Governance so they aren't shown twice under two different categories."
+      "_source": "Same source file as real-estate-land, filtered down to parcels typed \"School\" — grouped under Public Facilities instead of Governance so they aren't shown twice under two different categories."
     },
     {
       "id": "real-estate-parking-land",

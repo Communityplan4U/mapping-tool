@@ -983,7 +983,7 @@
   // scripts/fetch-open-data.js (see README.md). The panel groups layers by
   // theme (one checkbox toggles every dataset in that theme together) —
   // color comes from the theme, not the individual layer, so everything
-  // under e.g. "Community Services & Institutions" reads as one family on
+  // under e.g. "Public Facilities" reads as one family on
   // the map even though it's three separate City datasets. Shapes are
   // fetched lazily, the first time a theme is switched on.
   const layersListEl = document.getElementById("layers-list");

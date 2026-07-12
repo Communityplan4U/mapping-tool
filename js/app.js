@@ -294,6 +294,7 @@
   // any open data layer, so a resident's own feedback is never confused
   // with official City data.
   const topicsById = new Map((config.themes || []).map((t) => [t.id, t]));
+  const sitesById = new Map((config.sites || []).map((s) => [s.id, s]));
   const commentTopicsListEl = document.getElementById("comment-topics-list");
   const markersByLocationKey = new Map();
   let pendingCommentLocation = null;
@@ -453,6 +454,104 @@
     });
   }
   loadTopicSummary();
+
+  // Live activity feed — a running list across both feedback types
+  // (site rankings and click-anywhere comments), newest first. Fetches a
+  // batch from each table up front rather than paging the database
+  // directly, since merging two tables' cursors is real complexity this
+  // tool's realistic volume doesn't need yet; "Load more" just reveals
+  // more of what's already in memory.
+  const ACTIVITY_FEED_FETCH_LIMIT = 40;
+  const ACTIVITY_FEED_PAGE_SIZE = 8;
+  let activityItems = [];
+  let activityRenderCount = 0;
+
+  async function loadActivityFeed() {
+    const listEl = document.getElementById("activity-feed-list");
+    const moreBtn = document.getElementById("activity-feed-more");
+    if (!db) {
+      listEl.innerHTML = `<li class="empty-msg">Backend not configured — see README.md.</li>`;
+      moreBtn.hidden = true;
+      return;
+    }
+
+    const [commentsResult, submissionsResult] = await Promise.all([
+      db
+        .from("map_comments")
+        .select("id, topic, created_at")
+        .order("created_at", { ascending: false })
+        .limit(ACTIVITY_FEED_FETCH_LIMIT),
+      db
+        .from("submissions")
+        .select("id, site_id, created_at")
+        .order("created_at", { ascending: false })
+        .limit(ACTIVITY_FEED_FETCH_LIMIT),
+    ]);
+
+    const comments = (commentsResult.data || []).map((c) => ({
+      type: "comment",
+      created_at: c.created_at,
+      topic: topicsById.get(c.topic) || null,
+    }));
+    const submissions = (submissionsResult.data || []).map((s) => ({
+      type: "submission",
+      created_at: s.created_at,
+      site: sitesById.get(s.site_id) || null,
+    }));
+
+    activityItems = comments
+      .concat(submissions)
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    activityRenderCount = 0;
+
+    if (!activityItems.length) {
+      listEl.innerHTML = `<li class="empty-msg">No activity yet.</li>`;
+      moreBtn.hidden = true;
+      return;
+    }
+    renderActivityFeed();
+  }
+
+  function renderActivityFeed() {
+    const listEl = document.getElementById("activity-feed-list");
+    const moreBtn = document.getElementById("activity-feed-more");
+    activityRenderCount = Math.min(
+      activityRenderCount + ACTIVITY_FEED_PAGE_SIZE,
+      activityItems.length
+    );
+
+    listEl.innerHTML = "";
+    activityItems.slice(0, activityRenderCount).forEach((item) => {
+      const isComment = item.type === "comment";
+      const color = isComment && item.topic ? item.topic.color : null;
+      const label = isComment
+        ? `A ${item.topic ? item.topic.label : "feedback"} marker was added`
+        : `A ranking was submitted for ${
+            item.site ? item.site.name : "a site"
+          }`;
+
+      const li = document.createElement("li");
+      li.className = "activity-item";
+      li.innerHTML = `
+        <span class="activity-item__dot" style="background:${escapeHtml(
+          color || "var(--text-muted)"
+        )}"></span>
+        <span class="activity-item__text">${escapeHtml(label)}</span>
+        <span class="activity-item__time">${formatRelativeTime(
+          item.created_at
+        )}</span>
+      `;
+      listEl.appendChild(li);
+    });
+
+    moreBtn.hidden = activityRenderCount >= activityItems.length;
+  }
+
+  document
+    .getElementById("activity-feed-more")
+    .addEventListener("click", renderActivityFeed);
+
+  loadActivityFeed();
 
   const mapCommentDialog = document.getElementById("map-comment-dialog");
   const mapCommentPanel = document.getElementById("map-comment-panel");
@@ -717,6 +816,7 @@
       ensureLocationMarker(lat, lng, address, row.topic);
       refreshContributionCounter();
       loadTopicSummary();
+      loadActivityFeed();
       refreshCommentThread(address, lat, lng);
     });
 
@@ -892,6 +992,7 @@
       statusEl.textContent = "Thanks! Your ranking was submitted.";
       statusEl.className = "status-msg is-ok";
       refreshContributionCounter();
+      loadActivityFeed();
     });
 
   // ---------- Community ideas (submissions + upvotes) ----------
@@ -1301,6 +1402,26 @@
         month: "short",
         day: "numeric",
       });
+    } catch {
+      return "";
+    }
+  }
+
+  function formatRelativeTime(iso) {
+    try {
+      const diffSec = Math.round((Date.now() - new Date(iso).getTime()) / 1000);
+      if (diffSec < 60) return "just now";
+      const diffMin = Math.round(diffSec / 60);
+      if (diffMin < 60) return `${diffMin} minute${diffMin === 1 ? "" : "s"} ago`;
+      const diffHour = Math.round(diffMin / 60);
+      if (diffHour < 24) return `${diffHour} hour${diffHour === 1 ? "" : "s"} ago`;
+      const diffDay = Math.round(diffHour / 24);
+      if (diffDay < 30) return `${diffDay} day${diffDay === 1 ? "" : "s"} ago`;
+      const diffMonth = Math.round(diffDay / 30);
+      if (diffMonth < 12)
+        return `${diffMonth} month${diffMonth === 1 ? "" : "s"} ago`;
+      const diffYear = Math.round(diffMonth / 12);
+      return `${diffYear} year${diffYear === 1 ? "" : "s"} ago`;
     } catch {
       return "";
     }

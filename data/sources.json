@@ -332,7 +332,8 @@
         "data/raw/property-boundaries.geojson",
         "data/raw/land-asset-inventory.geojson"
       ],
-      "_source": "City of Toronto Open Data Portal, School Locations - all types (EPSG:4326). Re-download and replace data/raw/school-locations.geojson to refresh, then re-run scripts/fetch-open-data.js."
+      "excludeFilter": { "SCHOOL_TYPE_DESC": "Private" },
+      "_source": "City of Toronto Open Data Portal, School Locations (EPSG:4326), excluding private schools (SCHOOL_TYPE_DESC=Private). Re-download and replace data/raw/school-locations.geojson to refresh, then re-run scripts/fetch-open-data.js."
     },
     {
       "id": "libraries",

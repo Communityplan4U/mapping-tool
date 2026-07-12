@@ -136,6 +136,21 @@ reverse geocoding only if the feature has nothing address-like.
   geocoding fails or returns nothing, the comment still saves; it just
   falls back to being grouped by its exact lat/lng instead (so it won't
   join a thread other visitors can find by clicking nearby).
+- **Browse & filter by type**: under "Community feedback" a list shows the
+  entries residents have left (topic, type, year, text, name, location —
+  never contact), so people can read them without hunting pins. A row of
+  type chips (All / Displaced / gone / Concern / Working / Idea, from
+  `feedbackTypes`) filters **both** this list and the map markers at once —
+  so picking "Displaced / gone" turns the map into a memory map of only the
+  places residents recorded as lost. A location marker matches if any entry
+  there is of the selected type.
+- **Category icons**: each community-feedback marker draws a purpose-made
+  line icon for its category (defined in `ICON_PATHS` in `js/app.js`, keyed
+  by theme id), white on the category color. These replace the earlier
+  emoji glyphs, which rendered inconsistently across devices and couldn't
+  take the theme color; the map's own control buttons use the same icon
+  system. Add an `ICON_PATHS` entry when you add a category — anything
+  without one falls back to a generic pin.
 - **Voting**: each comment has independent up/down voting (`map_comment_votes`
   table) — distinct from the upvote-only "support" mechanic on site
   submissions. Voting the same direction again retracts your vote; voting

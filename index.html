@@ -28,23 +28,19 @@
   <main>
     <section class="intro">
       <p>
-        This map shows public land sites where your neighbourhood is
-        collecting ideas. Pick a site to rank the uses you'd most like to
-        see there, add an idea/archive entry, and support ideas other residents have
-        already proposed. Map layers and community feedback are both
-        organized around the same categories, based on the Little
-        Jamaica Community Development Action Plan's focus areas. You can
-        click any shape on the map to leave feedback about it directly,
-        or use the <strong>📍 Add feedback marker</strong> button to
-        leave feedback anywhere.
+        This map shows public land in your neighbourhood. Click any shape
+        to leave feedback about it, or use the <strong>Add feedback
+        marker</strong> button to leave feedback anywhere on the map.
+        <button type="button" id="intro-how" class="link-btn">How it works</button>
       </p>
     </section>
 
     <section class="map-section">
       <div id="map" aria-label="Map of public land sites"></div>
+      <div id="map-toast" class="map-toast" role="status" aria-live="polite" hidden></div>
 
-      <div class="layers-panel">
-        <h2 class="layers-panel__title">Map layers</h2>
+      <details class="layers-panel" data-collapsible open>
+        <summary class="layers-panel__title">Map layers</summary>
         <p class="hint">
           Open data from the City of Toronto, grouped by category. Turn a
           category on to see its layers on the map; click a shape for
@@ -52,10 +48,10 @@
         </p>
         <ul id="layers-list" class="layers-list"></ul>
         <p id="layers-status" class="layers-status" role="status"></p>
-      </div>
+      </details>
 
-      <div class="layers-panel">
-        <h2 class="layers-panel__title">Community feedback</h2>
+      <details class="layers-panel" data-collapsible open>
+        <summary class="layers-panel__title">Community feedback</summary>
         <p class="hint">
           Feedback residents have left, grouped by address and category —
           anyone can add another idea/archive entry at a location others
@@ -64,13 +60,23 @@
         </p>
         <ul id="comment-topics-list" class="layers-list"></ul>
 
+        <h3 class="layers-panel__subtitle">Browse entries</h3>
+        <p class="hint">
+          Read what residents have shared. Filter by type — pick
+          <strong>Displaced / gone</strong> to see the neighbourhood's
+          record of places lost, as its own memory map.
+        </p>
+        <div id="feedback-filter" class="chip-filter" role="group" aria-label="Filter feedback by type"></div>
+        <ul id="feedback-entries-list" class="feedback-entries"></ul>
+        <button type="button" id="feedback-entries-more" class="btn btn--small" hidden>Load more</button>
+
         <h3 class="layers-panel__subtitle">Activity</h3>
         <ul id="activity-feed-list" class="activity-feed"></ul>
         <button type="button" id="activity-feed-more" class="btn btn--small" hidden>Load more</button>
 
         <h3 class="layers-panel__subtitle">Feedback by category</h3>
         <div id="topic-summary-chart" class="viz-root"></div>
-      </div>
+      </details>
 
       <ul id="site-list" class="site-list" aria-label="List of public land sites"></ul>
     </section>
@@ -88,8 +94,17 @@
       <strong>Click any shape or pin on the map</strong> — a school, park,
       vacant lot, or existing idea/archive entry — to leave feedback about
       that specific place. To leave feedback somewhere without a shape,
-      use the <strong>📍 Add feedback marker</strong> button, then click
+      use the <strong>Add feedback marker</strong> button, then click
       the map where you'd like to add one.
+    </p>
+
+    <h3 class="layers-panel__subtitle">Ranking uses &amp; categories</h3>
+    <p>
+      Map layers and community feedback are organized around the same
+      categories, based on the Little Jamaica Community Development Action
+      Plan's focus areas. Where public land sites are listed, you can also
+      rank the uses you'd most like to see there and support ideas other
+      residents have already proposed.
     </p>
 
     <h3 class="layers-panel__subtitle">What happens to your idea/archive entry</h3>
@@ -200,7 +215,9 @@
 
       <label class="field">
         <span>Topic</span>
-        <select id="map-comment-topic"></select>
+        <select id="map-comment-topic" required>
+          <option value="" disabled selected>Choose one…</option>
+        </select>
       </label>
 
       <p id="map-comment-sentiment-hint" class="hint" hidden></p>

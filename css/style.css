@@ -61,6 +61,26 @@ body {
   color: #fff;
 }
 
+/* Content links use the brand color instead of the browser default
+   blue/purple (which reads as broken in dark mode). Leaflet's own control
+   links (.leaflet-bar a etc.) are more specific and keep their own color. */
+a {
+  color: var(--accent);
+}
+
+/* A button that reads as an inline text link — used for "How it works" in
+   the intro, which opens the help dialog. */
+.link-btn {
+  font: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
 .muted {
   color: var(--text-secondary);
 }
@@ -133,6 +153,14 @@ main {
   width: 100%;
   border-radius: 8px;
   border: 1px solid var(--border);
+}
+
+/* On phones the map should lead, not sit squeezed above a long scroll of
+   panels — give it most of the viewport height. */
+@media (max-width: 480px) {
+  #map {
+    height: 60vh;
+  }
 }
 
 .site-list {
@@ -642,6 +670,116 @@ body.feedback-loading * {
   font-size: 0.95rem;
 }
 
+/* The two reference panels are <details> so they can collapse on small
+   screens (see the mobile logic in app.js). The summary keeps the panel
+   title's look but gains a pointer + the disclosure marker. */
+summary.layers-panel__title {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+details.layers-panel[open] > summary.layers-panel__title {
+  margin-bottom: 0.5rem;
+}
+
+/* Feedback-type filter chips */
+
+.chip-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 0.7rem;
+}
+
+.chip {
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-secondary);
+  border-radius: 999px;
+  padding: 0.25rem 0.7rem;
+  cursor: pointer;
+}
+
+.chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.chip.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* Browsable feedback entries */
+
+.feedback-entries {
+  list-style: none;
+  margin: 0 0 0.6rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.feedback-entry {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: var(--page-plane);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.55rem 0.7rem;
+  cursor: pointer;
+}
+
+.feedback-entry:hover,
+.feedback-entry:focus-visible {
+  border-color: var(--accent);
+}
+
+.feedback-entry__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.feedback-entry__topic {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.feedback-entry__type {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.05rem 0.5rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.feedback-entry__text {
+  display: block;
+  font-size: 0.9rem;
+  margin: 0 0 0.3rem;
+}
+
+.feedback-entry__meta {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
 .layers-panel__subtitle {
   margin: 1rem 0 0.5rem;
   padding-top: 0.75rem;
@@ -754,8 +892,20 @@ body.feedback-loading * {
   border: 2px solid var(--surface-1);
   box-sizing: border-box;
   box-shadow: 0 1px 4px rgba(11, 11, 11, 0.35);
-  font-size: 13px;
+  /* The category icon inside is a currentColor line SVG — white reads on
+     every category color. */
+  color: #fff;
   line-height: 1;
+}
+
+.icon {
+  display: block;
+}
+
+/* Map control glyphs are SVGs too; center them in the square controls. */
+.leaflet-bar a .icon,
+.map-controls-group a .icon {
+  margin: auto;
 }
 
 .feature-popup {
@@ -946,6 +1096,40 @@ body.feedback-loading * {
 
 .map-add-marker-cta {
   margin: 0 10px 10px 0 !important;
+}
+
+/* Instruction toast shown while "add a marker" mode is armed — the only
+   placing cue touch users get (no crosshair cursor on touch). Fixed to the
+   viewport bottom-center, above the map controls. */
+.map-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 1.25rem;
+  transform: translate(-50%, 8px);
+  z-index: 1300;
+  max-width: min(90vw, 22rem);
+  text-align: center;
+  background: #211d1a;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.6rem 1.1rem;
+  border-radius: 999px;
+  box-shadow: 0 4px 16px rgba(11, 11, 11, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.map-toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-toast {
+    transition: none;
+  }
 }
 
 .map-add-marker-cta__button {

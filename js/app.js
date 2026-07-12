@@ -32,6 +32,67 @@
   }
   const voterToken = getVoterToken();
 
+  // ---------- Icons ----------
+  // Purpose-drawn line icons, replacing the emoji glyphs that render
+  // differently on every OS and can't take a theme color. Category icons
+  // are keyed by theme id (see config.themes); the rest are UI glyphs.
+  // Everything uses stroke="currentColor", so an icon inherits whatever
+  // color its container sets — white on a category marker, the control's
+  // own text color on a map button, so both themes just work.
+  const ICON_PATHS = {
+    housing:
+      '<path d="M4 12l8-6.5 8 6.5"/><path d="M6.5 10.5V19h11v-8.5"/><path d="M10.5 19v-4h3v4"/>',
+    "commercial-nonprofit":
+      '<path d="M5 9l1-4h12l1 4"/><path d="M5 9a2 2 0 0 0 4.7 0 2 2 0 0 0 4.6 0 2 2 0 0 0 4.7 0"/><path d="M6 10.5V19h12v-8.5"/><path d="M10 19v-4h4v4"/>',
+    employment:
+      '<rect x="3.5" y="8" width="17" height="11" rx="1.5"/><path d="M9 8V6.5A1.5 1.5 0 0 1 10.5 5h3A1.5 1.5 0 0 1 15 6.5V8"/><path d="M3.5 12.5h17"/>',
+    "cultural-identity":
+      '<path d="M12 4l2.2 4.9 5.3.5-4 3.6 1.2 5.2L12 15.9 6.3 18.7l1.2-5.2-4-3.6 5.3-.5z"/>',
+    "parks-public-realm":
+      '<path d="M12 3.2c-2.7 0-4.3 2.1-3.2 4.4C6.3 7.4 5 9 5 10.7c0 1.7 1.4 3 3.4 3h7.2c2 0 3.4-1.3 3.4-3 0-1.7-1.3-3.3-3.8-3.1C16.3 5.3 14.7 3.2 12 3.2z"/><path d="M12 13.7V20"/>',
+    transportation:
+      '<rect x="4.5" y="5" width="15" height="11" rx="2"/><path d="M4.5 11.5h15"/><path d="M8 19.5l1-2M16 19.5l-1-2"/><circle cx="8.5" cy="13.6" r="0.7" fill="currentColor" stroke="none"/><circle cx="15.5" cy="13.6" r="0.7" fill="currentColor" stroke="none"/>',
+    "community-services":
+      '<path d="M4 20h16"/><path d="M5 20v-9l7-4 7 4v9"/><path d="M9 20v-5h6v5"/><path d="M4 11h16"/>',
+    "urban-community-planning":
+      '<path d="M9 4.5L4 6.5v13l5-2 6 2 5-2v-13l-5 2-6-2z"/><path d="M9 4.5v13M15 6.5v13"/>',
+    pin: '<path d="M12 21c4-4.4 6-7.7 6-10.6A6 6 0 0 0 6 10.4C6 13.3 8 16.6 12 21z"/><circle cx="12" cy="10.3" r="2.2"/>',
+    close: '<path d="M6 6l12 12M18 6L6 18"/>',
+    link: '<path d="M9.5 14.5l5-5"/><path d="M11 7.6l1-1a3.5 3.5 0 0 1 5 5l-1 1"/><path d="M13 16.4l-1 1a3.5 3.5 0 0 1-5-5l1-1"/>',
+    check: '<path d="M5 12.5l4.5 4.5L19 7"/>',
+    expand: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+    help: '<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.4a2.5 2.5 0 0 1 4.8 1c0 1.7-2.4 1.9-2.4 3.6"/><circle cx="12" cy="17.3" r="0.6" fill="currentColor" stroke="none"/>',
+  };
+
+  function svgIcon(name, size) {
+    const path = ICON_PATHS[name];
+    if (!path) return "";
+    const s = size || 18;
+    return `<svg class="icon" viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
+  }
+
+  // ---------- Map instruction toast ----------
+  const mapToastEl = document.getElementById("map-toast");
+  let mapToastTimer = null;
+  function showMapToast(message, autoHideMs) {
+    if (!mapToastEl) return;
+    clearTimeout(mapToastTimer);
+    mapToastEl.textContent = message;
+    mapToastEl.hidden = false;
+    // Reflow so the opacity/transform transition runs on this show.
+    void mapToastEl.offsetWidth;
+    mapToastEl.classList.add("is-visible");
+    if (autoHideMs) mapToastTimer = setTimeout(hideMapToast, autoHideMs);
+  }
+  function hideMapToast() {
+    if (!mapToastEl) return;
+    clearTimeout(mapToastTimer);
+    mapToastEl.classList.remove("is-visible");
+    mapToastTimer = setTimeout(() => {
+      mapToastEl.hidden = true;
+    }, 220);
+  }
+
   // ---------- Page header / intro ----------
   document.getElementById(
     "page-title"
@@ -69,6 +130,11 @@
   refreshContributionCounter();
 
   // ---------- Map ----------
+  const helpDialog = document.getElementById("help-dialog");
+  document.getElementById("intro-how")?.addEventListener("click", () => {
+    helpDialog.showModal();
+  });
+
   const map = L.map("map").setView(
     config.neighbourhood.center,
     config.neighbourhood.zoom
@@ -223,7 +289,7 @@
         "aria-label",
         "How this works — help and moderation info"
       );
-      helpBtn.innerHTML = "?";
+      helpBtn.innerHTML = svgIcon("help");
       L.DomEvent.on(helpBtn, "click", L.DomEvent.stop).on(helpBtn, "click", () =>
         document.getElementById("help-dialog").showModal()
       );
@@ -233,7 +299,7 @@
       fullscreenBtn.title = "Toggle fullscreen";
       fullscreenBtn.setAttribute("role", "button");
       fullscreenBtn.setAttribute("aria-label", "Toggle fullscreen map");
-      fullscreenBtn.innerHTML = "⛶";
+      fullscreenBtn.innerHTML = svgIcon("expand");
       L.DomEvent.on(fullscreenBtn, "click", L.DomEvent.stop).on(
         fullscreenBtn,
         "click",
@@ -245,16 +311,16 @@
       shareBtn.title = "Copy link to this map";
       shareBtn.setAttribute("role", "button");
       shareBtn.setAttribute("aria-label", "Copy link to this map");
-      shareBtn.innerHTML = "🔗";
+      shareBtn.innerHTML = svgIcon("link");
       L.DomEvent.on(shareBtn, "click", L.DomEvent.stop).on(
         shareBtn,
         "click",
         async () => {
           try {
             await navigator.clipboard.writeText(window.location.href);
-            shareBtn.innerHTML = "✅";
+            shareBtn.innerHTML = svgIcon("check");
             setTimeout(() => {
-              shareBtn.innerHTML = "🔗";
+              shareBtn.innerHTML = svgIcon("link");
             }, 1500);
           } catch {
             // Clipboard API may be unavailable (e.g. insecure context) —
@@ -277,7 +343,7 @@
   // deliberate action instead of firing on every click while panning.
   let addMarkerMode = false;
   function addMarkerButtonContent(active) {
-    const icon = active ? "✕" : "📍";
+    const icon = active ? svgIcon("close", 18) : svgIcon("pin", 18);
     const label = active ? "Cancel adding a marker" : "Add feedback marker";
     return `<span class="map-add-marker-cta__icon" aria-hidden="true">${icon}</span><span class="map-add-marker-cta__label">${label}</span>`;
   }
@@ -321,6 +387,20 @@
     button.classList.toggle("is-active", active);
     button.innerHTML = addMarkerButtonContent(active);
     button.title = active ? "Cancel adding a marker" : "Add a feedback marker";
+    // The crosshair cursor is the only other "you're placing a marker" cue,
+    // and touch devices have no cursor — so this instruction is the whole
+    // signal there. Shown while armed, cleared when a marker is placed or
+    // the mode is cancelled.
+    if (active) {
+      const touch = window.matchMedia("(hover: none)").matches;
+      showMapToast(
+        touch
+          ? "Tap the map where you'd like to leave your entry"
+          : "Click the map where you'd like to leave your entry"
+      );
+    } else {
+      hideMapToast();
+    }
   }
 
   document.addEventListener("keydown", (e) => {
@@ -345,6 +425,28 @@
   const commentTopicsListEl = document.getElementById("comment-topics-list");
   const markersByLocationKey = new Map();
   let pendingCommentLocation = null;
+  // A location marker is shown when BOTH its category checkbox is on and
+  // it matches the active feedback-type filter (e.g. "Displaced / gone").
+  // A marker aggregates a whole thread, so it carries the set of every
+  // sentiment posted at that location and matches if any of them do.
+  let sentimentFilter = "all";
+
+  function markerMatchesFilters(entry) {
+    const cb = commentTopicsListEl.querySelector(
+      `input[data-topic-id="${entry.topicId}"]`
+    );
+    const topicOn = !cb || cb.checked;
+    const typeOn =
+      sentimentFilter === "all" || entry.sentiments.has(sentimentFilter);
+    return topicOn && typeOn;
+  }
+  function applyMarkerVisibility(entry) {
+    if (markerMatchesFilters(entry)) entry.marker.addTo(map);
+    else map.removeLayer(entry.marker);
+  }
+  function applyAllMarkerVisibility() {
+    markersByLocationKey.forEach(applyMarkerVisibility);
+  }
 
   (config.themes || []).forEach((topic) => {
     const li = document.createElement("li");
@@ -358,12 +460,9 @@
         ${escapeHtml(topic.label)}
       </label>
     `;
-    li.querySelector("input").addEventListener("change", (e) => {
-      const visible = e.currentTarget.checked;
+    li.querySelector("input").addEventListener("change", () => {
       markersByLocationKey.forEach((entry) => {
-        if (entry.topicId !== topic.id) return;
-        if (visible) entry.marker.addTo(map);
-        else map.removeLayer(entry.marker);
+        if (entry.topicId === topic.id) applyMarkerVisibility(entry);
       });
     });
     commentTopicsListEl.appendChild(li);
@@ -377,11 +476,12 @@
   // later with purpose-drawn icons that stay legible at every zoom level;
   // emoji are a placeholder for that, not the final look.
   function commentMarkerIcon(theme) {
+    const inner = ICON_PATHS[theme.id] ? svgIcon(theme.id, 15) : svgIcon("pin", 15);
     return L.divIcon({
       className: "glyph-marker-wrapper",
       html: `<span class="glyph-marker" style="background:${escapeHtml(
         theme.color
-      )}">${escapeHtml(theme.glyph || "📍")}</span>`,
+      )}">${inner}</span>`,
       iconSize: [26, 26],
       iconAnchor: [13, 13],
       popupAnchor: [0, -13],
@@ -395,26 +495,31 @@
   // First comment at an address sets the marker's color/position; later
   // comments at the same address join its thread without moving or
   // recoloring the marker.
-  function ensureLocationMarker(lat, lng, address, topicId) {
+  function ensureLocationMarker(lat, lng, address, topicId, sentimentId) {
     const key = locationKey(address, lat, lng);
     let entry = markersByLocationKey.get(key);
-    if (entry) return entry;
+    if (entry) {
+      if (sentimentId) entry.sentiments.add(sentimentId);
+      applyMarkerVisibility(entry);
+      return entry;
+    }
 
     const topic = topicsById.get(topicId);
     const marker = L.marker([lat, lng], {
-      icon: commentMarkerIcon(topic || { color: "#898781", glyph: "📍" }),
+      icon: commentMarkerIcon(topic || { color: "#898781" }),
     });
     marker.on("click", (e) => {
       L.DomEvent.stopPropagation(e);
       openMapCommentDialog({ lat, lng, address });
     });
-    const checkbox = commentTopicsListEl.querySelector(
-      `input[data-topic-id="${topicId}"]`
-    );
-    if (!checkbox || checkbox.checked) marker.addTo(map);
 
-    entry = { marker, topicId };
+    entry = {
+      marker,
+      topicId,
+      sentiments: new Set(sentimentId ? [sentimentId] : []),
+    };
     markersByLocationKey.set(key, entry);
+    applyMarkerVisibility(entry);
     return entry;
   }
 
@@ -431,18 +536,173 @@
     }
   }
 
+  let allMapComments = [];
+
   async function loadMapComments() {
     if (!db) return;
     const { data, error } = await db
       .from("map_comments")
-      .select("id, lat, lng, address, topic, created_at")
-      .order("created_at", { ascending: true });
+      .select(
+        "id, lat, lng, address, topic, sentiment, year_last_there, comment, name, created_at"
+      )
+      .order("created_at", { ascending: false });
     if (error || !data) return;
-    data.forEach((row) =>
-      ensureLocationMarker(row.lat, row.lng, row.address || null, row.topic)
-    );
+    // contact is deliberately never selected here — it stays out of the
+    // public browser entirely, only reachable from the admin reporting view.
+    allMapComments = data;
+    // Markers register oldest-first, so the first comment at an address
+    // still sets that location's marker color/position; sentiments from
+    // every later comment there accumulate onto the same marker.
+    data
+      .slice()
+      .reverse()
+      .forEach((row) =>
+        ensureLocationMarker(
+          row.lat,
+          row.lng,
+          row.address || null,
+          row.topic,
+          row.sentiment
+        )
+      );
+    renderFeedbackEntries();
   }
+
+  // ---------- Feedback-type filter + browsable entry list ----------
+  // Lets residents read others' entries without hunting pins, and — via
+  // the same filter — view a single type (e.g. displaced places) as its
+  // own map: picking a chip both filters this list and hides every marker
+  // that doesn't match, so "Displaced / gone" becomes a memory map.
+  const feedbackFilterEl = document.getElementById("feedback-filter");
+  const feedbackEntriesListEl = document.getElementById(
+    "feedback-entries-list"
+  );
+  const feedbackEntriesMoreBtn = document.getElementById(
+    "feedback-entries-more"
+  );
+  const FEEDBACK_ENTRIES_PAGE_SIZE = 6;
+  let feedbackEntriesShown = FEEDBACK_ENTRIES_PAGE_SIZE;
+
+  function buildFeedbackFilter() {
+    if (!feedbackFilterEl) return;
+    const chips = [{ id: "all", shortLabel: "All" }].concat(
+      config.feedbackTypes || []
+    );
+    feedbackFilterEl.innerHTML = "";
+    chips.forEach((c) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "chip" + (c.id === sentimentFilter ? " is-active" : "");
+      btn.dataset.type = c.id;
+      btn.textContent = c.shortLabel || c.label;
+      btn.addEventListener("click", () => setSentimentFilter(c.id));
+      feedbackFilterEl.appendChild(btn);
+    });
+  }
+
+  function setSentimentFilter(type) {
+    sentimentFilter = type;
+    if (feedbackFilterEl) {
+      feedbackFilterEl.querySelectorAll(".chip").forEach((b) => {
+        b.classList.toggle("is-active", b.dataset.type === type);
+      });
+    }
+    feedbackEntriesShown = FEEDBACK_ENTRIES_PAGE_SIZE;
+    applyAllMarkerVisibility();
+    renderFeedbackEntries();
+  }
+
+  function renderFeedbackEntries() {
+    if (!feedbackEntriesListEl) return;
+    const filtered = allMapComments.filter(
+      (c) => sentimentFilter === "all" || c.sentiment === sentimentFilter
+    );
+    if (!filtered.length) {
+      feedbackEntriesListEl.innerHTML = `<li class="empty-msg">${
+        allMapComments.length
+          ? "No entries of this type yet."
+          : "No feedback entries yet — be the first!"
+      }</li>`;
+      if (feedbackEntriesMoreBtn) feedbackEntriesMoreBtn.hidden = true;
+      return;
+    }
+
+    const shown = filtered.slice(0, feedbackEntriesShown);
+    feedbackEntriesListEl.innerHTML = shown
+      .map((c, i) => {
+        const topic = topicsById.get(c.topic);
+        const type = sentimentsById.get(c.sentiment);
+        const metaBits = [
+          c.address || `${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}`,
+          c.year_last_there ? `Last there ${c.year_last_there}` : null,
+          c.name || null,
+          formatDate(c.created_at),
+        ].filter(Boolean);
+        return `
+          <li>
+            <button type="button" class="feedback-entry" data-idx="${i}">
+              <span class="feedback-entry__head">
+                <span class="feedback-entry__topic" style="color:${escapeHtml(
+                  topic ? topic.color : "inherit"
+                )}">${escapeHtml(topic ? topic.label : c.topic)}</span>
+                ${
+                  type
+                    ? `<span class="feedback-entry__type">${escapeHtml(
+                        type.shortLabel || type.label
+                      )}</span>`
+                    : ""
+                }
+              </span>
+              <span class="feedback-entry__text">${escapeHtml(
+                c.comment || ""
+              )}</span>
+              <span class="feedback-entry__meta">${escapeHtml(
+                metaBits.join(" · ")
+              )}</span>
+            </button>
+          </li>`;
+      })
+      .join("");
+
+    feedbackEntriesListEl.querySelectorAll(".feedback-entry").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const c = shown[Number(btn.dataset.idx)];
+        if (c) {
+          openMapCommentDialog({
+            lat: c.lat,
+            lng: c.lng,
+            address: c.address || undefined,
+          });
+        }
+      });
+    });
+
+    if (feedbackEntriesMoreBtn) {
+      feedbackEntriesMoreBtn.hidden = feedbackEntriesShown >= filtered.length;
+    }
+  }
+
+  if (feedbackEntriesMoreBtn) {
+    feedbackEntriesMoreBtn.addEventListener("click", () => {
+      feedbackEntriesShown += FEEDBACK_ENTRIES_PAGE_SIZE;
+      renderFeedbackEntries();
+    });
+  }
+
+  buildFeedbackFilter();
   loadMapComments();
+
+  // On small screens the two reference panels (Map layers, Community
+  // feedback) otherwise push the map and everything else into a long
+  // scroll — collapse them by default there so the map leads, one tap
+  // from being reopened. They stay open on wider screens.
+  if (window.matchMedia("(max-width: 640px)").matches) {
+    document
+      .querySelectorAll("details.layers-panel[data-collapsible]")
+      .forEach((d) => {
+        d.open = false;
+      });
+  }
 
   // Aggregate count of feedback per topic across the whole map — the
   // click-anywhere-feedback analog of the per-site results bar chart.
@@ -700,7 +960,10 @@
 
   async function openMapCommentDialog({ lat, lng, address, presetTopic }) {
     pendingCommentLocation = { lat, lng, address: address || null };
-    if (presetTopic) mapCommentTopicSelect.value = presetTopic;
+    // Reset topic to the unselected placeholder each open (unless a shape's
+    // category preset it), so a leftover choice can't be filed silently —
+    // it's required, same as the feedback type below.
+    mapCommentTopicSelect.value = presetTopic || "";
     document.getElementById("map-comment-text").value = "";
     // Reset to the unselected placeholder each time, so a sentiment
     // chosen for a previous comment can't be silently reused for this
@@ -929,6 +1192,12 @@
         statusEl.className = "status-msg is-error";
         return;
       }
+      const topic = mapCommentTopicSelect.value;
+      if (!topic) {
+        statusEl.textContent = "Please choose a topic for your entry.";
+        statusEl.className = "status-msg is-error";
+        return;
+      }
 
       const name = document.getElementById("map-comment-name").value.trim();
       const contact = document
@@ -947,7 +1216,7 @@
         lat,
         lng,
         address,
-        topic: mapCommentTopicSelect.value,
+        topic,
         sentiment,
         year_last_there: year,
         comment,
@@ -967,10 +1236,11 @@
       statusEl.className = "status-msg is-ok";
       document.getElementById("map-comment-text").value = "";
       document.getElementById("map-comment-year").value = "";
-      ensureLocationMarker(lat, lng, address, row.topic);
+      ensureLocationMarker(lat, lng, address, row.topic, row.sentiment);
       refreshContributionCounter();
       loadTopicSummary();
       loadActivityFeed();
+      loadMapComments();
       refreshCommentThread(address, lat, lng);
     });
 

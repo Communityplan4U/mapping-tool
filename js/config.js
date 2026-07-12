@@ -42,16 +42,32 @@ window.APP_CONFIG = {
   // another option later. "askYear" is the same kind of opt-in extra: it
   // shows a "what year was it last there" field, generic to any type
   // rather than hardcoded to "losing" specifically.
+  // `shortLabel` is used where the full sentence is too long — the
+  // feedback-type filter chips and the browse list's type badge. Falls
+  // back to `label` if omitted.
   feedbackTypes: [
     {
       id: "losing",
       label: "A place being displaced or that is no longer there",
+      shortLabel: "Displaced / gone",
       hint: "If you can, include the name of the place and a link to a photo of it — it helps build the record of what's been lost.",
       askYear: true,
     },
-    { id: "concern", label: "A concern — something that doesn't feel right" },
-    { id: "working", label: "Something that's working — keep it" },
-    { id: "idea", label: "An idea or suggestion for the future" },
+    {
+      id: "concern",
+      label: "A concern — something that doesn't feel right",
+      shortLabel: "Concern",
+    },
+    {
+      id: "working",
+      label: "Something that's working — keep it",
+      shortLabel: "Working",
+    },
+    {
+      id: "idea",
+      label: "An idea or suggestion for the future",
+      shortLabel: "Idea",
+    },
   ],
 
   // Shared taxonomy used by BOTH the open data layers (the "theme" field
@@ -74,10 +90,11 @@ window.APP_CONFIG = {
   // palette (see README.md) — Urban & Community Planning reclaims the
   // blue slot Governance retired.
   //
-  // `glyph` is the emoji shown on every point marker in that category, so
-  // categories are legible on sight without opening the legend — replaces
-  // the old circle/diamond/triangle shape system (see data/sources.json
-  // history if you need to bring per-layer shapes back for some reason).
+  // `glyph` is a legacy emoji label kept for reference. Community-feedback
+  // markers now draw a purpose-made line icon per category instead (see
+  // ICON_PATHS in js/app.js, keyed by these ids) — crisper than emoji and
+  // able to take the theme color. Add a matching entry to ICON_PATHS when
+  // you add a category; anything without one falls back to a generic pin.
   themes: [
     { id: "housing", label: "Housing", color: "#e87ba4", glyph: "🏠" },
     {

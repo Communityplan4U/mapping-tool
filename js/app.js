@@ -184,6 +184,19 @@
         "leaflet-bar leaflet-control leaflet-control-custom map-controls-group"
       );
 
+      const helpBtn = L.DomUtil.create("a", "", container);
+      helpBtn.href = "#";
+      helpBtn.title = "How this works";
+      helpBtn.setAttribute("role", "button");
+      helpBtn.setAttribute(
+        "aria-label",
+        "How this works — help and moderation info"
+      );
+      helpBtn.innerHTML = "?";
+      L.DomEvent.on(helpBtn, "click", L.DomEvent.stop).on(helpBtn, "click", () =>
+        document.getElementById("help-dialog").showModal()
+      );
+
       const fullscreenBtn = L.DomUtil.create("a", "", container);
       fullscreenBtn.href = "#";
       fullscreenBtn.title = "Toggle fullscreen";

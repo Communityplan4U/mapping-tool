@@ -35,17 +35,24 @@ create table if not exists upvotes (
 -- address, similar to how multiple submissions can share one site_id.
 -- address is nullable — older rows predating this column, or a submission
 -- where reverse geocoding failed, fall back to grouping by lat/lng.
+-- sentiment is what *kind* of feedback this is (losing/concern/working/
+-- idea — see feedbackTypes in js/config.js), separate from its topic.
+-- Required in the app, but nullable here: existing rows predating this
+-- column have no value, and Postgres won't let a NOT NULL column be added
+-- to a table that already has rows without one.
 create table if not exists map_comments (
   id uuid primary key default gen_random_uuid(),
   lat double precision not null,
   lng double precision not null,
   address text,
   topic text not null,
+  sentiment text not null,
   comment text not null,
   voter_token text not null,
   created_at timestamptz not null default now()
 );
 alter table map_comments add column if not exists address text;
+alter table map_comments add column if not exists sentiment text;
 
 -- Up/down votes on individual map_comments rows (distinct from the
 -- upvote-only "support" mechanic on site submissions). One row per

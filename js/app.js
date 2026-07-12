@@ -339,6 +339,9 @@
   // with official City data.
   const topicsById = new Map((config.themes || []).map((t) => [t.id, t]));
   const sitesById = new Map((config.sites || []).map((s) => [s.id, s]));
+  const sentimentsById = new Map(
+    (config.feedbackTypes || []).map((s) => [s.id, s])
+  );
   const commentTopicsListEl = document.getElementById("comment-topics-list");
   const markersByLocationKey = new Map();
   let pendingCommentLocation = null;
@@ -635,6 +638,16 @@
     mapCommentTopicSelect.appendChild(opt);
   });
 
+  const mapCommentSentimentSelect = document.getElementById(
+    "map-comment-sentiment"
+  );
+  (config.feedbackTypes || []).forEach((sentiment) => {
+    const opt = document.createElement("option");
+    opt.value = sentiment.id;
+    opt.textContent = sentiment.label;
+    mapCommentSentimentSelect.appendChild(opt);
+  });
+
   // Short/new threads open in the centered dialog, unchanged. A thread
   // that already has 1+ comments opens in the slide-out panel instead, so
   // the list gets its own scroll region and the compose form stays
@@ -666,6 +679,11 @@
     pendingCommentLocation = { lat, lng, address: address || null };
     if (presetTopic) mapCommentTopicSelect.value = presetTopic;
     document.getElementById("map-comment-text").value = "";
+    // Reset to the unselected placeholder each time, so a sentiment
+    // chosen for a previous comment can't be silently reused for this
+    // one — it's required, and each comment should get a deliberate
+    // choice.
+    mapCommentSentimentSelect.value = "";
     const statusEl = document.getElementById("map-comment-status");
     statusEl.textContent = "";
     statusEl.className = "status-msg";
@@ -715,7 +733,7 @@
   async function fetchCommentThread(address, lat, lng) {
     let query = db
       .from("map_comments")
-      .select("id, topic, comment, created_at");
+      .select("id, topic, sentiment, comment, created_at");
     query = address
       ? query.eq("address", address)
       : query.eq("lat", lat).eq("lng", lng);
@@ -759,6 +777,7 @@
     listEl.innerHTML = "";
     comments.forEach((c) => {
       const topic = topicsById.get(c.topic);
+      const sentiment = sentimentsById.get(c.sentiment);
       const cVotes = votesByComment.get(c.id) || [];
       const upCount = cVotes.filter((v) => v.direction === 1).length;
       const downCount = cVotes.filter((v) => v.direction === -1).length;
@@ -773,6 +792,13 @@
           )}">${escapeHtml(topic ? topic.label : c.topic)}</span>
           <span class="idea-card__time">${formatDate(c.created_at)}</span>
         </div>
+        ${
+          sentiment
+            ? `<span class="idea-card__sentiment">${escapeHtml(
+                sentiment.label
+              )}</span>`
+            : ""
+        }
         <p class="idea-card__comment">${escapeHtml(c.comment)}</p>
         <div class="vote-btns">
           <button type="button" class="upvote-btn${
@@ -858,6 +884,13 @@
         statusEl.className = "status-msg is-error";
         return;
       }
+      const sentiment = mapCommentSentimentSelect.value;
+      if (!sentiment) {
+        statusEl.textContent =
+          "Please choose what type of feedback this is.";
+        statusEl.className = "status-msg is-error";
+        return;
+      }
 
       const submitBtn = document.getElementById("submit-map-comment");
       submitBtn.disabled = true;
@@ -870,6 +903,7 @@
         lng,
         address,
         topic: mapCommentTopicSelect.value,
+        sentiment,
         comment,
         voter_token: voterToken,
       };

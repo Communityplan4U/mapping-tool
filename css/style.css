@@ -455,6 +455,18 @@ body.feedback-loading * {
   margin: 0 0 0.3rem;
 }
 
+.idea-card__sentiment {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--page-plane);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  margin-bottom: 0.4rem;
+}
+
 .idea-card__comment {
   font-size: 0.9rem;
   margin: 0 0 0.5rem;

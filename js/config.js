@@ -31,6 +31,19 @@ window.APP_CONFIG = {
     { id: "natural", label: "Leave as natural space" },
   ],
 
+  // What kind of thing a piece of click-anywhere map feedback is —
+  // separate from its topic (Housing, Parks, etc. — see themes below).
+  // Required when leaving feedback. "losing" gets its own option rather
+  // than folding into a generic "concern" bucket: a record of
+  // displacement/loss at volume is evidence a generic concern option
+  // wouldn't surface on its own.
+  feedbackTypes: [
+    { id: "losing", label: "A place I'm losing, or have lost" },
+    { id: "concern", label: "A concern — something that doesn't feel right" },
+    { id: "working", label: "Something that's working — keep it" },
+    { id: "idea", label: "An idea or suggestion for the future" },
+  ],
+
   // Shared taxonomy used by BOTH the open data layers (the "theme" field
   // on each entry in data/sources.json) and community feedback (the topic
   // residents pick when leaving a comment). One taxonomy, one color and

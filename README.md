@@ -97,6 +97,11 @@ reverse geocoding only if the feature has nothing address-like.
   the dropdown, the "Community feedback" toggle panel, and the "Map
   layers" panel are all generated from this list. See "Open data map
   layers" below for how layers are assigned to categories.
+- **Feedback type** is a second, required dropdown — separate from
+  category — for what *kind* of thing the comment is (a loss, a concern,
+  something working, an idea). Defined in `feedbackTypes` in
+  `js/config.js`. It's a plain tag on the comment, not something other
+  residents vote on separately from the comment itself.
 - **Threading by address**: matching is an exact string match against the
   `address` column (same approach the address-search feature already uses
   for its `site_id`) — two clicks that Nominatim resolves to slightly

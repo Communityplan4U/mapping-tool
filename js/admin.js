@@ -6,6 +6,9 @@
     (config.categories || []).map((c) => [c.id, c])
   );
   const topicsById = new Map((config.themes || []).map((t) => [t.id, t]));
+  const sentimentsById = new Map(
+    (config.feedbackTypes || []).map((s) => [s.id, s])
+  );
   const siteNameById = new Map((config.sites || []).map((s) => [s.id, s.name]));
 
   const isConfigured =
@@ -123,7 +126,7 @@
 
     const { data, error } = await db
       .from("map_comments")
-      .select("topic, comment, lat, lng, address, created_at")
+      .select("topic, sentiment, comment, lat, lng, address, created_at")
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -141,6 +144,9 @@
         (row) => `
           <tr>
             <td>${escapeHtml(topicsById.get(row.topic)?.label || row.topic)}</td>
+            <td>${escapeHtml(
+              sentimentsById.get(row.sentiment)?.label || row.sentiment || ""
+            )}</td>
             <td>${escapeHtml(row.comment || "")}</td>
             <td>${escapeHtml(
               row.address || `${row.lat.toFixed(5)}, ${row.lng.toFixed(5)}`
@@ -175,6 +181,7 @@
         "map-feedback.csv",
         [
           "Topic",
+          "Feedback type",
           "Comment",
           "Address",
           "Latitude",
@@ -183,6 +190,7 @@
         ],
         latestMapComments.map((row) => [
           topicsById.get(row.topic)?.label || row.topic,
+          sentimentsById.get(row.sentiment)?.label || row.sentiment || "",
           row.comment || "",
           row.address || "",
           row.lat,

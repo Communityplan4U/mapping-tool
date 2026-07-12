@@ -60,7 +60,9 @@
         { "Building Description": "LEASED SPACE FOR CONSTITUENCY OFFICE" },
         { "Building Type": ["Community Recreation Centre", "Community Centre"] },
         { "Building Description": "YORK CIVIC CENTRE - SILVERTHORN DAY CARE CENTRE" },
-        { "Building Type": "Library" }
+        { "Building Type": "Library" },
+        { "Building Type": "Boiler House/Meter House" },
+        { "Building Description": "FORMER HYDRO BUILDING" }
       ],
       "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Building (EPSG:4326), unfiltered except the buildings excluded above — each either duplicates a location already shown by another layer (Libraries — see the Library Branches layer) or belongs under a different category and is shown instead by one of the real-estate-* layers below (see each layer's own _source note for which)."
     },
@@ -204,6 +206,22 @@
       "_source": "Same source file as real-estate-buildings, filtered down to buildings that sit within named parks already covered by the green-spaces layer (Fairbank Memorial Park, Keelesdale Park, Bert Robinson Park, Cedarvale Park, Charles Caccia Park) — grouped under Parks & Public Realm instead of Governance so they aren't shown twice under two different categories."
     },
     {
+      "id": "real-estate-utility-buildings",
+      "label": "Real Estate Asset Inventory (Utility Buildings)",
+      "theme": "parks-public-realm",
+      "shape": "triangle",
+      "file": "data/raw/building-asset-inventory.geojson",
+      "footprintSource": [
+        "data/raw/property-boundaries.geojson",
+        "data/raw/land-asset-inventory.geojson"
+      ],
+      "filter": [
+        { "Building Type": "Boiler House/Meter House" },
+        { "Building Description": "FORMER HYDRO BUILDING" }
+      ],
+      "_source": "Same source file as real-estate-buildings, filtered down to the Bathurst - Eglinton Meter House (matched by type, which is unique to it) and the Former Hydro Building (matched by exact description, since its \"Office Building - Large\" type is shared with the constituency office and the Nia Centre for the Arts, both already grouped elsewhere) — grouped under Parks & Public Realm instead of Governance."
+    },
+    {
       "id": "real-estate-land",
       "label": "Real Estate Asset Inventory (Land)",
       "theme": "governance",
@@ -229,7 +247,9 @@
           ]
         },
         { "Property Type": "Library Facility" },
-        { "Property Type": ["Vacant Land", "Reserve Strip", "Road Allowance"] }
+        { "Property Type": ["Vacant Land", "Reserve Strip", "Road Allowance"] },
+        { "Property Type": ["Water Management", "Administrative Faci."] },
+        { "Property Description": "YORK-WESTON METER HOUSE" }
       ],
       "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Land (EPSG:4326), excluding parcels covered by the real-estate-* layers below (each grouped under whichever category it actually belongs to instead of Governance — see each layer's own _source note for which), plus parcels dropped outright because they duplicate a location already shown elsewhere (Libraries — see the Library Branches layer; the Nia Centre for the Arts land record — see the real-estate-commercial-buildings layer for its building; and the York Civic Centre & Coronation Park combined parcel — see the real-estate-public-facility-buildings layer for the Civic Centre building and the Green Spaces layer for Coronation Park). Re-download and replace data/raw/land-asset-inventory.geojson to refresh, then re-run scripts/fetch-open-data.js."
     },
@@ -257,6 +277,18 @@
       "file": "data/raw/land-asset-inventory.geojson",
       "filter": { "Property Type": ["Vacant Land", "Reserve Strip", "Road Allowance"] },
       "_source": "Same source file as real-estate-land, filtered down to parcels typed \"Vacant Land\", \"Reserve Strip\", or \"Road Allowance\" — grouped under Parks & Public Realm instead of Governance."
+    },
+    {
+      "id": "real-estate-utility-land",
+      "label": "Real Estate Asset Inventory (Utility Land)",
+      "theme": "parks-public-realm",
+      "file": "data/raw/land-asset-inventory.geojson",
+      "filter": [
+        { "Property Type": "Water Management" },
+        { "Property Description": "FORMER HYDRO PROPERTY" },
+        { "Property Description": "YORK-WESTON METER HOUSE" }
+      ],
+      "_source": "Same source file as real-estate-land, filtered down to parcels typed \"Water Management\", plus the Former Hydro Property (matched by exact description, since its \"Administrative Faci.\" type is shared with a carpark parcel already grouped under Transportation) and the York-Weston Meter House — grouped under Parks & Public Realm instead of Governance."
     },
     {
       "id": "real-estate-railway-land",

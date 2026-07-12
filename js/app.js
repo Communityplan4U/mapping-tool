@@ -1301,21 +1301,8 @@
         fillOpacity: 0.15,
         dashArray: layer.dashed ? "6 4" : null,
       }),
-      pointToLayer: (feature, latlng) => {
-        if (layer.shape === "diamond") {
-          return L.marker(latlng, { icon: diamondIcon(color) });
-        }
-        if (layer.shape === "triangle") {
-          return L.marker(latlng, { icon: triangleIcon(color) });
-        }
-        return L.circleMarker(latlng, {
-          radius: layer.radius || 6,
-          color,
-          fillColor: color,
-          fillOpacity: 0.7,
-          weight: 2,
-        });
-      },
+      pointToLayer: (feature, latlng) =>
+        L.marker(latlng, { icon: glyphIcon(theme) }),
       onEachFeature: (feature, leafletLayer) => {
         leafletLayer.bindPopup(
           buildFeaturePopup(layer.label, theme, feature.properties)
@@ -1337,27 +1324,19 @@
     });
   }
 
-  function diamondIcon(color) {
+  // One glyph per category (see themes in js/config.js), on a colored
+  // badge — legible on sight without opening a legend, and replaces the
+  // old circle/diamond/triangle shapes that only distinguished layers
+  // from each other, not what they actually were.
+  function glyphIcon(theme) {
     return L.divIcon({
-      className: "diamond-marker-wrapper",
-      html: `<span class="diamond-marker" style="background:${escapeHtml(
-        color
-      )}"></span>`,
-      iconSize: [12, 12],
-      iconAnchor: [6, 6],
-      popupAnchor: [0, -6],
-    });
-  }
-
-  function triangleIcon(color) {
-    return L.divIcon({
-      className: "triangle-marker-wrapper",
-      html: `<span class="triangle-marker" style="border-bottom-color:${escapeHtml(
-        color
-      )}"></span>`,
-      iconSize: [14, 12],
-      iconAnchor: [7, 10],
-      popupAnchor: [0, -10],
+      className: "glyph-marker-wrapper",
+      html: `<span class="glyph-marker" style="background:${escapeHtml(
+        theme.color
+      )}">${escapeHtml(theme.glyph || "📍")}</span>`,
+      iconSize: [26, 26],
+      iconAnchor: [13, 13],
+      popupAnchor: [0, -13],
     });
   }
 

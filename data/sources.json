@@ -26,7 +26,6 @@
       "id": "real-estate-transit-buildings",
       "label": "Real Estate Asset Inventory (Transit Buildings)",
       "theme": "transportation",
-      "shape": "diamond",
       "file": "data/raw/building-asset-inventory.geojson",
       "footprintSource": [
         "data/raw/property-boundaries.geojson",
@@ -39,7 +38,6 @@
       "id": "real-estate-commercial-buildings",
       "label": "Real Estate Asset Inventory (Commercial & Non-Profit Buildings)",
       "theme": "commercial-nonprofit",
-      "shape": "diamond",
       "file": "data/raw/building-asset-inventory.geojson",
       "footprintSource": [
         "data/raw/property-boundaries.geojson",
@@ -57,7 +55,6 @@
       "id": "real-estate-housing-buildings",
       "label": "Real Estate Asset Inventory (Housing Buildings)",
       "theme": "housing",
-      "shape": "triangle",
       "file": "data/raw/building-asset-inventory.geojson",
       "footprintSource": [
         "data/raw/property-boundaries.geojson",
@@ -76,7 +73,6 @@
       "id": "real-estate-public-facility-buildings",
       "label": "Real Estate Asset Inventory (Public Facility Buildings)",
       "theme": "community-services",
-      "shape": "triangle",
       "file": "data/raw/building-asset-inventory.geojson",
       "footprintSource": [
         "data/raw/property-boundaries.geojson",
@@ -106,7 +102,6 @@
       "id": "real-estate-works-buildings",
       "label": "Real Estate Asset Inventory (Public Works Buildings)",
       "theme": "transportation",
-      "shape": "triangle",
       "file": "data/raw/building-asset-inventory.geojson",
       "footprintSource": [
         "data/raw/property-boundaries.geojson",
@@ -132,7 +127,6 @@
       "id": "real-estate-park-buildings",
       "label": "Real Estate Asset Inventory (Park Buildings)",
       "theme": "parks-public-realm",
-      "shape": "diamond",
       "file": "data/raw/building-asset-inventory.geojson",
       "footprintSource": [
         "data/raw/property-boundaries.geojson",
@@ -153,8 +147,6 @@
       "id": "real-estate-park-recreation-buildings",
       "label": "Real Estate Asset Inventory (Park Arenas & Recreation Centres)",
       "theme": "parks-public-realm",
-      "shape": "circle",
-      "radius": 10,
       "file": "data/raw/building-asset-inventory.geojson",
       "filter": {
         "Building Description": [
@@ -169,7 +161,6 @@
       "id": "real-estate-utility-buildings",
       "label": "Real Estate Asset Inventory (Utility Buildings)",
       "theme": "community-services",
-      "shape": "triangle",
       "file": "data/raw/building-asset-inventory.geojson",
       "footprintSource": [
         "data/raw/property-boundaries.geojson",
@@ -290,7 +281,6 @@
       "id": "community-housing",
       "label": "Toronto Community Housing",
       "theme": "housing",
-      "shape": "circle",
       "file": "data/raw/community-housing.geojson",
       "footprintSource": [
         "data/raw/property-boundaries.geojson",
@@ -302,7 +292,6 @@
       "id": "supportive-housing",
       "label": "Supportive Housing",
       "theme": "housing",
-      "shape": "diamond",
       "file": "data/raw/supportive-housing.geojson",
       "footprintSource": [
         "data/raw/property-boundaries.geojson",
@@ -332,7 +321,6 @@
       "id": "parks-rec-parks",
       "label": "Parks & Recreation Facilities",
       "theme": "parks-public-realm",
-      "shape": "circle",
       "file": "data/raw/parks-and-recreation-facilities.geojson",
       "filter": { "TYPE": "Park" },
       "_source": "City of Toronto Open Data Portal, Parks and Recreation Facilities (EPSG:4326), filtered down to parcels typed \"Park\" — grouped under Parks & Public Realm. The dataset's \"Community Centre\"/\"Civic Centre\"-typed entries are dropped entirely: every one of them duplicated a location already shown by a Real Estate Asset Inventory layer, under a slightly different name (see git history around the \"York Recreation Centre / York Civic Centre / Arenas\" cleanup for the full mapping)."
@@ -348,7 +336,6 @@
       "id": "schools",
       "label": "School Locations",
       "theme": "community-services",
-      "shape": "circle",
       "file": "data/raw/school-locations.geojson",
       "footprintSource": [
         "data/raw/property-boundaries.geojson",
@@ -369,7 +356,6 @@
       "id": "libraries",
       "label": "Library Branches",
       "theme": "community-services",
-      "shape": "diamond",
       "file": "data/raw/library-branches.geojson",
       "footprintSource": [
         "data/raw/property-boundaries.geojson",

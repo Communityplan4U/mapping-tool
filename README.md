@@ -80,7 +80,7 @@ isolated, disconnected pin. One marker is shown per unique address (not
 per comment), colored by whichever category was posted there first.
 Markers are always square regardless of category, so a resident's own
 feedback is never visually confused with an open data layer's
-circle/diamond/triangle markers or a predefined site's pin.
+pictogram markers or a predefined site's pin.
 
 You don't have to click empty ground to leave feedback: clicking any
 shape from an **open data layer** opens its popup with a "Leave feedback
@@ -329,22 +329,12 @@ node scripts/fetch-open-data.js
 `data/sources.json` — `minLng`/`minLat`/`maxLng`/`maxLat` — to widen or
 narrow the box features are kept within, then re-run the script.
 
-**Telling layers within the same category apart:** since all layers in a
-category share one color, a category with more than one point layer needs
-a second visual channel so its layers don't look identical on the map.
-Set `"shape"` on a point layer in `data/sources.json` to `"circle"`
-(default), `"diamond"`, or `"triangle"` — e.g. the `parks-public-realm`
-category has several point layers sharing those 3 shapes across them (a
-category can have more point layers than there are shapes; when that
-happens, pick the pairing that's least likely to be confused up close,
-since they're still distinguishable by clicking for the popup). A category
-with only one point layer doesn't need `"shape"` set at all. Circle
-markers also take an optional `"radius"` (pixels, default 6) — e.g.
-Real Estate Asset Inventory (Park Arenas & Recreation Centres) uses `10`
-so a handful of larger facilities read as slightly bigger dots without
-tracing their exact building outline (see "Drawing the actual property
-shape instead of a point" below for why that layer skips
-`footprintSource` on purpose). Polygon/line layers can similarly be set
+**Point markers:** every point layer renders with its category's
+pictogram — the `glyph` set on that theme in `js/config.js` (an emoji,
+e.g. 🏠 for Housing) — on a badge in the category's color, so categories
+are legible on sight without opening a legend. Layers within the same
+category share the same pictogram and color; click a marker to see its
+popup and confirm which layer it's from. Polygon/line layers can be set
 `"dashed": true` to render a dashed outline when two polygon layers land
 in the same category — e.g. Real Estate Asset Inventory (Park Land) is
 dashed to stay distinct from Green Spaces' solid outline.
@@ -352,7 +342,7 @@ dashed to stay distinct from Green Spaces' solid outline.
 **Drawing the actual property shape instead of a point:** most open data
 locations are just a single lat/lng (a School's or Library's address
 point, say) with no building outline of their own, so by default they
-render as a small circle/diamond/triangle marker. Set `"footprintSource"`
+render as a small pictogram marker. Set `"footprintSource"`
 on a point layer to the path of a polygon GeoJSON file — or an array of
 paths, tried in order, so a broader source can be backed up by a narrower
 one — and `scripts/fetch-open-data.js` will, for every point in that
@@ -437,7 +427,7 @@ js/config.js                           Your Supabase keys, neighbourhood, sites,
 js/app.js                              App logic: map, ranking UI, Supabase reads/writes, results chart, open data layers
 js/admin.js                            Reporting view logic: Supabase reads, tables, CSV export
 supabase/schema.sql                    Database tables + row-level security policies
-data/sources.json                      Open data layer list (with theme/shape) + neighbourhood bounding box (edit this)
+data/sources.json                      Open data layer list (with theme) + neighbourhood bounding box (edit this)
 data/*.geojson                         Generated layer shapes (do not hand-edit — see below)
 scripts/fetch-open-data.js             Downloads + trims open data sources into data/*.geojson
 .github/workflows/update-open-data.yml Runs that script on a schedule and commits changes

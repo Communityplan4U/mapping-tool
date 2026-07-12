@@ -33,10 +33,10 @@ window.APP_CONFIG = {
 
   // Shared taxonomy used by BOTH the open data layers (the "theme" field
   // on each entry in data/sources.json) and community feedback (the topic
-  // residents pick when leaving a comment). One taxonomy, one color per
-  // theme, reused everywhere that theme shows up — layer markers, the
-  // "Map layers" and "Community feedback" panel checkboxes, the feedback
-  // dropdown, and the "Feedback by topic" chart.
+  // residents pick when leaving a comment). One taxonomy, one color and
+  // one map-marker glyph per theme, reused everywhere that theme shows up
+  // — layer markers, the "Map layers" and "Community feedback" panel
+  // checkboxes, the feedback dropdown, and the "Feedback by topic" chart.
   //
   // Based on the Little Jamaica Community Development Action Plan's 5
   // focus areas (Housing, Commercial & Non-Profit Spaces, Employment,
@@ -50,30 +50,49 @@ window.APP_CONFIG = {
   // Urban & Community Planning). Colors are the 8 hues of the fixed
   // palette (see README.md) — Urban & Community Planning reclaims the
   // blue slot Governance retired.
+  //
+  // `glyph` is the emoji shown on every point marker in that category, so
+  // categories are legible on sight without opening the legend — replaces
+  // the old circle/diamond/triangle shape system (see data/sources.json
+  // history if you need to bring per-layer shapes back for some reason).
   themes: [
-    { id: "housing", label: "Housing", color: "#e87ba4" },
+    { id: "housing", label: "Housing", color: "#e87ba4", glyph: "🏠" },
     {
       id: "commercial-nonprofit",
       label: "Commercial & Non-Profit Spaces",
       color: "#eda100",
+      glyph: "🏪",
     },
-    { id: "employment", label: "Employment", color: "#eb6834" },
+    { id: "employment", label: "Employment", color: "#eb6834", glyph: "💼" },
     {
       id: "cultural-identity",
       label: "Cultural Identity & Stewardship",
       color: "#4a3aa7",
+      glyph: "🎨",
     },
-    { id: "parks-public-realm", label: "Parks & Public Realm", color: "#1baf7a" },
-    { id: "transportation", label: "Transportation", color: "#e34948" },
+    {
+      id: "parks-public-realm",
+      label: "Parks & Public Realm",
+      color: "#1baf7a",
+      glyph: "🌳",
+    },
+    {
+      id: "transportation",
+      label: "Transportation",
+      color: "#e34948",
+      glyph: "🚌",
+    },
     {
       id: "community-services",
       label: "Public Facilities",
       color: "#008300",
+      glyph: "🏛️",
     },
     {
       id: "urban-community-planning",
       label: "Urban and Community Planning",
       color: "#2a78d6",
+      glyph: "🗺️",
     },
   ],
 

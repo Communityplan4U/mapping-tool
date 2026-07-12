@@ -29,9 +29,21 @@
             "CHARLES CACCIA PARK SEWAGE PUMPING STATION"
           ]
         },
-        { "Building Description": { "contains": "CARPARK" } }
+        { "Building Description": { "contains": "CARPARK" } },
+        { "Building Type": "Subway/LRT Station" },
+        { "Building Type": "Multi-Unit Residence" },
+        { "Building Type": ["Residential House", "Residential Garage"] },
+        { "Building Description": "NIA CENTRE FOR THE ARTS" },
+        {
+          "Building Type": [
+            "Swimming Pool - Indoor",
+            "Fire Hall/Facility",
+            "Police Station/Facility"
+          ]
+        },
+        { "Building Description": "COMMERCIAL BLDG FOR TPA" }
       ],
-      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Building (EPSG:4326), unfiltered except the buildings excluded above: ones that duplicate named parks already shown by the green-spaces/parks-rec layers (see real-estate-park-buildings below) and ones that are carparks (see real-estate-parking-buildings below). Re-download and replace data/raw/building-asset-inventory.geojson to refresh, then re-run scripts/fetch-open-data.js."
+      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Building (EPSG:4326), unfiltered except the buildings excluded above — each duplicates or belongs under a different category, and is shown instead by one of the real-estate-* layers below grouped under that category (see each layer's own _source note for which)."
     },
     {
       "id": "real-estate-parking-buildings",
@@ -42,8 +54,75 @@
         "data/raw/property-boundaries.geojson",
         "data/raw/land-asset-inventory.geojson"
       ],
-      "filter": { "Building Description": { "contains": "CARPARK" } },
-      "_source": "Same source file as real-estate-buildings, filtered down to buildings whose description contains \"CARPARK\" — grouped under Transportation instead of Governance."
+      "filter": [
+        { "Building Description": { "contains": "CARPARK" } },
+        { "Building Description": "COMMERCIAL BLDG FOR TPA" }
+      ],
+      "_source": "Same source file as real-estate-buildings, filtered down to buildings whose description contains \"CARPARK\" or is the Toronto Parking Authority's commercial building — grouped under Transportation instead of Governance."
+    },
+    {
+      "id": "real-estate-transit-buildings",
+      "label": "Real Estate Asset Inventory (Transit Buildings)",
+      "theme": "transportation",
+      "shape": "diamond",
+      "file": "data/raw/building-asset-inventory.geojson",
+      "footprintSource": [
+        "data/raw/property-boundaries.geojson",
+        "data/raw/land-asset-inventory.geojson"
+      ],
+      "filter": { "Building Type": "Subway/LRT Station" },
+      "_source": "Same source file as real-estate-buildings, filtered down to buildings typed \"Subway/LRT Station\" (LRT station bike parking, a substation) — grouped under Transportation instead of Governance."
+    },
+    {
+      "id": "real-estate-commercial-buildings",
+      "label": "Real Estate Asset Inventory (Commercial & Non-Profit Buildings)",
+      "theme": "commercial-nonprofit",
+      "shape": "diamond",
+      "file": "data/raw/building-asset-inventory.geojson",
+      "footprintSource": [
+        "data/raw/property-boundaries.geojson",
+        "data/raw/land-asset-inventory.geojson"
+      ],
+      "filter": { "Building Description": "NIA CENTRE FOR THE ARTS" },
+      "_source": "Same source file as real-estate-buildings, filtered down to the Nia Centre for the Arts — grouped under Commercial & Non-Profit Spaces instead of Governance."
+    },
+    {
+      "id": "real-estate-housing-buildings",
+      "label": "Real Estate Asset Inventory (Housing Buildings)",
+      "theme": "housing",
+      "shape": "triangle",
+      "file": "data/raw/building-asset-inventory.geojson",
+      "footprintSource": [
+        "data/raw/property-boundaries.geojson",
+        "data/raw/land-asset-inventory.geojson"
+      ],
+      "filter": {
+        "Building Type": [
+          "Multi-Unit Residence",
+          "Residential House",
+          "Residential Garage"
+        ]
+      },
+      "_source": "Same source file as real-estate-buildings, filtered down to residential buildings (Beech Hall Housing Co-op, and single-family properties at 203 Ava Rd / 222 Strathearn Rd / 567 Arlington Ave) — grouped under Housing instead of Governance."
+    },
+    {
+      "id": "real-estate-public-facility-buildings",
+      "label": "Real Estate Asset Inventory (Public Facility Buildings)",
+      "theme": "community-services",
+      "shape": "triangle",
+      "file": "data/raw/building-asset-inventory.geojson",
+      "footprintSource": [
+        "data/raw/property-boundaries.geojson",
+        "data/raw/land-asset-inventory.geojson"
+      ],
+      "filter": {
+        "Building Type": [
+          "Swimming Pool - Indoor",
+          "Fire Hall/Facility",
+          "Police Station/Facility"
+        ]
+      },
+      "_source": "Same source file as real-estate-buildings, filtered down to the Vaughan Road Academy indoor pool, fire halls, and police stations — grouped under Public Facilities instead of Governance."
     },
     {
       "id": "real-estate-park-buildings",
@@ -78,9 +157,15 @@
         { "Property Type": "Park/Rec/Open Space" },
         { "Property Description": { "contains": "CARPARK" } },
         { "Property Type": "Parking Facility" },
-        { "Property Type": "School" }
+        { "Property Type": "School" },
+        { "Property Type": "Railway Land" },
+        { "Property Type": "Shelter/Housing" },
+        { "Property Type": "Residential" },
+        { "Property Type": "Walkway" },
+        { "Property Type": ["EMS/Fire", "Police Facility"] },
+        { "Property Description": { "contains": "EGLINTON - SCOTT METER HOUSE" } }
       ],
-      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Land (EPSG:4326), excluding parcels typed \"Park/Rec/Open Space\" (shown instead by real-estate-park-land below, under Parks & Public Realm), parcels described as a \"CARPARK\" or typed \"Parking Facility\" (shown instead by real-estate-parking-land below, under Transportation), and parcels typed \"School\" (shown instead by real-estate-school-land below, under Public Facilities). Re-download and replace data/raw/land-asset-inventory.geojson to refresh, then re-run scripts/fetch-open-data.js."
+      "_source": "City of Toronto Open Data Portal, Real Estate Asset Inventory - Land (EPSG:4326), excluding parcels covered by the real-estate-* layers below, each grouped under whichever category it actually belongs to instead of Governance (see each layer's own _source note for which). Re-download and replace data/raw/land-asset-inventory.geojson to refresh, then re-run scripts/fetch-open-data.js."
     },
     {
       "id": "real-estate-park-land",
@@ -92,12 +177,48 @@
       "_source": "Same source file as real-estate-land, filtered down to parcels typed \"Park/Rec/Open Space\" — grouped under Parks & Public Realm instead of Governance so they aren't shown twice under two different categories."
     },
     {
+      "id": "real-estate-walkway-land",
+      "label": "Real Estate Asset Inventory (Walkway Land)",
+      "theme": "parks-public-realm",
+      "file": "data/raw/land-asset-inventory.geojson",
+      "filter": { "Property Type": "Walkway" },
+      "_source": "Same source file as real-estate-land, filtered down to parcels typed \"Walkway\" (including the Westview Greenbelt Trail) — grouped under Parks & Public Realm instead of Governance."
+    },
+    {
+      "id": "real-estate-railway-land",
+      "label": "Real Estate Asset Inventory (Railway Land)",
+      "theme": "parks-public-realm",
+      "file": "data/raw/land-asset-inventory.geojson",
+      "filter": { "Property Type": "Railway Land" },
+      "_source": "Same source file as real-estate-land, filtered down to parcels typed \"Railway Land\" (Metrolinx easements) — grouped under Parks & Public Realm instead of Governance."
+    },
+    {
       "id": "real-estate-school-land",
       "label": "Real Estate Asset Inventory (School Land)",
       "theme": "community-services",
       "file": "data/raw/land-asset-inventory.geojson",
       "filter": { "Property Type": "School" },
       "_source": "Same source file as real-estate-land, filtered down to parcels typed \"School\" — grouped under Public Facilities instead of Governance so they aren't shown twice under two different categories."
+    },
+    {
+      "id": "real-estate-public-facility-land",
+      "label": "Real Estate Asset Inventory (Public Facility Land)",
+      "theme": "community-services",
+      "dashed": true,
+      "file": "data/raw/land-asset-inventory.geojson",
+      "filter": [
+        { "Property Type": ["EMS/Fire", "Police Facility"] },
+        { "Property Description": { "contains": "EGLINTON - SCOTT METER HOUSE" } }
+      ],
+      "_source": "Same source file as real-estate-land, filtered down to parcels typed \"EMS/Fire\" or \"Police Facility\", plus the Eglinton - Scott Meter House — grouped under Public Facilities instead of Governance."
+    },
+    {
+      "id": "real-estate-housing-land",
+      "label": "Real Estate Asset Inventory (Housing Land)",
+      "theme": "housing",
+      "file": "data/raw/land-asset-inventory.geojson",
+      "filter": { "Property Type": ["Shelter/Housing", "Residential"] },
+      "_source": "Same source file as real-estate-land, filtered down to parcels typed \"Shelter/Housing\" (Beech Hall Housing Co-op) or \"Residential\" — grouped under Housing instead of Governance."
     },
     {
       "id": "real-estate-parking-land",

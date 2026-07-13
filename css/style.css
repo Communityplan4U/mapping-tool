@@ -911,6 +911,13 @@ details.layers-panel[open] > summary.layers-panel__title {
   margin-top: 0.15rem;
 }
 
+/* Reference overlays (e.g. property boundaries) are drawn as outlines, not
+   filled shapes — so their legend swatch is an outline too. */
+.layers-list__swatch--line {
+  background: transparent;
+  border: 1.5px solid #8b8898;
+}
+
 .layers-status {
   font-size: 0.8rem;
   color: #d03b3b;

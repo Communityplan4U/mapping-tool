@@ -199,6 +199,57 @@
       // load, the map still works fine without it.
     });
 
+  // ---------- Property boundaries (optional reference overlay) ----------
+  // City parcel/lot lines — a heavy layer (~19k polygons), so it's lazily
+  // loaded the first time it's switched on and drawn with a canvas
+  // renderer, which handles this many shapes far faster than the default
+  // SVG one. Non-interactive: it's a visual reference, so clicks pass
+  // straight through to place a marker or hit the shape underneath.
+  (function setupPropertyBoundaries() {
+    const checkbox = document.getElementById("toggle-property-boundaries");
+    const statusEl = document.getElementById("reference-status");
+    if (!checkbox) return;
+    let layer = null;
+    const renderer = L.canvas ? L.canvas({ padding: 0.5 }) : undefined;
+
+    checkbox.addEventListener("change", async () => {
+      if (!checkbox.checked) {
+        if (layer) map.removeLayer(layer);
+        return;
+      }
+      if (layer) {
+        layer.addTo(map);
+        return;
+      }
+      checkbox.disabled = true;
+      statusEl.textContent = "Loading property boundaries…";
+      try {
+        const res = await fetch("data/property-boundaries.geojson");
+        if (!res.ok) throw new Error("not found");
+        const geojson = await res.json();
+        layer = L.geoJSON(geojson, {
+          renderer,
+          interactive: false,
+          style: () => ({
+            color: "#8b8898",
+            weight: 0.7,
+            opacity: 0.6,
+            fill: false,
+          }),
+        });
+        // The user may have unchecked it while it loaded — only add if
+        // still on.
+        if (checkbox.checked) layer.addTo(map);
+        statusEl.textContent = "";
+      } catch {
+        checkbox.checked = false;
+        statusEl.textContent = "Couldn't load property boundaries.";
+      } finally {
+        checkbox.disabled = false;
+      }
+    });
+  })();
+
   // Address search (OpenStreetMap Nominatim geocoding, no API key needed).
   // Guarded in case the CDN script fails to load — the map still works
   // without it.

@@ -258,6 +258,17 @@ see its details (and to leave feedback about it — see "Click-anywhere map
 feedback" above), which helps them see what's already there before
 proposing a new use.
 
+**Reference layers** (a separate "Reference" section in the same panel)
+are overlays that aren't feedback categories — currently **Property
+boundaries** (City parcel/lot lines, `data/property-boundaries.geojson`,
+~19k polygons). These are handled directly in `js/app.js` rather than
+through `themes`/`sources.json`: drawn as thin outlines with a canvas
+renderer (fast for many shapes), lazily fetched the first time they're
+toggled on, and `interactive: false` so clicks pass straight through to
+place a marker or hit the shape underneath. The file is a lean, minified,
+coordinate-rounded version of `data/raw/property-boundaries.geojson` (~5
+MB); re-generate it the same way if you refresh the raw download.
+
 **Categories, not individual layers:** the "Map layers" panel doesn't list
 every dataset separately — it lists the categories from `themes` in
 `js/config.js` (the same categories "Community feedback" uses), and only

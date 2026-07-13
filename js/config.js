@@ -16,21 +16,6 @@ window.APP_CONFIG = {
     zoom: 15,
   },
 
-  // The list of possible uses residents rank for each site. Order here is
-  // just the default/unranked order shown before anyone drags or reorders.
-  categories: [
-    { id: "park", label: "Public park / green space" },
-    { id: "garden", label: "Community garden" },
-    { id: "playground", label: "Playground" },
-    { id: "housing", label: "Affordable housing" },
-    { id: "market", label: "Small business / market space" },
-    { id: "centre", label: "Community centre / gathering space" },
-    { id: "sport", label: "Sports courts" },
-    { id: "art", label: "Public art / cultural space" },
-    { id: "plaza", label: "Seating plaza / public square" },
-    { id: "natural", label: "Leave as natural space" },
-  ],
-
   // What kind of thing a piece of click-anywhere map feedback is —
   // separate from its topic (Housing, Parks, etc. — see themes below).
   // Required when leaving feedback. "losing" gets its own option rather
@@ -135,16 +120,4 @@ window.APP_CONFIG = {
       glyph: "🗺️",
     },
   ],
-
-  // Add real public land parcels here as they're identified. To get
-  // coordinates: right-click the spot on https://www.google.com/maps and
-  // click the lat/lng that appears. Example entry:
-  // {
-  //   id: "some-unique-id",
-  //   name: "Site name",
-  //   lat: 43.1234,
-  //   lng: -79.1234,
-  //   description: "Current condition, approximate size, who owns it.",
-  // },
-  sites: [],
 };

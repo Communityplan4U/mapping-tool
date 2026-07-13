@@ -205,33 +205,6 @@ main {
   }
 }
 
-.site-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 0.75rem;
-}
-
-.site-card {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
-  background: var(--surface-1);
-}
-
-.site-card h3 {
-  margin: 0 0 0.35rem;
-  font-size: 1rem;
-}
-
-.site-card p {
-  margin: 0 0 0.6rem;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-}
-
 .btn {
   font: inherit;
   font-weight: 600;
@@ -360,106 +333,10 @@ body.feedback-loading * {
   color: var(--text-secondary);
 }
 
-#dialog-site-name {
-  margin: 0 0 0.25rem;
-}
-
-#dialog-site-description {
-  margin: 0 0 1rem;
-  font-size: 0.9rem;
-}
-
-.tabs {
-  display: flex;
-  gap: 0.25rem;
-  border-bottom: 1px solid var(--gridline);
-  margin-bottom: 1rem;
-}
-
-.tab-btn {
-  font: inherit;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  padding: 0.5rem 0.25rem;
-  cursor: pointer;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-}
-
-.tab-btn.is-active {
-  color: var(--text-primary);
-  border-bottom-color: var(--accent);
-  font-weight: 600;
-}
-
-.tab-panel[hidden] {
-  display: none;
-}
-
 .hint {
   font-size: 0.85rem;
   color: var(--text-secondary);
   margin-top: 0;
-}
-
-/* Ranking list */
-
-.ranking-list {
-  list-style: none;
-  margin: 0 0 1rem;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.ranking-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 0.4rem 0.6rem;
-  background: var(--page-plane);
-  cursor: grab;
-}
-
-.ranking-row.dragging {
-  opacity: 0.5;
-}
-
-.ranking-rank {
-  font-variant-numeric: tabular-nums;
-  color: var(--text-muted);
-  width: 1.5rem;
-  flex-shrink: 0;
-}
-
-.ranking-label {
-  flex: 1;
-}
-
-.ranking-move-btns {
-  display: flex;
-  gap: 0.15rem;
-}
-
-.ranking-move-btns button {
-  font: inherit;
-  border: 1px solid var(--border);
-  background: var(--surface-1);
-  color: var(--text-primary);
-  border-radius: 4px;
-  width: 1.6rem;
-  height: 1.6rem;
-  cursor: pointer;
-  line-height: 1;
-}
-
-.ranking-move-btns button:disabled {
-  opacity: 0.3;
-  cursor: default;
 }
 
 .field {
@@ -532,12 +409,6 @@ body.feedback-loading * {
 .idea-card__time {
   font-size: 0.75rem;
   color: var(--text-muted);
-}
-
-.idea-card__top-picks {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  margin: 0 0 0.3rem;
 }
 
 .idea-card__sentiment {

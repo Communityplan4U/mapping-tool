@@ -2,7 +2,6 @@
   "use strict";
 
   const config = window.APP_CONFIG;
-  const categoriesById = new Map(config.categories.map((c) => [c.id, c]));
 
   const isConfigured =
     config.supabaseUrl &&
@@ -104,29 +103,21 @@
   ).textContent = `Help decide how public land should be used in ${config.neighbourhood.name}.`;
 
   // ---------- Contribution counter ----------
-  // Counts both site rankings (submissions) and map click-anywhere
-  // feedback (map_comments) — anything a resident has contributed.
+  // Counts every piece of click-anywhere map feedback residents have left.
   async function refreshContributionCounter() {
     const el = document.getElementById("contribution-counter");
     if (!db) return;
     el.textContent = "Loading contributions…";
     el.hidden = false;
-    const [submissionsResult, commentsResult] = await Promise.all([
-      db.from("submissions").select("*", { count: "exact", head: true }),
-      db.from("map_comments").select("*", { count: "exact", head: true }),
-    ]);
-    if (
-      submissionsResult.error ||
-      commentsResult.error ||
-      submissionsResult.count === null ||
-      commentsResult.count === null
-    ) {
+    const { count, error } = await db
+      .from("map_comments")
+      .select("*", { count: "exact", head: true });
+    if (error || count === null) {
       el.textContent = "Contribution count unavailable";
       return;
     }
-    const total = submissionsResult.count + commentsResult.count;
-    el.textContent = `${total.toLocaleString()} contribution${
-      total === 1 ? "" : "s"
+    el.textContent = `${count.toLocaleString()} contribution${
+      count === 1 ? "" : "s"
     } so far`;
   }
   refreshContributionCounter();
@@ -267,14 +258,8 @@
 
         if (searchResultMarker) map.removeLayer(searchResultMarker);
 
-        const searchedSite = {
-          id: `search-${center.lat.toFixed(5)}-${center.lng.toFixed(5)}`,
-          name: name || `${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`,
-          lat: center.lat,
-          lng: center.lng,
-          description:
-            "Location found via address search — not an official site, but you can still leave feedback here.",
-        };
+        const searchedName =
+          name || `${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`;
 
         searchResultMarker = L.marker(center, {
           icon: searchResultIcon(),
@@ -282,7 +267,7 @@
         }).addTo(map);
         searchResultMarker.bindPopup(`
           <div class="feature-popup">
-            <p class="feature-popup__layer">${escapeHtml(searchedSite.name)}</p>
+            <p class="feature-popup__layer">${escapeHtml(searchedName)}</p>
             <button type="button" class="btn btn--small search-feedback-btn">Leave feedback here</button>
           </div>
         `);
@@ -292,7 +277,11 @@
             .querySelector(".search-feedback-btn")
             ?.addEventListener("click", () => {
               searchResultMarker.closePopup();
-              openSiteDialog(searchedSite);
+              openMapCommentDialog({
+                lat: center.lat,
+                lng: center.lng,
+                address: searchedName,
+              });
             });
         });
         searchResultMarker.openPopup();
@@ -472,7 +461,6 @@
   // any open data layer, so a resident's own feedback is never confused
   // with official City data.
   const topicsById = new Map((config.themes || []).map((t) => [t.id, t]));
-  const sitesById = new Map((config.sites || []).map((s) => [s.id, s]));
   const sentimentsById = new Map(
     (config.feedbackTypes || []).map((s) => [s.id, s])
   );
@@ -862,12 +850,9 @@
   }
   loadTopicSummary();
 
-  // Live activity feed — a running list across both feedback types
-  // (site rankings and click-anywhere comments), newest first. Fetches a
-  // batch from each table up front rather than paging the database
-  // directly, since merging two tables' cursors is real complexity this
-  // tool's realistic volume doesn't need yet; "Load more" just reveals
-  // more of what's already in memory.
+  // Live activity feed — a running list of click-anywhere feedback,
+  // newest first. Fetches a batch up front rather than paging the database
+  // directly; "Load more" just reveals more of what's already in memory.
   const ACTIVITY_FEED_FETCH_LIMIT = 40;
   const ACTIVITY_FEED_PAGE_SIZE = 8;
   let activityItems = [];
@@ -882,36 +867,19 @@
       return;
     }
 
-    const [commentsResult, submissionsResult] = await Promise.all([
-      db
-        .from("map_comments")
-        .select("id, topic, lat, lng, address, created_at")
-        .order("created_at", { ascending: false })
-        .limit(ACTIVITY_FEED_FETCH_LIMIT),
-      db
-        .from("submissions")
-        .select("id, site_id, created_at")
-        .order("created_at", { ascending: false })
-        .limit(ACTIVITY_FEED_FETCH_LIMIT),
-    ]);
+    const { data } = await db
+      .from("map_comments")
+      .select("id, topic, lat, lng, address, created_at")
+      .order("created_at", { ascending: false })
+      .limit(ACTIVITY_FEED_FETCH_LIMIT);
 
-    const comments = (commentsResult.data || []).map((c) => ({
-      type: "comment",
+    activityItems = (data || []).map((c) => ({
       created_at: c.created_at,
       topic: topicsById.get(c.topic) || null,
       lat: c.lat,
       lng: c.lng,
       address: c.address,
     }));
-    const submissions = (submissionsResult.data || []).map((s) => ({
-      type: "submission",
-      created_at: s.created_at,
-      site: sitesById.get(s.site_id) || null,
-    }));
-
-    activityItems = comments
-      .concat(submissions)
-      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     activityRenderCount = 0;
 
     if (!activityItems.length) {
@@ -932,24 +900,15 @@
 
     listEl.innerHTML = "";
     activityItems.slice(0, activityRenderCount).forEach((item) => {
-      const isComment = item.type === "comment";
-      const color = isComment && item.topic ? item.topic.color : null;
-      const label = isComment
-        ? `A ${item.topic ? item.topic.label : "feedback"} marker was added`
-        : `A ranking was submitted for ${
-            item.site ? item.site.name : "a site"
-          }`;
-      // Comments always have a location. Submissions only open something
-      // if their site is still in config.sites — an old submission for a
-      // since-removed site has nothing to jump to.
-      const clickable = isComment || !!item.site;
+      const color = item.topic ? item.topic.color : null;
+      const label = `A ${
+        item.topic ? item.topic.label : "feedback"
+      } marker was added`;
 
       const li = document.createElement("li");
-      const row = document.createElement(clickable ? "button" : "div");
-      row.className = clickable
-        ? "activity-item activity-item--clickable"
-        : "activity-item";
-      if (clickable) row.type = "button";
+      const row = document.createElement("button");
+      row.type = "button";
+      row.className = "activity-item activity-item--clickable";
       row.innerHTML = `
         <span class="activity-item__dot" style="background:${escapeHtml(
           color || "var(--text-muted)"
@@ -959,23 +918,14 @@
           item.created_at
         )}</span>
       `;
-      if (clickable) {
-        row.addEventListener("click", () => {
-          if (isComment) {
-            focusMap(item.lat, item.lng);
-            openMapCommentDialog({
-              lat: item.lat,
-              lng: item.lng,
-              address: item.address,
-            });
-          } else {
-            focusMap(item.site.lat, item.site.lng);
-            openSiteDialog(item.site);
-            showTab("ideas");
-            markersBySiteId.get(item.site.id)?.openTooltip();
-          }
+      row.addEventListener("click", () => {
+        focusMap(item.lat, item.lng);
+        openMapCommentDialog({
+          lat: item.lat,
+          lng: item.lng,
+          address: item.address,
         });
-      }
+      });
       li.appendChild(row);
       listEl.appendChild(li);
     });
@@ -1353,338 +1303,6 @@
       loadMapComments();
       refreshCommentThread(address, lat, lng);
     });
-
-  const markersBySiteId = new Map();
-  config.sites.forEach((site) => {
-    const marker = L.marker([site.lat, site.lng]).addTo(map);
-    marker.bindTooltip(site.name);
-    marker.on("click", () => openSiteDialog(site));
-    markersBySiteId.set(site.id, marker);
-  });
-
-  // ---------- Site list ----------
-  const siteListEl = document.getElementById("site-list");
-  config.sites.forEach((site) => {
-    const li = document.createElement("li");
-    li.className = "site-card";
-    li.innerHTML = `
-      <h3>${escapeHtml(site.name)}</h3>
-      <p>${escapeHtml(site.description || "")}</p>
-      <button type="button" class="btn btn--small">View &amp; respond</button>
-    `;
-    li.querySelector("button").addEventListener("click", () => {
-      openSiteDialog(site);
-      markersBySiteId.get(site.id)?.openTooltip();
-    });
-    siteListEl.appendChild(li);
-  });
-
-  // ---------- Dialog / tabs ----------
-  const dialog = document.getElementById("site-dialog");
-  let currentSite = null;
-
-  const tabButtons = {
-    respond: document.getElementById("tab-btn-respond"),
-    ideas: document.getElementById("tab-btn-ideas"),
-    results: document.getElementById("tab-btn-results"),
-  };
-  const tabPanels = {
-    respond: document.getElementById("tab-respond"),
-    ideas: document.getElementById("tab-ideas"),
-    results: document.getElementById("tab-results"),
-  };
-  Object.keys(tabButtons).forEach((key) => {
-    tabButtons[key].addEventListener("click", () => showTab(key));
-  });
-
-  function showTab(key) {
-    Object.keys(tabButtons).forEach((k) => {
-      const active = k === key;
-      tabButtons[k].classList.toggle("is-active", active);
-      tabButtons[k].setAttribute("aria-selected", String(active));
-      tabPanels[k].hidden = !active;
-    });
-    if (key === "ideas") loadIdeas(currentSite.id);
-    if (key === "results") loadResults(currentSite.id);
-  }
-
-  function openSiteDialog(site) {
-    currentSite = site;
-    document.getElementById("dialog-site-name").textContent = site.name;
-    document.getElementById("dialog-site-description").textContent =
-      site.description || "";
-    document.getElementById("comment-input").value = "";
-    document.getElementById("nickname-input").value = "";
-    document.getElementById("submit-status").textContent = "";
-    document.getElementById("submit-status").className = "status-msg";
-    buildRankingList();
-    showTab("respond");
-    dialog.showModal();
-  }
-
-  // ---------- Ranking list (drag + up/down reorder) ----------
-  const rankingListEl = document.getElementById("ranking-list");
-  let rankingOrder = [];
-
-  function buildRankingList() {
-    rankingOrder = config.categories.map((c) => c.id);
-    renderRankingList();
-  }
-
-  function renderRankingList() {
-    rankingListEl.innerHTML = "";
-    rankingOrder.forEach((catId, index) => {
-      const cat = categoriesById.get(catId);
-      const li = document.createElement("li");
-      li.className = "ranking-row";
-      li.draggable = true;
-      li.dataset.catId = catId;
-      li.innerHTML = `
-        <span class="ranking-rank">${index + 1}</span>
-        <span class="ranking-label">${escapeHtml(cat.label)}</span>
-        <span class="ranking-move-btns">
-          <button type="button" data-dir="up" aria-label="Move up" ${
-            index === 0 ? "disabled" : ""
-          }>▲</button>
-          <button type="button" data-dir="down" aria-label="Move down" ${
-            index === rankingOrder.length - 1 ? "disabled" : ""
-          }>▼</button>
-        </span>
-      `;
-      li.querySelectorAll("button").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          moveItem(catId, btn.dataset.dir === "up" ? -1 : 1);
-        });
-      });
-      li.addEventListener("dragstart", () => {
-        li.classList.add("dragging");
-        li.dataset.dragging = "1";
-      });
-      li.addEventListener("dragend", () => {
-        li.classList.remove("dragging");
-      });
-      li.addEventListener("dragover", (e) => {
-        e.preventDefault();
-      });
-      li.addEventListener("drop", (e) => {
-        e.preventDefault();
-        const draggingEl = rankingListEl.querySelector(".dragging");
-        if (!draggingEl || draggingEl === li) return;
-        const fromId = draggingEl.dataset.catId;
-        const toIndex = rankingOrder.indexOf(catId);
-        rankingOrder = rankingOrder.filter((id) => id !== fromId);
-        rankingOrder.splice(toIndex, 0, fromId);
-        renderRankingList();
-      });
-      rankingListEl.appendChild(li);
-    });
-  }
-
-  function moveItem(catId, delta) {
-    const index = rankingOrder.indexOf(catId);
-    const newIndex = index + delta;
-    if (newIndex < 0 || newIndex >= rankingOrder.length) return;
-    [rankingOrder[index], rankingOrder[newIndex]] = [
-      rankingOrder[newIndex],
-      rankingOrder[index],
-    ];
-    renderRankingList();
-  }
-
-  // ---------- Submit ranking ----------
-  document
-    .getElementById("submit-ranking")
-    .addEventListener("click", async () => {
-      const statusEl = document.getElementById("submit-status");
-      if (!db) {
-        statusEl.textContent =
-          "Backend not configured — see README.md to enable saving.";
-        statusEl.className = "status-msg is-error";
-        return;
-      }
-      const nickname = document.getElementById("nickname-input").value.trim();
-      const comment = document.getElementById("comment-input").value.trim();
-      const submitBtn = document.getElementById("submit-ranking");
-      submitBtn.disabled = true;
-      statusEl.textContent = "Submitting…";
-      statusEl.className = "status-msg";
-
-      const { error } = await db.from("submissions").insert({
-        site_id: currentSite.id,
-        nickname: nickname || null,
-        rankings: rankingOrder,
-        comment: comment || null,
-        voter_token: voterToken,
-      });
-
-      submitBtn.disabled = false;
-      if (error) {
-        statusEl.textContent = `Something went wrong: ${error.message}`;
-        statusEl.className = "status-msg is-error";
-        return;
-      }
-      statusEl.textContent = "Thanks! Your ranking was submitted.";
-      statusEl.className = "status-msg is-ok";
-      refreshContributionCounter();
-      loadActivityFeed();
-    });
-
-  // ---------- Community ideas (submissions + upvotes) ----------
-  async function loadIdeas(siteId) {
-    const listEl = document.getElementById("ideas-list");
-    if (!db) {
-      listEl.innerHTML = `<li class="empty-msg">Backend not configured — see README.md.</li>`;
-      return;
-    }
-    listEl.innerHTML = `<li class="empty-msg">Loading…</li>`;
-
-    const { data: submissions, error } = await db
-      .from("submissions")
-      .select("id, nickname, rankings, comment, created_at")
-      .eq("site_id", siteId)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      listEl.innerHTML = `<li class="empty-msg">Couldn't load ideas: ${escapeHtml(
-        error.message
-      )}</li>`;
-      return;
-    }
-    if (!submissions.length) {
-      listEl.innerHTML = `<li class="empty-msg">No submissions yet for this site — be the first!</li>`;
-      return;
-    }
-
-    const submissionIds = submissions.map((s) => s.id);
-    const { data: upvotes } = await db
-      .from("upvotes")
-      .select("id, submission_id, voter_token")
-      .in("submission_id", submissionIds);
-
-    const upvotesBySubmission = new Map();
-    (upvotes || []).forEach((u) => {
-      if (!upvotesBySubmission.has(u.submission_id)) {
-        upvotesBySubmission.set(u.submission_id, []);
-      }
-      upvotesBySubmission.get(u.submission_id).push(u);
-    });
-
-    listEl.innerHTML = "";
-    submissions.forEach((sub) => {
-      const votes = upvotesBySubmission.get(sub.id) || [];
-      const myVote = votes.find((v) => v.voter_token === voterToken);
-      const topPicks = (sub.rankings || [])
-        .slice(0, 3)
-        .map((id) => categoriesById.get(id)?.label || id)
-        .join(", ");
-
-      const li = document.createElement("li");
-      li.className = "idea-card";
-      li.innerHTML = `
-        <div class="idea-card__top">
-          <span class="idea-card__author">${escapeHtml(
-            sub.nickname || "Neighbour"
-          )}</span>
-          <span class="idea-card__time">${formatDate(sub.created_at)}</span>
-        </div>
-        <p class="idea-card__top-picks">Top picks: ${escapeHtml(
-          topPicks || "—"
-        )}</p>
-        ${
-          sub.comment
-            ? `<p class="idea-card__comment">${escapeHtml(sub.comment)}</p>`
-            : ""
-        }
-        <button type="button" class="upvote-btn${
-          myVote ? " is-active" : ""
-        }" data-submission-id="${sub.id}">
-          ▲ Support (${votes.length})
-        </button>
-      `;
-      li.querySelector(".upvote-btn").addEventListener("click", (e) =>
-        toggleUpvote(e.currentTarget, sub.id, Boolean(myVote))
-      );
-      listEl.appendChild(li);
-    });
-  }
-
-  async function toggleUpvote(button, submissionId, currentlyVoted) {
-    button.disabled = true;
-    if (currentlyVoted) {
-      await db
-        .from("upvotes")
-        .delete()
-        .eq("submission_id", submissionId)
-        .eq("voter_token", voterToken);
-    } else {
-      await db
-        .from("upvotes")
-        .insert({ submission_id: submissionId, voter_token: voterToken });
-    }
-    button.disabled = false;
-    loadIdeas(currentSite.id);
-  }
-
-  // ---------- Results (aggregate bar chart) ----------
-  async function loadResults(siteId) {
-    const chartEl = document.getElementById("results-chart");
-    if (!db) {
-      chartEl.innerHTML = `<p class="empty-msg">Backend not configured — see README.md.</p>`;
-      return;
-    }
-    chartEl.innerHTML = `<p class="empty-msg">Loading…</p>`;
-
-    const { data: submissions, error } = await db
-      .from("submissions")
-      .select("rankings")
-      .eq("site_id", siteId);
-
-    if (error) {
-      chartEl.innerHTML = `<p class="empty-msg">Couldn't load results: ${escapeHtml(
-        error.message
-      )}</p>`;
-      return;
-    }
-    if (!submissions.length) {
-      chartEl.innerHTML = `<p class="empty-msg">No rankings submitted yet for this site.</p>`;
-      return;
-    }
-
-    const n = config.categories.length;
-    const totals = new Map(config.categories.map((c) => [c.id, 0]));
-    submissions.forEach((sub) => {
-      (sub.rankings || []).forEach((catId, index) => {
-        if (!totals.has(catId)) return;
-        // Rank 0 (most wanted) scores n points, last rank scores 1 point.
-        totals.set(catId, totals.get(catId) + (n - index));
-      });
-    });
-
-    const results = config.categories
-      .map((c) => ({
-        id: c.id,
-        label: c.label,
-        avgScore: totals.get(c.id) / submissions.length,
-      }))
-      .sort((a, b) => b.avgScore - a.avgScore);
-
-    const maxScore = Math.max(...results.map((r) => r.avgScore), 1);
-
-    chartEl.innerHTML = "";
-    results.forEach((r) => {
-      const pct = Math.max((r.avgScore / maxScore) * 100, 1);
-      const row = document.createElement("div");
-      row.className = "result-row";
-      row.innerHTML = `
-        <span class="result-row__label">${escapeHtml(r.label)}</span>
-        <span class="result-row__track">
-          <span class="result-row__bar" style="width:${pct}%"></span>
-        </span>
-        <span class="result-row__value">${r.avgScore.toFixed(1)}</span>
-      `;
-      chartEl.appendChild(row);
-    });
-  }
 
   // ---------- Open data layers ----------
   // Layer metadata (id/label/theme) comes from data/sources.json; the

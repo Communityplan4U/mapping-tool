@@ -99,8 +99,6 @@
         <h3 class="layers-panel__subtitle">Feedback by category</h3>
         <div id="topic-summary-chart" class="viz-root"></div>
       </details>
-
-      <ul id="site-list" class="site-list" aria-label="List of public land sites"></ul>
     </section>
   </main>
 
@@ -120,21 +118,19 @@
       the map where you'd like to add one.
     </p>
 
-    <h3 class="layers-panel__subtitle">Ranking uses &amp; categories</h3>
+    <h3 class="layers-panel__subtitle">Categories</h3>
     <p>
       Map layers and community feedback are organized around the same
       categories, based on the Little Jamaica Community Development Action
-      Plan's focus areas. Where public land sites are listed, you can also
-      rank the uses you'd most like to see there and support ideas other
-      residents have already proposed.
+      Plan's focus areas, so you can line up what's already on the ground
+      with what residents are saying about it.
     </p>
 
     <h3 class="layers-panel__subtitle">What happens to your idea/archive entry</h3>
     <p>
-      Idea/archive entries and rankings post immediately and are visible
-      to everyone — there's no review queue before that happens. Other
-      residents can vote on entries and rank site uses too; look for the
-      tally next to each one.
+      Idea/archive entries post immediately and are visible to everyone —
+      there's no review queue before that happens. Other residents can
+      vote entries up or down; look for the tally next to each one.
     </p>
 
     <h3 class="layers-panel__subtitle">Moderation</h3>
@@ -150,58 +146,6 @@
       fact. See something that should come down? Contact your
       neighbourhood organizers.
     </p>
-  </dialog>
-
-  <dialog id="site-dialog" class="app-dialog">
-    <form method="dialog" class="dialog-close-form">
-      <button type="submit" class="dialog-close" aria-label="Close">✕</button>
-    </form>
-
-    <h2 id="dialog-site-name"></h2>
-    <p id="dialog-site-description" class="muted"></p>
-
-    <nav class="tabs" role="tablist">
-      <button type="button" class="tab-btn is-active" id="tab-btn-respond" role="tab" aria-selected="true" aria-controls="tab-respond">
-        Add your ranking
-      </button>
-      <button type="button" class="tab-btn" id="tab-btn-ideas" role="tab" aria-selected="false" aria-controls="tab-ideas">
-        Community ideas
-      </button>
-      <button type="button" class="tab-btn" id="tab-btn-results" role="tab" aria-selected="false" aria-controls="tab-results">
-        Results
-      </button>
-    </nav>
-
-    <section id="tab-respond" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-respond">
-      <p class="hint">
-        Drag rows (or use the ▲▼ buttons) so your <strong>most wanted</strong> use
-        is at the top and your <strong>least wanted</strong> is at the bottom.
-      </p>
-      <ol id="ranking-list" class="ranking-list"></ol>
-
-      <label class="field">
-        <span>Nickname <span class="muted">(optional)</span></span>
-        <input type="text" id="nickname-input" maxlength="40" placeholder="e.g. Eglinton Ave resident" />
-      </label>
-
-      <label class="field">
-        <span>Idea/Archive <span class="muted">(optional)</span></span>
-        <textarea id="comment-input" maxlength="1000" rows="3" placeholder="Anything else you'd like the community to know?"></textarea>
-      </label>
-
-      <button type="button" id="submit-ranking" class="btn btn--primary">Submit my ranking</button>
-      <p id="submit-status" class="status-msg" role="status"></p>
-    </section>
-
-    <section id="tab-ideas" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-ideas" hidden>
-      <p class="hint">Support the ideas you agree with.</p>
-      <ul id="ideas-list" class="ideas-list"></ul>
-    </section>
-
-    <section id="tab-results" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-results" hidden>
-      <p class="hint">Average support across all submitted rankings for this site.</p>
-      <div id="results-chart" class="viz-root"></div>
-    </section>
   </dialog>
 
   <!-- Short/new threads (no existing comments): the centered dialog below.

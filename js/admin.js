@@ -2,14 +2,10 @@
   "use strict";
 
   const config = window.APP_CONFIG;
-  const categoriesById = new Map(
-    (config.categories || []).map((c) => [c.id, c])
-  );
   const topicsById = new Map((config.themes || []).map((t) => [t.id, t]));
   const sentimentsById = new Map(
     (config.feedbackTypes || []).map((s) => [s.id, s])
   );
-  const siteNameById = new Map((config.sites || []).map((s) => [s.id, s.name]));
 
   const isConfigured =
     config.supabaseUrl &&
@@ -39,21 +35,6 @@
     }
   }
 
-  function siteLabel(siteId) {
-    if (siteNameById.has(siteId)) return siteNameById.get(siteId);
-    if (typeof siteId === "string" && siteId.startsWith("search-")) {
-      return `Address search location (${siteId})`;
-    }
-    return siteId;
-  }
-
-  function topPicks(rankings) {
-    return (rankings || [])
-      .slice(0, 3)
-      .map((id) => categoriesById.get(id)?.label || id)
-      .join(", ");
-  }
-
   function csvEscape(value) {
     const str = value === null || value === undefined ? "" : String(value);
     if (/[",\n]/.test(str)) {
@@ -79,44 +60,7 @@
     URL.revokeObjectURL(url);
   }
 
-  let latestSubmissions = [];
   let latestMapComments = [];
-
-  async function loadSubmissions() {
-    const tbody = document.querySelector("#submissions-table tbody");
-    const summaryEl = document.getElementById("submissions-summary");
-    if (!db) return;
-    summaryEl.textContent = "Loading…";
-
-    const { data, error } = await db
-      .from("submissions")
-      .select("site_id, nickname, rankings, comment, created_at")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      summaryEl.textContent = `Couldn't load submissions: ${error.message}`;
-      return;
-    }
-
-    latestSubmissions = data || [];
-    summaryEl.textContent = `${latestSubmissions.length.toLocaleString()} submission${
-      latestSubmissions.length === 1 ? "" : "s"
-    }`;
-
-    tbody.innerHTML = latestSubmissions
-      .map(
-        (row) => `
-          <tr>
-            <td>${escapeHtml(siteLabel(row.site_id))}</td>
-            <td>${escapeHtml(row.nickname || "Neighbour")}</td>
-            <td>${escapeHtml(topPicks(row.rankings))}</td>
-            <td>${escapeHtml(row.comment || "")}</td>
-            <td>${escapeHtml(formatDateTime(row.created_at))}</td>
-          </tr>
-        `
-      )
-      .join("");
-  }
 
   async function loadMapComments() {
     const tbody = document.querySelector("#map-comments-table tbody");
@@ -173,22 +117,6 @@
   }
 
   document
-    .getElementById("export-submissions")
-    .addEventListener("click", () => {
-      downloadCSV(
-        "site-submissions.csv",
-        ["Site", "Nickname", "Top picks", "Idea/Archive", "Submitted"],
-        latestSubmissions.map((row) => [
-          siteLabel(row.site_id),
-          row.nickname || "Neighbour",
-          topPicks(row.rankings),
-          row.comment || "",
-          formatDateTime(row.created_at),
-        ])
-      );
-    });
-
-  document
     .getElementById("export-map-comments")
     .addEventListener("click", () => {
       downloadCSV(
@@ -222,6 +150,5 @@
       );
     });
 
-  loadSubmissions();
   loadMapComments();
 })();

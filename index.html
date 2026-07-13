@@ -70,6 +70,11 @@
     <section class="map-section">
       <div id="map" aria-label="Map of public land sites"></div>
       <div id="map-toast" class="map-toast" role="status" aria-live="polite" hidden></div>
+      <div id="draw-controls" class="draw-controls" hidden>
+        <button type="button" id="draw-undo" class="btn btn--small">Undo point</button>
+        <button type="button" id="draw-finish" class="btn btn--primary btn--small">Finish area</button>
+        <button type="button" id="draw-cancel" class="btn btn--small">Cancel</button>
+      </div>
 
       <details class="layers-panel" data-collapsible open>
         <summary class="layers-panel__title">Map layers</summary>
@@ -92,6 +97,23 @@
           </li>
         </ul>
         <p id="reference-status" class="layers-status" role="status"></p>
+
+        <h3 class="layers-panel__subtitle">User Identified</h3>
+        <p class="hint">
+          Areas residents have mapped out and named themselves — a
+          property, a site, a spot worth pointing out. Draw one to add it.
+        </p>
+        <ul class="layers-list">
+          <li class="layers-list__item">
+            <label>
+              <input type="checkbox" id="toggle-user-areas" checked />
+              <span class="layers-list__swatch" id="user-areas-swatch"></span>
+              User Identified areas
+            </label>
+          </li>
+        </ul>
+        <button type="button" id="draw-area-btn" class="btn btn--small">✏️ Draw an area</button>
+        <p id="user-areas-status" class="layers-status" role="status"></p>
       </details>
 
       <details class="layers-panel" data-collapsible open>
@@ -123,6 +145,28 @@
       </details>
     </section>
   </main>
+
+  <dialog id="area-dialog" class="app-dialog">
+    <form method="dialog" class="dialog-close-form">
+      <button type="submit" class="dialog-close" aria-label="Close">✕</button>
+    </form>
+
+    <h2>What is this area?</h2>
+    <p class="muted">Identify the area you just drew so others know what it is.</p>
+
+    <label class="field">
+      <span>What is it?</span>
+      <input type="text" id="area-label" maxlength="80" placeholder="e.g. vacant lot, community garden, my property" />
+    </label>
+
+    <label class="field">
+      <span>Anything else about it? <span class="muted">(optional)</span></span>
+      <textarea id="area-description" maxlength="600" rows="3" placeholder="What's here now, what it means to the neighbourhood, what you'd like to see…"></textarea>
+    </label>
+
+    <button type="button" id="submit-area" class="btn btn--primary">Save area</button>
+    <p id="area-status" class="status-msg" role="status"></p>
+  </dialog>
 
   <dialog id="help-dialog" class="app-dialog">
     <form method="dialog" class="dialog-close-form">

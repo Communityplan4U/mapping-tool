@@ -1042,8 +1042,26 @@ details.layers-panel[open] > summary.layers-panel__title {
   font-size: 1.1rem;
 }
 
-.leaflet-container.add-marker-mode {
+.leaflet-container.add-marker-mode,
+.leaflet-container.draw-mode {
   cursor: crosshair;
+}
+
+/* Draw-mode action bar — appears at the bottom-centre of the viewport
+   while a resident is drawing an area, above the instruction toast. */
+.draw-controls {
+  position: fixed;
+  left: 50%;
+  bottom: 4.5rem;
+  transform: translateX(-50%);
+  z-index: 1301;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: 0 4px 16px rgba(11, 11, 11, 0.28);
 }
 
 /* Map control grouping/spacing: zoom, then search, then view controls

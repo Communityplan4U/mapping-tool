@@ -129,6 +129,31 @@ drop policy if exists "Public delete map_comment_votes" on map_comment_votes;
 create policy "Public delete map_comment_votes" on map_comment_votes
   for delete using (true);
 
+-- Areas residents draw and label themselves (the "User Identified" map
+-- layer) — a property, a site, a spot they want to point out. geojson
+-- holds the polygon geometry (a GeoJSON Polygon); label is what they say
+-- it is, description is optional detail. Public read + insert, same open
+-- trust model as map_comments (no anon delete — remove a bad one from the
+-- Supabase dashboard).
+create table if not exists map_areas (
+  id uuid primary key default gen_random_uuid(),
+  label text not null,
+  description text,
+  geojson jsonb not null,
+  voter_token text not null,
+  created_at timestamptz not null default now()
+);
+alter table map_areas enable row level security;
+grant select, insert on map_areas to anon, authenticated;
+
+drop policy if exists "Public read map_areas" on map_areas;
+create policy "Public read map_areas" on map_areas
+  for select using (true);
+
+drop policy if exists "Public insert map_areas" on map_areas;
+create policy "Public insert map_areas" on map_areas
+  for insert with check (true);
+
 -- Photo uploads for map feedback go to a PUBLIC Storage bucket, so an
 -- uploaded photo can be shown to everyone. anon (no-login) visitors can
 -- upload — the same open trust model as the rest of this tool.

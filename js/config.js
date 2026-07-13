@@ -16,6 +16,11 @@ window.APP_CONFIG = {
     zoom: 15,
   },
 
+  // Areas residents draw and label themselves (a property, a site, a spot
+  // they want to point out). They're all one map-layer category, shown in
+  // this colour. See map_areas in supabase/schema.sql.
+  userAreas: { label: "User Identified", color: "#8b5cf6" },
+
   // What kind of thing a piece of click-anywhere map feedback is —
   // separate from its topic (Housing, Parks, etc. — see themes below).
   // Required when leaving feedback. "losing" gets its own option rather

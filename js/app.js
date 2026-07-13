@@ -241,6 +241,250 @@
     });
   })();
 
+  // ---------- User-identified areas ----------
+  // Residents draw a polygon on the map and label what it is. Saved areas
+  // live in the "User Identified" map layer (map_areas table). Drawing is a
+  // click-to-add-vertices mode, cousin of the add-marker mode below: arm it
+  // from the panel's "Draw an area" button, tap the map to drop points,
+  // then Finish to name it. All one colour/category (config.userAreas).
+  const AREA_COLOR = (config.userAreas && config.userAreas.color) || "#8b5cf6";
+  const AREA_LAYER_LABEL =
+    (config.userAreas && config.userAreas.label) || "User Identified";
+
+  const userAreasSwatch = document.getElementById("user-areas-swatch");
+  if (userAreasSwatch) userAreasSwatch.style.background = AREA_COLOR;
+
+  let userAreasLayer = null;
+  const userAreasToggle = document.getElementById("toggle-user-areas");
+
+  function renderUserAreas(areas) {
+    if (userAreasLayer) {
+      map.removeLayer(userAreasLayer);
+      userAreasLayer = null;
+    }
+    if (!areas || !areas.length) return;
+    userAreasLayer = L.layerGroup();
+    areas.forEach((area) => {
+      if (!area.geojson) return;
+      const shape = L.geoJSON(area.geojson, {
+        style: () => ({
+          color: AREA_COLOR,
+          weight: 2,
+          fillColor: AREA_COLOR,
+          fillOpacity: 0.18,
+        }),
+        onEachFeature: (feature, layer) => {
+          const desc = area.description
+            ? `<p class="feature-popup__note">${escapeHtml(
+                area.description
+              )}</p>`
+            : "";
+          layer.bindPopup(`
+            <div class="feature-popup">
+              <p class="feature-popup__layer">${escapeHtml(AREA_LAYER_LABEL)}</p>
+              <p class="feature-popup__title">${escapeHtml(area.label)}</p>
+              ${desc}
+            </div>
+          `);
+        },
+      });
+      userAreasLayer.addLayer(shape);
+    });
+    if (!userAreasToggle || userAreasToggle.checked) userAreasLayer.addTo(map);
+  }
+
+  async function loadMapAreas() {
+    if (!db) return;
+    const { data, error } = await db
+      .from("map_areas")
+      .select("id, label, description, geojson, created_at")
+      .order("created_at", { ascending: false });
+    if (error || !data) return;
+    renderUserAreas(data);
+  }
+
+  if (userAreasToggle) {
+    userAreasToggle.addEventListener("change", () => {
+      if (!userAreasLayer) return;
+      if (userAreasToggle.checked) userAreasLayer.addTo(map);
+      else map.removeLayer(userAreasLayer);
+    });
+  }
+
+  // ----- Drawing mode -----
+  let drawMode = false;
+  let drawVertices = [];
+  let drawVertexMarkers = [];
+  let drawPreview = null;
+  let pendingAreaVertices = null;
+  const drawControlsEl = document.getElementById("draw-controls");
+  const areaDialog = document.getElementById("area-dialog");
+
+  function clearDrawing() {
+    drawVertexMarkers.forEach((m) => map.removeLayer(m));
+    drawVertexMarkers = [];
+    if (drawPreview) {
+      map.removeLayer(drawPreview);
+      drawPreview = null;
+    }
+    drawVertices = [];
+  }
+
+  function updateDrawControls() {
+    const finishBtn = document.getElementById("draw-finish");
+    if (finishBtn) finishBtn.disabled = drawVertices.length < 3;
+  }
+
+  function addDrawVertex(latlng) {
+    drawVertices.push(latlng);
+    const vm = L.circleMarker(latlng, {
+      radius: 4,
+      color: AREA_COLOR,
+      weight: 2,
+      fillColor: "#fff",
+      fillOpacity: 1,
+      interactive: false,
+    }).addTo(map);
+    drawVertexMarkers.push(vm);
+    if (drawVertices.length >= 2) {
+      if (drawPreview) drawPreview.setLatLngs(drawVertices);
+      else
+        drawPreview = L.polygon(drawVertices, {
+          color: AREA_COLOR,
+          weight: 2,
+          dashArray: "6 4",
+          fillColor: AREA_COLOR,
+          fillOpacity: 0.12,
+          interactive: false,
+        }).addTo(map);
+    }
+    updateDrawControls();
+  }
+
+  function startDrawMode() {
+    if (typeof setAddMarkerMode === "function") setAddMarkerMode(false);
+    drawMode = true;
+    map.getContainer().classList.add("draw-mode");
+    clearDrawing();
+    if (drawControlsEl) drawControlsEl.hidden = false;
+    updateDrawControls();
+    const touch = window.matchMedia("(hover: none)").matches;
+    showMapToast(
+      touch
+        ? "Tap the map to add points, then Finish the area"
+        : "Click the map to add points, then Finish the area"
+    );
+  }
+
+  function cancelDrawMode() {
+    drawMode = false;
+    map.getContainer().classList.remove("draw-mode");
+    clearDrawing();
+    if (drawControlsEl) drawControlsEl.hidden = true;
+    hideMapToast();
+  }
+
+  function finishDrawMode() {
+    if (drawVertices.length < 3) {
+      showMapToast("Add at least 3 points to make an area");
+      return;
+    }
+    pendingAreaVertices = drawVertices.slice();
+    drawMode = false;
+    map.getContainer().classList.remove("draw-mode");
+    if (drawControlsEl) drawControlsEl.hidden = true;
+    hideMapToast();
+    // Keep the drawn preview visible while they name it.
+    document.getElementById("area-label").value = "";
+    document.getElementById("area-description").value = "";
+    const statusEl = document.getElementById("area-status");
+    statusEl.textContent = "";
+    statusEl.className = "status-msg";
+    areaDialog.showModal();
+  }
+
+  document.getElementById("draw-area-btn")?.addEventListener("click", () => {
+    if (drawMode) cancelDrawMode();
+    else startDrawMode();
+  });
+  document
+    .getElementById("draw-undo")
+    ?.addEventListener("click", () => {
+      if (!drawVertices.length) return;
+      drawVertices.pop();
+      const vm = drawVertexMarkers.pop();
+      if (vm) map.removeLayer(vm);
+      if (drawVertices.length >= 2 && drawPreview) {
+        drawPreview.setLatLngs(drawVertices);
+      } else if (drawPreview) {
+        map.removeLayer(drawPreview);
+        drawPreview = null;
+      }
+      updateDrawControls();
+    });
+  document
+    .getElementById("draw-finish")
+    ?.addEventListener("click", finishDrawMode);
+  document
+    .getElementById("draw-cancel")
+    ?.addEventListener("click", cancelDrawMode);
+
+  // Naming dialog closed via the ✕ / Escape — discard the drawn shape.
+  areaDialog?.addEventListener("close", () => {
+    clearDrawing();
+    pendingAreaVertices = null;
+  });
+
+  document.getElementById("submit-area")?.addEventListener("click", async () => {
+    const statusEl = document.getElementById("area-status");
+    if (!db) {
+      statusEl.textContent =
+        "Backend not configured — see README.md to enable saving.";
+      statusEl.className = "status-msg is-error";
+      return;
+    }
+    if (!pendingAreaVertices || pendingAreaVertices.length < 3) return;
+    const label = document.getElementById("area-label").value.trim();
+    if (!label) {
+      statusEl.textContent = "Please say what this area is.";
+      statusEl.className = "status-msg is-error";
+      return;
+    }
+    const description = document
+      .getElementById("area-description")
+      .value.trim();
+
+    const submitBtn = document.getElementById("submit-area");
+    submitBtn.disabled = true;
+    statusEl.textContent = "Saving…";
+    statusEl.className = "status-msg";
+
+    // GeoJSON polygons are [lng, lat] and must close (first point repeated).
+    const ring = pendingAreaVertices.map((ll) => [ll.lng, ll.lat]);
+    ring.push(ring[0]);
+    const geojson = { type: "Polygon", coordinates: [ring] };
+
+    const { error } = await db.from("map_areas").insert({
+      label,
+      description: description || null,
+      geojson,
+      voter_token: voterToken,
+    });
+
+    submitBtn.disabled = false;
+    if (error) {
+      statusEl.textContent = `Something went wrong: ${error.message}`;
+      statusEl.className = "status-msg is-error";
+      return;
+    }
+    // Success: the "close" handler clears the preview; refresh the layer.
+    pendingAreaVertices = null;
+    areaDialog.close();
+    loadMapAreas();
+  });
+
+  loadMapAreas();
+
   // Address search (OpenStreetMap Nominatim geocoding, no API key needed).
   // Guarded in case the CDN script fails to load — the map still works
   // without it.
@@ -424,6 +668,8 @@
     if (!config.themes || config.themes.length === 0) {
       return;
     }
+    // Add-marker and draw-area are mutually exclusive placing modes.
+    if (active && drawMode) cancelDrawMode();
     addMarkerMode = active;
     map.getContainer().classList.toggle("add-marker-mode", active);
     const button = addMarkerControl._button;
@@ -1240,6 +1486,10 @@
   }
 
   map.on("click", (e) => {
+    if (drawMode) {
+      addDrawVertex(e.latlng);
+      return;
+    }
     if (!addMarkerMode) return;
     setAddMarkerMode(false);
     openMapCommentDialog({ lat: e.latlng.lat, lng: e.latlng.lng });

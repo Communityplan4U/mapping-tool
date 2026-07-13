@@ -272,6 +272,18 @@ place a marker or hit the shape underneath. The file is a lean, minified,
 coordinate-rounded version of `data/raw/property-boundaries.geojson` (~5
 MB); re-generate it the same way if you refresh the raw download.
 
+**User Identified areas** (a "User Identified" section in the same panel)
+are polygons residents draw and label themselves — a property, a site, a
+spot worth pointing out. Clicking **✏️ Draw an area** arms a
+click-to-add-vertices draw mode (a cousin of the add-marker mode): tap the
+map to drop points, then **Finish area** (enabled at 3+ points) opens a
+dialog to say what it is. The polygon geometry, label, and optional
+description are saved to the `map_areas` table (added by
+`supabase/schema.sql`) and rendered as one map layer in the colour set by
+`userAreas` in `js/config.js`; clicking an area shows its label. Public
+read + insert, no anon delete (remove a bad one from the Supabase
+dashboard).
+
 **Categories, not individual layers:** the "Map layers" panel doesn't list
 every dataset separately — it lists the categories from `themes` in
 `js/config.js` (the same categories "Community feedback" uses), and only

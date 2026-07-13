@@ -1,35 +1,46 @@
 :root {
-  --surface-1: #fcfcfb;
-  --page-plane: #f9f9f7;
-  --text-primary: #0b0b0b;
-  --text-secondary: #52514e;
-  --text-muted: #898781;
-  --gridline: #e1e0d9;
+  --surface-1: #ffffff;
+  --page-plane: #f6f6fc;
+  --text-primary: #23202f;
+  --text-secondary: #5a5866;
+  --text-muted: #7a7885;
+  --gridline: #e8e6f2;
   --baseline: #c3c2b7;
-  --border: rgba(11, 11, 11, 0.1);
-  /* Brand orange, matching communityplan4u.ca — this is a best-effort match
-     eyeballed from a screenshot, not a sampled/official hex. Swap it here
-     (both modes) if you have the real brand value. Darkened slightly off
-     the homepage's brighter orange so button text still clears 4.5:1
-     contrast at this size. */
-  --accent: #c24e1d;
-  --accent-strong: #9c3e16;
+  --border: rgba(42, 40, 65, 0.12);
+  /* Community in Public brand orange (#f37721) and indigo (#4c469d). See
+     communityinpublic.ca. --accent is the brand orange, used for accents,
+     borders, links, headings and the masthead band. --accent-strong is a
+     darkened orange used ONLY as the fill of buttons/CTA/active controls,
+     so their label text clears WCAG AA contrast — the bright brand orange
+     with white text does not. --on-accent is that label colour (white on
+     light, near-black on dark's brighter orange). --accent-2 is the indigo. */
+  --accent: #f37721;
+  --accent-strong: #b8500f;
+  --on-accent: #ffffff;
+  --accent-2: #4c469d;
   --warning-bg: #fff6e0;
   --warning-border: #eda100;
+  --font-head: "Montserrat", "Century Gothic", "URW Geometric", system-ui, sans-serif;
+  --font-body: "Nirmala UI", "Segoe UI", system-ui, -apple-system, sans-serif;
 }
 
+/* Dark mode is built on the brand's own deep indigo (#2a2841) rather than
+   pure black, so it reads as part of the palette. Bright-orange fills get a
+   near-black label (--on-accent) so they stay legible. */
 @media (prefers-color-scheme: dark) {
   :root {
-    --surface-1: #1a1a19;
-    --page-plane: #0d0d0d;
-    --text-primary: #ffffff;
-    --text-secondary: #c3c2b7;
-    --text-muted: #898781;
-    --gridline: #2c2c2a;
-    --baseline: #383835;
-    --border: rgba(255, 255, 255, 0.18);
-    --accent: #f58652;
-    --accent-strong: #ffa97e;
+    --surface-1: #262336;
+    --page-plane: #1a1826;
+    --text-primary: #f3f2fb;
+    --text-secondary: #c6c4d8;
+    --text-muted: #9997b0;
+    --gridline: #35324b;
+    --baseline: #3d3a55;
+    --border: rgba(255, 255, 255, 0.16);
+    --accent: #ffaf52;
+    --accent-strong: #f37721;
+    --on-accent: #241f14;
+    --accent-2: #8f88c9;
     --warning-bg: #332b0d;
     --warning-border: #c98500;
   }
@@ -49,11 +60,20 @@
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font-body);
   background: var(--page-plane);
   color: var(--text-primary);
   line-height: 1.5;
   accent-color: var(--accent);
+}
+
+/* Montserrat for headings, matching the Community in Public wordmark. */
+h1, h2, h3,
+.layers-panel__title,
+.layers-panel__subtitle,
+.cip-word {
+  font-family: var(--font-head);
+  letter-spacing: -0.01em;
 }
 
 ::selection {
@@ -97,39 +117,61 @@ a {
   color: var(--text-primary);
 }
 
+/* Civic-bold masthead: left-aligned, led by a brand orange top band and
+   the Community in Public logo lockup, constrained to the content width. */
 .site-header {
-  padding: 1.5rem 1rem 0.5rem;
-  text-align: center;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 1rem 0.5rem;
+  border-top: 6px solid var(--accent);
+  text-align: left;
+}
+
+.cip-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  margin: 1.1rem 0 0.9rem;
+}
+
+.cip-logo__mark {
+  height: 30px;
+  width: auto;
+  flex: none;
+}
+
+.cip-word {
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: var(--accent);
 }
 
 .site-header h1 {
-  margin: 0 0 0.25rem;
-  font-size: 1.6rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  margin: 0 0 0.2rem;
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.14;
 }
 
-.brand-mark {
-  display: inline-block;
-  width: 0.85em;
-  height: 0.85em;
-  border-radius: 50%;
-  background: var(--accent);
-  flex-shrink: 0;
+.site-header h1 span {
+  display: block;
+  color: var(--accent);
+}
+
+#page-subtitle {
+  margin: 0.35rem 0 0;
 }
 
 .contribution-counter {
   display: inline-block;
-  margin: 0.75rem 0 0;
-  padding: 0.3rem 0.9rem;
+  margin: 0.85rem 0 0;
+  padding: 0.32rem 0.9rem;
   border-radius: 999px;
-  background: var(--gridline);
-  background: color-mix(in srgb, var(--accent) 12%, var(--surface-1));
-  color: var(--accent-strong);
+  background: var(--accent-2);
+  color: #fff;
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 main {
@@ -202,14 +244,13 @@ main {
 }
 
 .btn--primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  color: var(--on-accent);
 }
 
 .btn--primary:hover {
-  background: var(--accent-strong);
-  border-color: var(--accent-strong);
+  filter: brightness(0.93);
 }
 
 .btn--small {
@@ -469,8 +510,10 @@ body.feedback-loading * {
 
 .idea-card {
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-left: 4px solid var(--cat, var(--accent));
+  border-radius: 10px;
   padding: 0.6rem 0.8rem;
+  background: color-mix(in srgb, var(--cat, var(--accent)) 6%, var(--surface-1));
 }
 
 .idea-card__top {
@@ -526,8 +569,9 @@ body.feedback-loading * {
 }
 
 .upvote-btn.is-active {
-  background: var(--accent);
-  color: #fff;
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  color: var(--on-accent);
 }
 
 .vote-btns {
@@ -667,7 +711,10 @@ body.feedback-loading * {
 
 .layers-panel__title {
   margin: 0 0 0.25rem;
-  font-size: 0.95rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 /* The two reference panels are <details> so they can collapse on small
@@ -675,7 +722,6 @@ body.feedback-loading * {
    title's look but gains a pointer + the disclosure marker. */
 summary.layers-panel__title {
   cursor: pointer;
-  font-weight: 700;
 }
 
 details.layers-panel[open] > summary.layers-panel__title {
@@ -709,9 +755,9 @@ details.layers-panel[open] > summary.layers-panel__title {
 }
 
 .chip.is-active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  color: var(--on-accent);
 }
 
 /* Browsable feedback entries */
@@ -731,16 +777,20 @@ details.layers-panel[open] > summary.layers-panel__title {
   text-align: left;
   font: inherit;
   color: inherit;
-  background: var(--page-plane);
+  /* Tinted and edged in the entry's own category colour (--cat, set per
+     entry in app.js). Falls back to the brand orange if a category has no
+     colour. */
+  background: color-mix(in srgb, var(--cat, var(--accent)) 8%, var(--surface-1));
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-left: 4px solid var(--cat, var(--accent));
+  border-radius: 10px;
   padding: 0.55rem 0.7rem;
   cursor: pointer;
 }
 
 .feedback-entry:hover,
 .feedback-entry:focus-visible {
-  border-color: var(--accent);
+  border-color: var(--cat, var(--accent));
 }
 
 .feedback-entry__head {
@@ -781,10 +831,25 @@ details.layers-panel[open] > summary.layers-panel__title {
 }
 
 .layers-panel__subtitle {
-  margin: 1rem 0 0.5rem;
+  position: relative;
+  margin: 1.3rem 0 0.6rem;
   padding-top: 0.75rem;
-  border-top: 1px solid var(--border);
-  font-size: 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Civic-bold signature: a short brand-orange rule above each subheading. */
+.layers-panel__subtitle::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 28px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--accent);
 }
 
 .layers-list {
@@ -1136,20 +1201,20 @@ details.layers-panel[open] > summary.layers-panel__title {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  background: var(--accent);
-  color: #fff;
-  font-weight: 600;
+  background: var(--accent-strong);
+  color: var(--on-accent);
+  font-weight: 700;
   font-size: 0.95rem;
   padding: 0.65rem 1.15rem;
   border-radius: 999px;
   box-shadow: 0 2px 10px rgba(11, 11, 11, 0.28);
   text-decoration: none;
   white-space: nowrap;
-  transition: background-color 0.15s ease, transform 0.1s ease;
+  transition: filter 0.15s ease, transform 0.1s ease;
 }
 
 .map-add-marker-cta__button:hover {
-  background: var(--accent-strong);
+  filter: brightness(0.93);
 }
 
 .map-add-marker-cta__button:active {

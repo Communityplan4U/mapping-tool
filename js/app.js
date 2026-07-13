@@ -94,9 +94,11 @@
   }
 
   // ---------- Page header / intro ----------
+  // Neighbourhood name on the first line, "Public Land Use Tool" on a
+  // second (accent-coloured) line — see #page-title span in css/style.css.
   document.getElementById(
     "page-title"
-  ).textContent = `${config.neighbourhood.name}: Public Land Use Tool`;
+  ).innerHTML = `${escapeHtml(config.neighbourhood.name)}<span>Public Land Use Tool</span>`;
   document.getElementById(
     "page-subtitle"
   ).textContent = `Help decide how public land should be used in ${config.neighbourhood.name}.`;
@@ -177,13 +179,14 @@
     .then((res) => (res.ok ? res.json() : null))
     .then((geojson) => {
       if (!geojson) return;
-      // Matches --accent in css/style.css (light mode) — Leaflet's SVG
-      // renderer sets this as a presentation attribute, not a CSS
-      // property, so a var() reference wouldn't reliably resolve here.
+      // Community in Public brand orange (#f37721), matching --accent in
+      // css/style.css (light mode) — Leaflet's SVG renderer sets this as a
+      // presentation attribute, not a CSS property, so a var() reference
+      // wouldn't reliably resolve here.
       L.geoJSON(geojson, {
         interactive: false,
         style: () => ({
-          color: "#c24e1d",
+          color: "#f37721",
           weight: 2,
           dashArray: "6 4",
           fill: true,
@@ -640,7 +643,9 @@
         ].filter(Boolean);
         return `
           <li>
-            <button type="button" class="feedback-entry" data-idx="${i}">
+            <button type="button" class="feedback-entry" data-idx="${i}"${
+          topic ? ` style="--cat:${topic.color}"` : ""
+        }>
               <span class="feedback-entry__head">
                 <span class="feedback-entry__topic" style="color:${escapeHtml(
                   topic ? topic.color : "inherit"
@@ -1079,6 +1084,7 @@
 
       const li = document.createElement("li");
       li.className = "idea-card";
+      if (topic) li.style.setProperty("--cat", topic.color);
       li.innerHTML = `
         <div class="idea-card__top">
           <span class="idea-card__author" style="color:${escapeHtml(

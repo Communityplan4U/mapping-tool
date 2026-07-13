@@ -97,10 +97,10 @@
   // second (accent-coloured) line — see #page-title span in css/style.css.
   document.getElementById(
     "page-title"
-  ).innerHTML = `${escapeHtml(config.neighbourhood.name)}<span>Public Land Use Tool</span>`;
+  ).innerHTML = `${escapeHtml(config.neighbourhood.name)}<span>Land Use Past, Present, and Future Mapping Tool</span>`;
   document.getElementById(
     "page-subtitle"
-  ).textContent = `Help decide how public land should be used in ${config.neighbourhood.name}.`;
+  ).textContent = `Help decide how land should be used in ${config.neighbourhood.name}.`;
 
   // ---------- Contribution counter ----------
   // Counts every piece of click-anywhere map feedback residents have left.

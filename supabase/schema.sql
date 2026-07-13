@@ -129,6 +129,24 @@ drop policy if exists "Public delete map_comment_votes" on map_comment_votes;
 create policy "Public delete map_comment_votes" on map_comment_votes
   for delete using (true);
 
+-- Photo uploads for map feedback go to a PUBLIC Storage bucket, so an
+-- uploaded photo can be shown to everyone. anon (no-login) visitors can
+-- upload — the same open trust model as the rest of this tool.
+-- map_comments.photo_url then holds the uploaded file's public URL.
+-- (Deletes are intentionally NOT granted to anon, so a visitor can't wipe
+-- others' photos; remove a bad upload from the Storage dashboard.)
+insert into storage.buckets (id, name, public)
+  values ('feedback-photos', 'feedback-photos', true)
+  on conflict (id) do nothing;
+
+drop policy if exists "Public read feedback photos" on storage.objects;
+create policy "Public read feedback photos" on storage.objects
+  for select using (bucket_id = 'feedback-photos');
+
+drop policy if exists "Public upload feedback photos" on storage.objects;
+create policy "Public upload feedback photos" on storage.objects
+  for insert with check (bucket_id = 'feedback-photos');
+
 -- One-time migration: the topic/theme id list was reworked to align with
 -- the Little Jamaica Community Development Action Plan's focus areas.
 -- Existing map_comments rows using the old ids are remapped so they keep

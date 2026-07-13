@@ -614,6 +614,37 @@
     return `<a class="idea-card__photo" href="${s}" target="_blank" rel="noopener noreferrer"><img src="${s}" alt="Photo of this place" loading="lazy" referrerpolicy="no-referrer" onerror="this.closest('.idea-card__photo').remove()" /></a>`;
   }
 
+  // Residents upload a photo of the place; it goes to a public Supabase
+  // Storage bucket and the comment stores that file's public URL (which
+  // the preview helpers above then render). Returns the URL, or null if
+  // anything failed so the caller can stop rather than save a broken link.
+  const PHOTO_MAX_BYTES = 5 * 1024 * 1024;
+  const PHOTO_BUCKET = "feedback-photos";
+  async function uploadFeedbackPhoto(file) {
+    if (!db) return null;
+    try {
+      const extMatch = /\.([a-z0-9]+)$/i.exec(file.name || "");
+      const ext = (
+        extMatch ? extMatch[1] : file.type.split("/")[1] || "jpg"
+      ).toLowerCase();
+      const unique =
+        (typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(16).slice(2)}`);
+      const path = `${voterToken}/${unique}.${ext}`;
+      const { error } = await db.storage.from(PHOTO_BUCKET).upload(path, file, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: file.type,
+      });
+      if (error) return null;
+      const { data } = db.storage.from(PHOTO_BUCKET).getPublicUrl(path);
+      return (data && data.publicUrl) || null;
+    } catch {
+      return null;
+    }
+  }
+
   let allMapComments = [];
 
   async function loadMapComments() {
@@ -1254,20 +1285,46 @@
         .value.trim();
       const yearRaw = document.getElementById("map-comment-year").value.trim();
       const year = yearRaw ? Number(yearRaw) : null;
-      const photoUrl = document
-        .getElementById("map-comment-photo")
-        .value.trim();
-      if (photoUrl && !isHttpUrl(photoUrl)) {
-        statusEl.textContent =
-          "Please enter a valid photo link starting with http:// or https://";
-        statusEl.className = "status-msg is-error";
-        return;
+
+      // Optional photo: validate the file before we start submitting so we
+      // can bail early with a clear message.
+      const photoInput = document.getElementById("map-comment-photo");
+      const photoFile = photoInput.files && photoInput.files[0];
+      if (photoFile) {
+        if (!photoFile.type.startsWith("image/")) {
+          statusEl.textContent = "The photo must be an image file.";
+          statusEl.className = "status-msg is-error";
+          return;
+        }
+        if (photoFile.size > PHOTO_MAX_BYTES) {
+          statusEl.textContent = "The photo must be under 5 MB.";
+          statusEl.className = "status-msg is-error";
+          return;
+        }
       }
 
       const submitBtn = document.getElementById("submit-map-comment");
       submitBtn.disabled = true;
       statusEl.textContent = "Submitting…";
       statusEl.className = "status-msg";
+
+      // Upload the photo to Supabase Storage first, so the public URL is
+      // ready to store on the comment row. If the upload fails, stop here
+      // rather than saving a comment that points at nothing.
+      let photoUrl = null;
+      if (photoFile) {
+        statusEl.textContent = "Uploading photo…";
+        const url = await uploadFeedbackPhoto(photoFile);
+        if (!url) {
+          submitBtn.disabled = false;
+          statusEl.textContent =
+            "Couldn't upload the photo — please try again, or submit without it.";
+          statusEl.className = "status-msg is-error";
+          return;
+        }
+        photoUrl = url;
+        statusEl.textContent = "Submitting…";
+      }
 
       const { lat, lng, address } = pendingCommentLocation;
       const row = {

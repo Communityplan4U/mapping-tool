@@ -117,14 +117,17 @@ reverse geocoding only if the feature has nothing address-like.
   Stored as `year_last_there` and shown publicly next to the sentiment
   label, since it's part of the displacement record this feedback type
   exists to build.
-- **Photo link** is an optional field on **every** entry (all feedback
-  types and categories) — a link to a photo of the place. Stored as
-  `photo_url` and shown publicly as an image preview: a thumbnail in the
+- **Photo** is an optional field on **every** entry (all feedback types
+  and categories) — residents upload a photo of the place directly. The
+  file goes to a public Supabase **Storage** bucket (`feedback-photos`,
+  created by `supabase/schema.sql`), and `photo_url` stores that file's
+  public URL. Shown publicly as an image preview: a thumbnail in the
   "Browse entries" list and a larger, tappable preview in the location
-  thread. Only `http(s)` URLs are accepted and rendered (`isHttpUrl` in
-  `js/app.js`); it's an external link, so the image is served from
-  wherever the URL points — not uploaded, stored, or proxied here (so the
-  viewer's browser requests it directly from that host).
+  thread. Uploads are validated client-side (must be an image, ≤ 5 MB);
+  the render helpers only display `http(s)` URLs (`isHttpUrl` in
+  `js/app.js`), so any older pasted-link `photo_url` values still show.
+  Anon visitors can upload but not delete — remove a bad upload from the
+  Supabase Storage dashboard.
 - **Name and contact info** are optional fields on every map comment.
   Name is shown publicly next to the comment, same as the nickname on
   site submissions. Contact is never shown in the public app — it only

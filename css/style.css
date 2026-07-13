@@ -824,6 +824,34 @@ details.layers-panel[open] > summary.layers-panel__title {
   margin: 0 0 0.3rem;
 }
 
+/* Optional photo previews for entries. A compact thumbnail in the browse
+   list; a larger, tappable preview in the thread card. */
+.feedback-entry__photo {
+  display: block;
+  width: 100%;
+  max-height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  margin: 0 0 0.4rem;
+}
+
+.idea-card__photo {
+  display: block;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  margin: 0 0 0.5rem;
+  max-width: 100%;
+}
+
+.idea-card__photo img {
+  display: block;
+  width: 100%;
+  max-height: 240px;
+  object-fit: cover;
+}
+
 .feedback-entry__meta {
   display: block;
   font-size: 0.75rem;

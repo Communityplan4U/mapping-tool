@@ -54,6 +54,11 @@ create table if not exists upvotes (
 -- the person believes the place was last there. Shown publicly next to
 -- the sentiment label, since it's part of the displacement record the
 -- "losing" type exists to build.
+-- photo_url is an optional link to a photo of the place, provided by the
+-- person leaving feedback. Shown publicly as an image preview with the
+-- entry. The app only accepts and only renders http(s) URLs (see
+-- isHttpUrl in js/app.js); it's an external link, so the image is served
+-- from wherever the URL points, not stored/proxied here.
 create table if not exists map_comments (
   id uuid primary key default gen_random_uuid(),
   lat double precision not null,
@@ -65,6 +70,7 @@ create table if not exists map_comments (
   comment text not null,
   name text,
   contact text,
+  photo_url text,
   voter_token text not null,
   created_at timestamptz not null default now()
 );
@@ -73,6 +79,7 @@ alter table map_comments add column if not exists sentiment text;
 alter table map_comments add column if not exists name text;
 alter table map_comments add column if not exists contact text;
 alter table map_comments add column if not exists year_last_there integer;
+alter table map_comments add column if not exists photo_url text;
 
 -- Up/down votes on individual map_comments rows (distinct from the
 -- upvote-only "support" mechanic on site submissions). One row per

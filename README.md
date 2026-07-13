@@ -117,6 +117,14 @@ reverse geocoding only if the feature has nothing address-like.
   Stored as `year_last_there` and shown publicly next to the sentiment
   label, since it's part of the displacement record this feedback type
   exists to build.
+- **Photo link** is an optional field on **every** entry (all feedback
+  types and categories) — a link to a photo of the place. Stored as
+  `photo_url` and shown publicly as an image preview: a thumbnail in the
+  "Browse entries" list and a larger, tappable preview in the location
+  thread. Only `http(s)` URLs are accepted and rendered (`isHttpUrl` in
+  `js/app.js`); it's an external link, so the image is served from
+  wherever the URL points — not uploaded, stored, or proxied here (so the
+  viewer's browser requests it directly from that host).
 - **Name and contact info** are optional fields on every map comment.
   Name is shown publicly next to the comment, same as the nickname on
   site submissions. Contact is never shown in the public app — it only

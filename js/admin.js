@@ -127,7 +127,7 @@
     const { data, error } = await db
       .from("map_comments")
       .select(
-        "topic, sentiment, year_last_there, comment, name, contact, lat, lng, address, created_at"
+        "topic, sentiment, year_last_there, comment, name, contact, photo_url, lat, lng, address, created_at"
       )
       .order("created_at", { ascending: false });
 
@@ -155,6 +155,13 @@
             <td>${escapeHtml(row.comment || "")}</td>
             <td>${escapeHtml(row.name || "")}</td>
             <td>${escapeHtml(row.contact || "")}</td>
+            <td>${
+              row.photo_url
+                ? `<a href="${escapeHtml(
+                    row.photo_url
+                  )}" target="_blank" rel="noopener noreferrer">photo</a>`
+                : ""
+            }</td>
             <td>${escapeHtml(
               row.address || `${row.lat.toFixed(5)}, ${row.lng.toFixed(5)}`
             )}</td>
@@ -193,6 +200,7 @@
           "Idea/Archive",
           "Name",
           "Contact",
+          "Photo",
           "Address",
           "Latitude",
           "Longitude",
@@ -205,6 +213,7 @@
           row.comment || "",
           row.name || "",
           row.contact || "",
+          row.photo_url || "",
           row.address || "",
           row.lat,
           row.lng,

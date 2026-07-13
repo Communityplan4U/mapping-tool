@@ -539,6 +539,42 @@
     }
   }
 
+  // Pan+zoom the map so a given point sits at the centre, without zooming
+  // back out if the user is already closer in. Used when jumping to an
+  // item from the activity feed.
+  function focusMap(lat, lng) {
+    if (typeof lat !== "number" || typeof lng !== "number") return;
+    map.setView([lat, lng], Math.max(map.getZoom(), 17), { animate: true });
+  }
+
+  // Only http(s) links are shown as photo previews — guards against a
+  // stored javascript:/data: value ever reaching an <img src> or an href.
+  function isHttpUrl(value) {
+    try {
+      const u = new URL(value);
+      return u.protocol === "http:" || u.protocol === "https:";
+    } catch {
+      return false;
+    }
+  }
+
+  // Small thumbnail for the browse list (inside a <button>, so no link).
+  function photoThumbHtml(url) {
+    if (!isHttpUrl(url)) return "";
+    return `<img class="feedback-entry__photo" src="${escapeHtml(
+      url
+    )}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()" />`;
+  }
+
+  // Larger preview for a thread card, linked to the full photo in a new tab.
+  // onerror removes the whole figure so a dead link shows nothing, not a
+  // broken-image icon.
+  function photoLinkHtml(url) {
+    if (!isHttpUrl(url)) return "";
+    const s = escapeHtml(url);
+    return `<a class="idea-card__photo" href="${s}" target="_blank" rel="noopener noreferrer"><img src="${s}" alt="Photo of this place" loading="lazy" referrerpolicy="no-referrer" onerror="this.closest('.idea-card__photo').remove()" /></a>`;
+  }
+
   let allMapComments = [];
 
   async function loadMapComments() {
@@ -546,7 +582,7 @@
     const { data, error } = await db
       .from("map_comments")
       .select(
-        "id, lat, lng, address, topic, sentiment, year_last_there, comment, name, created_at"
+        "id, lat, lng, address, topic, sentiment, year_last_there, comment, name, photo_url, created_at"
       )
       .order("created_at", { ascending: false });
     if (error || !data) return;
@@ -661,6 +697,7 @@
               <span class="feedback-entry__text">${escapeHtml(
                 c.comment || ""
               )}</span>
+              ${photoThumbHtml(c.photo_url)}
               <span class="feedback-entry__meta">${escapeHtml(
                 metaBits.join(" · ")
               )}</span>
@@ -874,12 +911,14 @@
       if (clickable) {
         row.addEventListener("click", () => {
           if (isComment) {
+            focusMap(item.lat, item.lng);
             openMapCommentDialog({
               lat: item.lat,
               lng: item.lng,
               address: item.address,
             });
           } else {
+            focusMap(item.site.lat, item.site.lng);
             openSiteDialog(item.site);
             showTab("ideas");
             markersBySiteId.get(item.site.id)?.openTooltip();
@@ -978,9 +1017,11 @@
     mapCommentSentimentHint.hidden = true;
     mapCommentYearField.hidden = true;
     document.getElementById("map-comment-year").value = "";
-    // Name/contact are deliberately NOT reset here — if someone leaves
-    // feedback at several spots in one visit, they shouldn't have to
-    // retype who they are each time.
+    // Photo is about this specific place, so it's cleared each time (like
+    // the comment and year). Name/contact are deliberately NOT reset —
+    // if someone leaves feedback at several spots in one visit, they
+    // shouldn't have to retype who they are each time.
+    document.getElementById("map-comment-photo").value = "";
     const statusEl = document.getElementById("map-comment-status");
     statusEl.textContent = "";
     statusEl.className = "status-msg";
@@ -1031,7 +1072,7 @@
     let query = db
       .from("map_comments")
       .select(
-        "id, topic, sentiment, year_last_there, comment, name, created_at"
+        "id, topic, sentiment, year_last_there, comment, name, photo_url, created_at"
       );
     query = address
       ? query.eq("address", address)
@@ -1106,6 +1147,7 @@
             : ""
         }
         <p class="idea-card__comment">${escapeHtml(c.comment)}</p>
+        ${photoLinkHtml(c.photo_url)}
         <div class="vote-btns">
           <button type="button" class="upvote-btn${
             myVote?.direction === 1 ? " is-active" : ""
@@ -1211,6 +1253,15 @@
         .value.trim();
       const yearRaw = document.getElementById("map-comment-year").value.trim();
       const year = yearRaw ? Number(yearRaw) : null;
+      const photoUrl = document
+        .getElementById("map-comment-photo")
+        .value.trim();
+      if (photoUrl && !isHttpUrl(photoUrl)) {
+        statusEl.textContent =
+          "Please enter a valid photo link starting with http:// or https://";
+        statusEl.className = "status-msg is-error";
+        return;
+      }
 
       const submitBtn = document.getElementById("submit-map-comment");
       submitBtn.disabled = true;
@@ -1228,6 +1279,7 @@
         comment,
         name: name || null,
         contact: contact || null,
+        photo_url: photoUrl || null,
         voter_token: voterToken,
       };
       const { error } = await db.from("map_comments").insert(row);
@@ -1242,6 +1294,7 @@
       statusEl.className = "status-msg is-ok";
       document.getElementById("map-comment-text").value = "";
       document.getElementById("map-comment-year").value = "";
+      document.getElementById("map-comment-photo").value = "";
       ensureLocationMarker(lat, lng, address, row.topic, row.sentiment);
       refreshContributionCounter();
       loadTopicSummary();
